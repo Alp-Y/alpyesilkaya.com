@@ -1,0 +1,120 @@
+/*
+  Size is set by the parent through --vc-size (see Hero.module.css).
+  The box is reserved up front, so nothing shifts when Three.js loads.
+*/
+.widget {
+  --vc-size: 200px;
+  position: relative;
+  width: var(--vc-size);
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  border-radius: 6px;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.widget:focus-visible {
+  box-shadow:
+    0 0 0 1px rgba(62, 224, 143, 0.55),
+    0 0 0 5px rgba(62, 224, 143, 0.08);
+}
+
+.stage {
+  position: relative;
+  width: var(--vc-size);
+  height: var(--vc-size);
+}
+
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--motion-section) var(--ease);
+}
+
+/* The static drawing, sized to match the 3D cube, cross-fades out when the live cube is ready */
+.fallback {
+  position: absolute;
+  inset: 6%;
+  width: 88%;
+  height: 88%;
+  transition: opacity var(--motion-medium) var(--ease);
+}
+.fallback :global([data-viewcube-ring]) {
+  transform: rotate(var(--vc-rot, 0deg));
+  transition: transform var(--motion-demo) var(--ease);
+}
+
+.widget[data-ready="true"] .stage canvas {
+  opacity: 1;
+}
+.widget[data-ready="true"] .fallback {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Compass letters: positioned from 3D by the controller */
+.compass {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  color: var(--text-2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-ui) linear;
+  will-change: transform;
+}
+.north {
+  color: var(--text-1);
+}
+.widget:not([data-ready="true"]) .compass {
+  visibility: hidden;
+}
+
+/* Home */
+.home {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  color: var(--text-3);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    color var(--motion-ui) var(--ease),
+    background-color var(--motion-ui) var(--ease),
+    opacity var(--motion-medium) var(--ease);
+}
+.home svg {
+  width: 16px;
+  height: 16px;
+}
+.widget[data-ready="true"] .home {
+  opacity: 1;
+  pointer-events: auto;
+}
+.home:hover {
+  color: var(--text-1);
+  background: var(--surface-strong);
+}
+.home:active {
+  transform: scale(0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage canvas,
+  .fallback,
+  .home {
+    transition-duration: 1ms;
+  }
+}

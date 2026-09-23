@@ -1,0 +1,311 @@
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+  /* leave room for the fixed status bar on desktop */
+  min-height: calc(100svh - var(--hero-offset, 0px));
+  padding-top: calc(var(--header-h) + 20px);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ---------- One soft light (static; the grid is the site-wide workspace grid) ---------- */
+.light {
+  position: absolute;
+  z-index: -1;
+  width: 70vmax;
+  height: 70vmax;
+  left: 50%;
+  top: 30%;
+  margin: -35vmax 0 0 -35vmax;
+  background: radial-gradient(
+    circle at center,
+    rgba(62, 224, 143, 0.06) 0%,
+    rgba(120, 170, 220, 0.03) 30%,
+    transparent 62%
+  );
+  pointer-events: none;
+}
+
+/* ---------- ViewCube ---------- */
+/* Phones: small, tucked into the top-right corner above the eyebrow */
+.viewcubeWrap {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--header-h) + 2px);
+  right: max(calc(var(--gutter) - 8px), calc((100vw - var(--max-width)) / 2 - 8px));
+}
+.viewcube {
+  --vc-size: 104px;
+}
+/* Tablets */
+@media (min-width: 641px) {
+  .viewcubeWrap {
+    top: calc(var(--header-h) + 36px);
+  }
+  .viewcube {
+    --vc-size: 156px;
+  }
+}
+/* Desktop */
+@media (min-width: 1100px) {
+  .viewcubeWrap {
+    top: calc(var(--header-h) + 40px);
+  }
+  .viewcube {
+    --vc-size: 200px;
+  }
+}
+
+/* ---------- HUD ---------- */
+.hud {
+  /* Above the hero content so the View / Display menus open over it */
+  position: relative;
+  z-index: 4;
+  pointer-events: none; /* only its controls take the pointer, not the empty strip */
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+}
+.hud > * {
+  pointer-events: auto;
+}
+.hudSep {
+  color: var(--line-strong);
+}
+
+/* ---------- Content ---------- */
+.content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  padding-block: clamp(40px, 7vh, 88px) clamp(32px, 5vh, 56px);
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: clamp(20px, 3vh, 32px);
+  color: var(--text-2);
+}
+.eyebrowDot {
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+
+.title {
+  font-size: var(--fs-display);
+  font-weight: 580;
+  letter-spacing: -0.055em;
+  line-height: 0.9;
+  margin-left: -0.05em;
+}
+
+.chain {
+  max-width: 920px;
+  margin-top: clamp(32px, 5vh, 56px);
+}
+
+.lower {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px 64px;
+  margin-top: clamp(32px, 5vh, 56px);
+}
+.statement {
+  max-width: 34ch;
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+  color: var(--text-2);
+  letter-spacing: -0.01em;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 46px;
+  padding: 0 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-1);
+  font-size: 15px;
+  font-weight: 500;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+.primary .arrow {
+  color: var(--accent);
+}
+.primary:hover {
+  border-color: rgba(62, 224, 143, 0.5);
+  background: var(--accent-glow);
+}
+.primary:active {
+  transform: scale(0.98);
+}
+
+/* ---------- Command line ---------- */
+.cmdWrap {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  padding-bottom: clamp(20px, 3vh, 32px);
+}
+.ucsWrap {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 6px;
+}
+/* Sits exactly on the UCS origin (14, 50 in the icon's 64-unit box) */
+.origin {
+  position: absolute;
+  left: calc(52px * 14 / 64);
+  top: calc(52px * 50 / 64);
+  width: 0;
+  height: 0;
+}
+.ucs {
+  width: 52px;
+  height: 52px;
+  opacity: 0.9;
+}
+.cmd {
+  flex: 1;
+  max-width: 760px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(11, 14, 18, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  transition: border-color var(--t-fast) var(--ease);
+}
+.cmd:focus-within {
+  border-color: rgba(62, 224, 143, 0.4);
+}
+.cmdHistory {
+  padding: 10px 14px 6px;
+  min-height: 52px;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+.cmdHistory p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmdHistory p:last-child {
+  color: var(--text-2);
+}
+.cmdPrompt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  height: 36px;
+  border-top: 1px solid var(--line);
+}
+.cmdCaret {
+  color: var(--accent);
+  font-size: 14px;
+}
+.cmdInput {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--text-1);
+  font: inherit;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  caret-color: var(--accent);
+}
+.cmdInput::placeholder {
+  color: var(--text-3);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/*
+  ---------- Scroll hand-off ----------
+  As the hero scrolls away its content clears BEFORE it reaches the header
+  or the next section: lib/effects.ts sets --exit (0 → 1) from the scroll
+  position, so this works the same in every browser.
+*/
+.hero [data-hero-exit] {
+  opacity: calc(1 - var(--exit, 0) * 1.35);
+  transform: translate3d(0, calc(var(--exit, 0) * -48px), 0);
+  will-change: opacity, transform;
+}
+.hero .hud[data-hero-exit] {
+  opacity: calc(1 - var(--exit, 0) * 3);
+}
+
+/* ---------- Responsive ---------- */
+@media (min-width: 900px) {
+  .hero {
+    --hero-offset: var(--status-h);
+  }
+}
+
+@media (max-width: 899px) {
+  .ucsWrap {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  /* The sheet annotation gives way to the cube on phones */
+  .hud > [data-overlay] {
+    display: none;
+  }
+  .title {
+    letter-spacing: -0.05em;
+  }
+  .lower {
+    gap: 28px;
+  }
+  .actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .cmdHistory p:first-child {
+    display: none;
+  }
+  .cmdHistory {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero [data-hero-exit] {
+    transform: none;
+  }
+}

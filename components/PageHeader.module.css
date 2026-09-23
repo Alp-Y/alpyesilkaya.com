@@ -1,0 +1,69 @@
+.header {
+  position: relative;
+  padding: calc(var(--header-h) + clamp(48px, 8vw, 104px)) 0 clamp(56px, 7vw, 96px);
+}
+.header > :global(.container) {
+  position: relative;
+}
+
+.crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 clamp(28px, 4vw, 48px);
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.crumbs li + li::before {
+  content: "/";
+  margin-right: 6px;
+  color: var(--line-strong);
+}
+.crumbs a {
+  transition: color var(--t-fast) var(--ease);
+}
+.crumbs a:hover {
+  color: var(--accent);
+}
+.crumbs [aria-current] {
+  color: var(--text-2);
+}
+
+.grid {
+  display: grid;
+  gap: 40px 64px;
+  align-items: end;
+}
+@media (min-width: 1000px) {
+  .grid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+  }
+}
+
+.title {
+  font-size: var(--fs-h1);
+  font-weight: 560;
+  letter-spacing: -0.05em;
+  line-height: 0.96;
+}
+
+.intro {
+  max-width: 46ch;
+  margin-top: clamp(24px, 3vw, 36px);
+  font-size: var(--fs-lead);
+  line-height: 1.55;
+}
+
+.baseRule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--line);
+}

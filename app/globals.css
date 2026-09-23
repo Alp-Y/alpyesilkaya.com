@@ -1,26 +1,659 @@
-@import "tailwindcss";
+/* ==================================================================
+   GLOBAL STYLES
+   ------------------------------------------------------------------
+   1. Design tokens   – every colour, size and timing lives here
+   2. Base            – resets and typography
+   3. Layout helpers  – container, grid background
+   4. Motion system   – rise / lines / draw (+ reduced motion)
+   5. Prose           – long-form Markdown content
+   6. View transitions
+   Component-specific styles live next to each component
+   (e.g. components/Hero.module.css).
+   ================================================================== */
 
+/* 1. DESIGN TOKENS ------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces — "model space" blue-black, a few tones apart */
+  --bg-0: #07090b;
+  --bg-1: #0b0e12;
+  --bg-2: #10141a;
+  --bg-3: #161b23;
+  --surface: rgba(150, 175, 205, 0.04);
+  /* Section grounds are translucent so the workspace grid runs through the whole site */
+  --ground-0: rgba(7, 9, 11, 0.5);
+  --ground-1: rgba(11, 14, 18, 0.8);
+  --surface-strong: rgba(150, 175, 205, 0.07);
+
+  /* Lines */
+  --line: rgba(160, 185, 215, 0.1);
+  --line-strong: rgba(160, 185, 215, 0.2);
+  --grid-minor: rgba(160, 185, 215, 0.035);
+  --grid-major: rgba(160, 185, 215, 0.07);
+
+  /* Text */
+  --text-1: #e8ecf0;
+  --text-2: #97a1ad;
+  --text-3: #747f8b; /* 4.7:1 on the page ground — legible for small mono labels */
+
+  /* Accent — CAD "layer green". Change it here and the whole site follows. */
+  --accent: #3ee08f;
+  --accent-soft: rgba(62, 224, 143, 0.14);
+  --accent-glow: rgba(62, 224, 143, 0.06);
+
+  /* CAD details (used sparingly) */
+  --axis-x: #e5484d; /* UCS icon X axis */
+  --axis-y: #3ee08f; /* UCS icon Y axis */
+  --grip: #4d8dff; /* selection grips */
+
+  /* Type */
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --fs-display: clamp(3.4rem, 10.5vw, 9.5rem);
+  --fs-h1: clamp(2.75rem, 7vw, 6.25rem);
+  --fs-h2: clamp(2.25rem, 5.2vw, 4.75rem);
+  --fs-h3: clamp(1.5rem, 2.4vw, 2.25rem);
+  --fs-lead: clamp(1.125rem, 1.6vw, 1.375rem);
+  --fs-body: 1.0625rem;
+  --fs-small: 0.875rem;
+  --fs-mono: 0.6875rem;
+
+  /* Space */
+  --gutter: clamp(20px, 4vw, 56px);
+  --max-width: 1360px;
+  --section-space: clamp(104px, 13vw, 176px);
+  --header-h: 60px;
+  --status-h: 30px;
+  --radius: 5px;
+
+  /*
+    MOTION SYSTEM — every duration and easing on the site comes from here.
+      instant  80ms   state flips (toggle lit, readout value)
+      fast    140ms   cursor / HUD / hover response
+      ui      200ms   buttons, links, small UI transitions
+      medium  350ms   panels, selection emphasis
+      section 500ms   section-level changes, view transitions
+      demo    700ms   one-off initialisation / construction animations
+  */
+  --motion-instant: 80ms;
+  --motion-fast: 140ms;
+  --motion-ui: 200ms;
+  --motion-medium: 350ms;
+  --motion-section: 500ms;
+  --motion-demo: 700ms;
+  /* UI response: fast, restrained ease-out (no overshoot) */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Section transitions */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Drawing / construction: controlled, almost linear */
+  --ease-draw: cubic-bezier(0.33, 0.1, 0.25, 1);
+  /* Aliases used by older rules */
+  --ease: var(--ease-out);
+  --t-fast: var(--motion-ui);
+  --t-rise: var(--motion-demo);
+  --t-lines: var(--motion-demo);
+  --t-draw: var(--motion-demo);
+  --stagger: 60ms;
+
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* 2. BASE ---------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 12px);
+  background: var(--bg-0);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  /* Transparent so the fixed workspace grid shows; the page ground is on <html> */
+  background: transparent;
+  color: var(--text-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+@media (min-width: 900px) {
+  body {
+    padding-bottom: var(--status-h);
+  }
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  color: var(--text-1);
+  font-weight: 560;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--accent);
+  color: #04120b;
+}
+
+:focus-visible {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 200;
+  padding: 10px 14px;
+  background: var(--accent);
+  color: #04120b;
+  font-weight: 600;
+  border-radius: var(--radius);
+  transform: translateY(-150%);
+  transition: transform var(--t-fast) var(--ease);
+}
+.skip-link:focus {
+  transform: none;
+}
+
+/* Small monospaced annotation — the "drawing reference" voice of the site */
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  font-weight: 450;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.4;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+/* Marks placeholder content so it can't be mistaken for the real thing */
+.placeholder-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 7px;
+  border: 1px dashed rgba(255, 196, 77, 0.45);
+  border-radius: 3px;
+  color: #ffc44d;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* 3. LAYOUT HELPERS ------------------------------------------------ */
+.container {
+  width: 100%;
+  max-width: calc(var(--max-width) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* Engineering grid — minor 24px, major 120px. Toggle with the GRID button. */
+.cad-grid {
+  background-image:
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px);
+  background-size:
+    120px 120px,
+    120px 120px,
+    24px 24px,
+    24px 24px;
+}
+
+html[data-grid="off"] .cad-grid {
+  background-image: none;
+}
+
+/*
+  The persistent workspace: ONE engineering grid fixed behind the whole
+  site. Sections are drawing states on top of it (translucent grounds),
+  so the grid never restarts between sections.
+*/
+.workspace-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 120% 90% at 40% 35%, #000 30%, rgba(0, 0, 0, 0.35) 100%);
+  mask-image: radial-gradient(ellipse 120% 90% at 40% 35%, #000 30%, rgba(0, 0, 0, 0.35) 100%);
+}
+
+/* Tabular figures for anything numeric that can change */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+  Interface / display typography is not "text to select": no I-beam, no
+  accidental selection. Real paragraphs stay selectable.
+*/
+.no-select,
+.mono,
+h1,
+[data-overlay] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/*
+  CAD cursor: the native cursor is hidden ONLY inside CAD spaces, and only
+  when the custom cursor is running (fine pointer + JS). Text and inputs
+  keep the I-beam; the ViewCube sets its own grab cursor.
+*/
+html[data-cad-cursor="on"] [data-cad-space],
+html[data-cad-cursor="on"] [data-cad-space] * {
+  cursor: none;
+}
+html[data-cad-cursor="on"] [data-cad-space] [data-cursor="text"],
+html[data-cad-cursor="on"] [data-cad-space] [data-cursor="text"] *,
+html[data-cad-cursor="on"] [data-cad-space] input,
+html[data-cad-cursor="on"] [data-cad-space] textarea {
+  cursor: text;
+}
+html[data-cad-cursor="on"] [data-cad-space] [data-cursor="grab"] {
+  cursor: grab;
+}
+
+/* Clean view: the [−] control hides secondary annotations (never navigation) */
+[data-overlay] {
+  transition: opacity var(--motion-medium) var(--ease-out);
+}
+html[data-overlays="off"] [data-overlay] {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+html[data-overlays-touched] [data-overlay] {
+  transition-delay: 0s !important;
+}
+
+/* Arrow used in links: moves on hover of its parent link */
+.arrow {
+  display: inline-block;
+  transition: transform var(--t-fast) var(--ease);
+}
+a:hover .arrow,
+button:hover .arrow,
+a:focus-visible .arrow {
+  transform: translateX(4px);
+}
+a:hover .arrow-down {
+  transform: translateY(3px);
+}
+
+/* Text link with an underline that draws in from the left and exits right */
+.link-line {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-1);
+}
+.link-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--motion-medium) var(--ease-out);
+}
+.link-line:hover::after,
+.link-line:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* 4. MOTION SYSTEM ------------------------------------------------- */
+/*
+   Three patterns, used everywhere:
+     data-reveal="rise"   fade in while moving up
+     data-reveal="lines"  each .line slides up from behind a mask
+     data-reveal="draw"   a hairline extends from its origin
+   Elements start hidden only when JavaScript is running (html.js), and
+   lib/effects.ts adds .is-in when they scroll into view.
+   Children of [data-stagger] get a --i index for staggered timing.
+*/
+
+.js [data-reveal="rise"] {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  transition:
+    opacity var(--t-rise) var(--ease),
+    transform var(--t-rise) var(--ease);
+  transition-delay: calc(var(--i, 0) * var(--stagger) + var(--delay, 0ms));
+}
+
+.js [data-reveal="rise"].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Line reveal: <span class="line"><span>Text</span></span> */
+.line {
+  display: block;
+  overflow: hidden;
+  /* room for descenders so the mask doesn't clip them */
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.line > span {
+  display: block;
+}
+.js [data-reveal="lines"] .line > span {
+  transform: translate3d(0, 105%, 0);
+  transition: transform var(--t-lines) var(--ease);
+  transition-delay: calc(var(--l, 0) * 90ms + var(--delay, 0ms));
+}
+.js [data-reveal="lines"].is-in .line > span {
+  transform: none;
+}
+
+/* Draw: hairlines scale out from their origin */
+.js [data-reveal="draw"] {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--t-draw) var(--ease);
+  transition-delay: calc(var(--i, 0) * var(--stagger) + var(--delay, 0ms));
+}
+.js [data-reveal="draw"][data-axis="y"] {
+  transform: scaleY(0);
+  transform-origin: center top;
+}
+.js [data-reveal="draw"].is-in {
+  transform: none;
+}
+
+/* Safety net: if scripts fail, show everything after a moment */
+html.reveal-all [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+html.reveal-all [data-reveal] .line > span {
+  transform: none !important;
+}
+
+/* Reduced motion: no movement, just a quick fade */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  .js [data-reveal="rise"],
+  .js [data-reveal="draw"],
+  .js [data-reveal="lines"] .line > span {
+    transform: none !important;
+    transition: opacity 200ms linear !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+/* 5. PROSE (Markdown content) -------------------------------------- */
+.prose {
+  max-width: 68ch;
+  color: var(--text-2);
+  font-size: 1.125rem;
+  line-height: 1.75;
+}
+.prose > * + * {
+  margin-top: 1.25em;
+}
+.prose h2 {
+  margin-top: 2.6em;
+  font-size: clamp(1.625rem, 2.6vw, 2.125rem);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.prose h3 {
+  margin-top: 2em;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.prose h2 + *,
+.prose h3 + * {
+  margin-top: 0.8em;
+}
+.prose > :first-child {
+  margin-top: 0;
+}
+.prose strong {
+  color: var(--text-1);
+  font-weight: 560;
+}
+.prose em {
+  color: var(--text-3);
+}
+.prose a {
+  color: var(--text-1);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--t-fast) var(--ease);
+}
+.prose a:hover {
+  text-decoration-color: var(--accent);
+}
+.prose ul,
+.prose ol {
+  padding: 0;
+  list-style: none;
+}
+.prose li {
+  position: relative;
+  padding-left: 1.75em;
+}
+.prose li + li {
+  margin-top: 0.5em;
+}
+.prose ul li::before {
+  content: "";
+  position: absolute;
+  left: 0.2em;
+  top: 0.78em;
+  width: 9px;
+  height: 1px;
+  background: var(--accent);
+}
+.prose ol {
+  counter-reset: item;
+}
+.prose ol li {
+  counter-increment: item;
+}
+.prose ol li::before {
+  content: counter(item, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.3em;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+}
+.prose blockquote {
+  margin-inline: 0;
+  padding: 0.25em 0 0.25em 1.25em;
+  border-left: 1px solid var(--accent);
+  color: var(--text-1);
+  font-size: 1.3rem;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+.prose code {
+  padding: 0.15em 0.4em;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--text-1);
+}
+.prose pre {
+  overflow-x: auto;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.prose pre code {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.prose figure {
+  margin: 2.5em 0;
+}
+.prose figure img,
+.prose p img {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.prose figcaption {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.prose hr {
+  border: 0;
+  height: 1px;
+  background: var(--line);
+  margin: 3em 0;
+}
+
+/* 6. VIEW TRANSITIONS ---------------------------------------------- */
+/* Shared screenshots morph between the homepage and the tool pages */
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-group(.morph) {
+  animation-duration: var(--motion-section);
+  animation-timing-function: var(--ease);
+}
+::view-transition-image-pair(.morph) {
+  animation-name: via-blur;
+}
+@keyframes via-blur {
+  30% {
+    filter: blur(2px);
+  }
+}
+/* Default page crossfade */
+::view-transition-old(root) {
+  animation: var(--motion-ui) ease-in both vt-fade-out;
+}
+::view-transition-new(root) {
+  animation: var(--motion-medium) var(--ease-out) var(--motion-instant) both vt-fade-in;
+}
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+/* Header and status bar stay put during page transitions */
+::view-transition-group(site-header),
+::view-transition-group(status-bar) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header),
+::view-transition-old(status-bar) {
+  display: none;
+}
+::view-transition-new(site-header),
+::view-transition-new(status-bar) {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
 }

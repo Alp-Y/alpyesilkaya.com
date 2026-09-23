@@ -1,0 +1,172 @@
+.section {
+  position: relative;
+  padding-block: var(--section-space);
+  background: linear-gradient(180deg, transparent 0%, var(--ground-1) 100%);
+}
+
+.grid {
+  display: grid;
+  gap: 56px 40px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.item {
+  position: relative;
+  padding-top: 28px;
+}
+.rule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--line-strong);
+}
+/* Green end-tick on each rule, like a dimension terminator */
+.item::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 0;
+  width: 1px;
+  height: 9px;
+  background: var(--accent);
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+}
+
+.icon {
+  width: 48px;
+  height: 48px;
+  color: var(--text-1);
+  stroke: currentColor;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icon :global(*) {
+  vector-effect: non-scaling-stroke;
+}
+
+/* Line drawings trace themselves when the column appears */
+:global(.js) .item .icon path,
+:global(.js) .item .icon rect {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset var(--motion-demo) var(--ease);
+  transition-delay: calc(var(--i, 0) * 120ms + 300ms);
+}
+:global(.js) .item .icon path[stroke-dasharray] {
+  stroke-dasharray: 2 3;
+  stroke-dashoffset: 0;
+  opacity: 0;
+  transition: opacity var(--motion-demo) var(--ease) 900ms;
+}
+:global(.js) .item:global(.is-in) .icon path,
+:global(.js) .item:global(.is-in) .icon rect {
+  stroke-dashoffset: 0;
+}
+:global(.js) .item:global(.is-in) .icon path[stroke-dasharray] {
+  opacity: 0.5;
+}
+
+.title {
+  font-size: var(--fs-h3);
+  letter-spacing: -0.035em;
+  margin-bottom: 14px;
+}
+.text {
+  max-width: 36ch;
+  color: var(--text-2);
+}
+
+/*
+  Micro-motion: each mark responds in a way that means something.
+  Proximity (--prox, 0 → 1 within ~140 px) and hover are subtle; nothing moves on its own.
+    Civil       the datum line extends; the centreline tick grows
+    Software    the brackets open
+    Automation  pulses flow through the process
+*/
+.icon [data-part] {
+  transform-box: fill-box;
+}
+:global(.js) .item .icon path[data-part] {
+  transition:
+    stroke-dashoffset var(--motion-demo) var(--ease),
+    transform var(--motion-medium) var(--ease-out),
+    opacity var(--motion-medium) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 120ms + 300ms), 0ms, 0ms;
+}
+.icon [data-part="datum"] {
+  transform-origin: center;
+  transform: scaleX(calc(1 + var(--prox, 0) * 0.04));
+}
+.icon [data-part="cl"] {
+  transform-origin: bottom;
+}
+.icon [data-part="open"] {
+  transform: translateX(calc(var(--prox, 0) * -0.6px));
+}
+.icon [data-part="close"] {
+  transform: translateX(calc(var(--prox, 0) * 0.6px));
+}
+:global(.js) .item .icon path[data-part="flow"] {
+  stroke: var(--accent);
+  stroke-width: 1.6;
+  stroke-dasharray: 0.08 0.92;
+  stroke-dashoffset: 0;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-out);
+}
+.item:hover .icon [data-part="datum"] {
+  transform: scaleX(1.1);
+}
+.item:hover .icon [data-part="cl"] {
+  transform: scaleY(1.35);
+}
+.item:hover .icon [data-part="open"] {
+  transform: translateX(-2px);
+}
+.item:hover .icon [data-part="close"] {
+  transform: translateX(2px);
+}
+:global(.js) .item:hover .icon path[data-part="flow"] {
+  opacity: 1;
+  animation: flow 1.2s linear infinite;
+}
+@keyframes flow {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+/* The heading reacts with its mark: one object */
+.title {
+  transition: color var(--motion-fast) var(--ease-out);
+}
+.item:hover .title {
+  color: #fff;
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon [data-part] {
+    transform: none !important;
+  }
+  :global(.js) .item:hover .icon path[data-part="flow"] {
+    animation: none;
+    opacity: 0;
+  }
+}

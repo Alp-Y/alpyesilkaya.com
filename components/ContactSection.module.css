@@ -1,0 +1,142 @@
+.section {
+  position: relative;
+  padding-block: var(--section-space) clamp(96px, 12vw, 160px);
+  background: var(--ground-0);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.annotation {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: clamp(40px, 6vw, 72px);
+}
+.rule {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.title {
+  font-size: var(--fs-h1);
+  font-weight: 560;
+  letter-spacing: -0.05em;
+  line-height: 0.96;
+  margin-bottom: clamp(40px, 6vw, 72px);
+}
+.dim {
+  color: var(--text-3);
+}
+
+.emailRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.email {
+  position: relative;
+  display: inline-grid;
+  font-size: clamp(1.5rem, 4.4vw, 3.5rem);
+  font-weight: 480;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  color: var(--text-1);
+  word-break: break-all;
+}
+.email > span {
+  grid-area: 1 / 1;
+  transition:
+    opacity var(--motion-medium) var(--ease),
+    transform var(--motion-section) var(--ease);
+}
+.emailText {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-size: 0% 1.5px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition:
+    background-size var(--motion-section) var(--ease),
+    opacity var(--motion-medium) var(--ease),
+    transform var(--motion-section) var(--ease) !important;
+}
+.email:hover .emailText {
+  background-size: 100% 1.5px;
+}
+.copied {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  color: var(--accent);
+  opacity: 0;
+  transform: translate3d(0, 0.4em, 0);
+  pointer-events: none;
+}
+.copied svg {
+  width: 0.8em;
+  height: 0.8em;
+}
+.email[data-copied="true"] .emailText {
+  opacity: 0;
+  transform: translate3d(0, -0.4em, 0);
+}
+.email[data-copied="true"] .copied {
+  opacity: 1;
+  transform: none;
+}
+
+.copyButton {
+  display: none;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.copyButton[data-copied="true"] {
+  color: var(--accent);
+  border-color: rgba(62, 224, 143, 0.5);
+}
+
+.hint {
+  margin-top: 14px;
+}
+.hintTouch {
+  display: none;
+}
+
+@media (hover: none) {
+  .copyButton {
+    display: inline-block;
+  }
+  .hintDesktop {
+    display: none;
+  }
+  .hintTouch {
+    display: inline;
+  }
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+  margin: clamp(56px, 7vw, 96px) 0 0;
+  padding: 28px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+  font-size: 1.0625rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .email > span {
+    transition: none !important;
+    transform: none !important;
+  }
+}

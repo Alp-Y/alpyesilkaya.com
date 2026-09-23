@@ -1,0 +1,111 @@
+.viewport {
+  position: relative;
+  margin: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 40px 80px -30px rgba(0, 0, 0, 0.7),
+    0 12px 24px -12px rgba(0, 0, 0, 0.5);
+  transition:
+    border-color var(--motion-medium) var(--ease),
+    box-shadow var(--motion-medium) var(--ease);
+}
+
+.bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.screen {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px);
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  transition: transform var(--motion-demo) var(--ease);
+}
+
+/* One soft sheen across the "glass" on hover */
+.sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.06) 48%,
+    rgba(255, 255, 255, 0.02) 52%,
+    transparent 65%
+  );
+  transform: translate3d(-100%, 0, 0);
+  pointer-events: none;
+}
+
+/* Selection grips (hidden until hovered) */
+.grip {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--grip);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity var(--motion-ui) var(--ease),
+    transform var(--motion-medium) var(--ease);
+  pointer-events: none;
+}
+.tl {
+  top: -4px;
+  left: -4px;
+}
+.tr {
+  top: -4px;
+  right: -4px;
+}
+.bl {
+  bottom: -4px;
+  left: -4px;
+}
+.br {
+  bottom: -4px;
+  right: -4px;
+}
+
+/* Hover — triggered by the viewport itself or by any parent marked [data-hover-group] */
+:global([data-hover-group]:hover) .viewport,
+.viewport:hover {
+  border-color: rgba(77, 141, 255, 0.45);
+}
+:global([data-hover-group]:hover) .grip,
+.viewport:hover .grip {
+  opacity: 1;
+  transform: none;
+}
+:global([data-hover-group]:hover) .image,
+.viewport:hover .image {
+  transform: scale(1.02);
+}
+:global([data-hover-group]:hover) .sheen,
+.viewport:hover .sheen {
+  transform: translate3d(100%, 0, 0);
+  transition: transform var(--motion-demo) var(--ease);
+}
+
+@media (hover: none) {
+  .grip {
+    display: none;
+  }
+}

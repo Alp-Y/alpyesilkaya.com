@@ -1,0 +1,25 @@
+.section {
+  padding-block: clamp(64px, 9vw, 128px);
+  background: var(--ground-1);
+}
+
+.grid {
+  display: grid;
+  gap: 56px;
+}
+@media (min-width: 1000px) {
+  .grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(56px, 8vw, 128px);
+    align-items: start;
+  }
+  .side {
+    position: sticky;
+    top: calc(var(--header-h) + 32px);
+  }
+}
+
+.side {
+  display: grid;
+  gap: 28px;
+}

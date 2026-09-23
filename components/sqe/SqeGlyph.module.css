@@ -1,0 +1,137 @@
+/*
+  States follow the demo; `:global(.play)` on an ancestor (heading hover /
+  section activation) runs the full construction sequence once:
+  boundary draws → tag attaches → work draws → intersection fills → dimension.
+*/
+.glyph {
+  width: 44px;
+  height: 44px;
+  overflow: visible;
+  stroke-linecap: square;
+}
+.glyph * {
+  vector-effect: non-scaling-stroke;
+  transition:
+    opacity var(--motion-medium) var(--ease-out),
+    stroke var(--motion-medium) var(--ease-out),
+    stroke-dashoffset var(--motion-demo) var(--ease-draw),
+    transform var(--motion-medium) var(--ease-out);
+}
+
+.boundary {
+  stroke: var(--text-2);
+  stroke-width: 1.2;
+  stroke-dasharray: 0.06 0.04;
+}
+.tag {
+  stroke: var(--accent);
+  stroke-width: 1;
+  opacity: 0;
+  transform: translate3d(-3px, 0, 0);
+}
+.tag circle {
+  fill: var(--accent);
+  stroke: none;
+}
+.work {
+  stroke: var(--text-1);
+  stroke-width: 1;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  opacity: 0.7;
+}
+.hit {
+  fill: var(--accent);
+  opacity: 0;
+}
+.dim {
+  stroke: var(--accent);
+  stroke-width: 1;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+}
+
+/* 0 — nothing loaded: a faint dashed outline */
+.glyph[data-stage="0"] .boundary {
+  opacity: 0.55;
+}
+/* 1 — drawing loaded */
+.glyph[data-stage="1"] .boundary,
+.glyph[data-stage="2"] .boundary,
+.glyph[data-stage="3"] .boundary {
+  stroke-dasharray: none;
+  stroke: var(--text-1);
+}
+/* 2 — metadata assigned */
+.glyph[data-stage="2"] .tag,
+.glyph[data-stage="3"] .tag {
+  opacity: 1;
+  transform: none;
+}
+/* 3 — analysis: work, intersection, quantity */
+.glyph[data-stage="3"] .work,
+.glyph[data-stage="3"] .dim {
+  stroke-dashoffset: 0;
+}
+.glyph[data-stage="3"] .hit {
+  opacity: 0.28;
+}
+
+/* Hover / activation: run the whole sequence once (~900 ms) */
+:global(.play) .glyph .boundary {
+  animation: g-boundary var(--motion-demo) var(--ease-draw) both;
+}
+:global(.play) .glyph .tag {
+  animation: g-tag var(--motion-medium) var(--ease-out) 180ms both;
+}
+:global(.play) .glyph .work {
+  animation: g-draw var(--motion-section) var(--ease-draw) 300ms both;
+}
+:global(.play) .glyph .hit {
+  animation: g-hit var(--motion-medium) var(--ease-out) 600ms both;
+}
+:global(.play) .glyph .dim {
+  animation: g-draw var(--motion-medium) var(--ease-draw) 700ms both;
+}
+@keyframes g-boundary {
+  from {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes g-tag {
+  from {
+    opacity: 0;
+    transform: translate3d(-3px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes g-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes g-hit {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.28;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(.play) .glyph * {
+    animation: none !important;
+  }
+}

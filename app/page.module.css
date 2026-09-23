@@ -1,0 +1,26 @@
+.tools {
+  position: relative;
+  padding-block: var(--section-space);
+  background:
+    radial-gradient(ellipse 50% 40% at 15% 10%, rgba(62, 224, 143, 0.035), transparent 70%),
+    var(--ground-1);
+  border-top: 1px solid var(--line);
+}
+
+.cases {
+  position: relative;
+  padding-block: var(--section-space);
+  background:
+    radial-gradient(ellipse 50% 45% at 90% 0%, rgba(120, 170, 220, 0.04), transparent 70%),
+    var(--ground-0);
+  border-top: 1px solid var(--line);
+}
+
+.more {
+  margin-top: clamp(56px, 7vw, 96px);
+}
+
+.toolList {
+  display: grid;
+  gap: clamp(96px, 12vw, 160px);
+}

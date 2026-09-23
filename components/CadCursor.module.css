@@ -1,0 +1,195 @@
+/* One fixed overlay for the whole page. Never intercepts the pointer. */
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+
+/* ---------- Crosshair: clipped to the current CAD space ---------- */
+.frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-out);
+}
+.h,
+.v {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+  transition: opacity var(--motion-fast) var(--ease-out);
+}
+.h {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200, 220, 240, 0.14) 12%, rgba(200, 220, 240, 0.14) 88%, transparent);
+}
+.v {
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, rgba(200, 220, 240, 0.14) 12%, rgba(200, 220, 240, 0.14) 88%, transparent);
+}
+
+/* ---------- Marker at the pointer: pickbox ↔ target ↔ selection ---------- */
+.marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  will-change: transform;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-out);
+}
+.box {
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  width: 11px;
+  height: 11px;
+  border: 1px solid rgba(225, 235, 248, 0.7);
+  transition:
+    transform var(--motion-fast) var(--ease-out),
+    opacity var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
+.corner {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-color: var(--accent);
+  border-style: solid;
+  border-width: 0;
+  opacity: 0;
+  transition:
+    transform var(--motion-fast) var(--ease-out),
+    opacity var(--motion-fast) var(--ease-out);
+}
+.tl {
+  left: -8px;
+  top: -8px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+}
+.tr {
+  right: -8px;
+  top: -8px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+}
+.bl {
+  left: -8px;
+  bottom: -8px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+}
+.br {
+  right: -8px;
+  bottom: -8px;
+  border-bottom-width: 1px;
+  border-right-width: 1px;
+}
+
+/* cad: full crosshair */
+.root[data-mode="cad"] .frame,
+.root[data-mode="select"] .frame,
+.root[data-mode="cad"] .marker,
+.root[data-mode="select"] .marker,
+.root[data-mode="interactive"] .marker {
+  opacity: 1;
+}
+
+/* interactive: lines fade, pickbox becomes a small target */
+.root[data-mode="interactive"] .frame {
+  opacity: 0;
+}
+.root[data-mode="interactive"] .box {
+  transform: scale(0.45);
+  border-color: var(--text-1);
+}
+.root[data-mode="interactive"] .corner {
+  opacity: 1;
+  transform: translate(3px, 3px);
+}
+.root[data-mode="interactive"] .tr {
+  transform: translate(-3px, 3px);
+}
+.root[data-mode="interactive"] .bl {
+  transform: translate(3px, -3px);
+}
+.root[data-mode="interactive"] .br {
+  transform: translate(-3px, -3px);
+}
+
+/* select: crosshair stays, box tightens and brackets lock on */
+.root[data-mode="select"] .box {
+  transform: scale(0.7);
+  border-color: var(--accent);
+}
+.root[data-mode="select"] .corner {
+  opacity: 1;
+}
+.root[data-mode="select"] .h,
+.root[data-mode="select"] .v {
+  opacity: 0.7;
+}
+
+/* ---------- The HUD (context inspector) ---------- */
+.hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  opacity: 0;
+  transition: opacity var(--motion-fast) var(--ease-out);
+  will-change: transform;
+}
+.hud[data-visible="true"] {
+  opacity: 1;
+}
+.inner {
+  display: grid;
+  gap: 2px;
+  min-width: 132px;
+  padding: 6px 8px 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  background: rgba(13, 17, 22, 0.9);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+.hud:global(.hud-swap) .inner {
+  animation: hud-swap var(--motion-fast) var(--ease-out);
+}
+@keyframes hud-swap {
+  from {
+    opacity: 0.35;
+    transform: translate3d(0, 2px, 0);
+  }
+}
+.inner :global(.hud-title) {
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  color: var(--text-3);
+}
+.inner :global(.hud-line) {
+  color: var(--text-1);
+}
+.inner :global(.hud-row) {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.inner :global(.hud-label) {
+  color: var(--text-2);
+}
