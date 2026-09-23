@@ -324,6 +324,11 @@ html[data-cad-cursor="on"] [data-cad-space] [data-cursor="grab"] {
   cursor: grab;
 }
 
+/* Sections soften as they scroll up under the header (lib/effects.ts sets --exit) */
+main > [data-exit] {
+  opacity: calc(1 - var(--exit, 0));
+}
+
 /* Clean view: the [−] control hides secondary annotations (never navigation) */
 [data-overlay] {
   transition: opacity var(--motion-medium) var(--ease-out);

@@ -89,11 +89,27 @@ function initReveal(): Cleanup {
   return () => observer.disconnect();
 }
 
+/**
+ * Sets --exit (0 → 1) on an element as its bottom edge travels the last
+ * `range` px up to the header. `floor` is the lowest opacity it reaches.
+ * CSS turns it into opacity (see [data-exit] in globals.css / Hero.module.css).
+ */
+function fadeOut(el: HTMLElement, barH: number, range: number, floor: number) {
+  const bottom = el.getBoundingClientRect().bottom;
+  const t = 1 - Math.min(1, Math.max(0, (bottom - barH) / range));
+  const exit = (t * t * (3 - 2 * t)) * (1 - floor); // smoothstep: eases in and out
+  const value = exit.toFixed(3);
+  if (el.style.getPropertyValue("--exit") !== value) el.style.setProperty("--exit", value);
+  el.dataset.exit = "";
+}
+
 /* ---------- Header + hero hand-off (driven by the shared frame loop) ---------- */
 function initHeader(): Cleanup {
   const header = document.querySelector<HTMLElement>("[data-header]");
   if (!header) return () => {};
   const hero = document.querySelector<HTMLElement>("[data-hero]");
+  const heroBlocks = hero ? [...hero.querySelectorAll<HTMLElement>("[data-hero-exit]")] : [];
+  const sections = [...document.querySelectorAll<HTMLElement>("main > *:not([data-hero])")];
 
   let lastY = -1;
   const update = () => {
@@ -102,11 +118,16 @@ function initHeader(): Cleanup {
     // Frosted as soon as anything scrolls underneath it — content never collides with the bar
     header.dataset.state = y > 8 ? "scrolled" : "top";
 
-    // Hero content clears before it reaches the header / next section
-    if (hero) {
-      const exit = Math.min(1, Math.max(0, y / (hero.offsetHeight * 0.55)));
-      hero.style.setProperty("--exit", exit.toFixed(3));
+    // Content fades as it slides under the top edge — never while it is still
+    // in open view. Measured from the header's height (not its position), so it
+    // behaves the same whether the header is shown or tucked away.
+    const barH = header.offsetHeight;
+    // Hero blocks: a short, clear hand-off
+    if (hero && y < hero.offsetHeight + 200) {
+      for (const el of heroBlocks) fadeOut(el, barH, Math.min(el.offsetHeight, 220), 0);
     }
+    // Every other section: slower and softer — never fully disappears
+    for (const el of sections) fadeOut(el, barH, 420, 0.25);
 
     const menuOpen = header.dataset.menuOpen === "true";
     if (!menuOpen && !reducedMotion() && lastY >= 0) {

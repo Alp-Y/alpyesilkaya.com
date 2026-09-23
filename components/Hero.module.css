@@ -255,17 +255,11 @@
 
 /*
   ---------- Scroll hand-off ----------
-  As the hero scrolls away its content clears BEFORE it reaches the header
-  or the next section: lib/effects.ts sets --exit (0 → 1) from the scroll
-  position, so this works the same in every browser.
+  lib/effects.ts sets --exit (0 → 1) on each block as it slides under the
+  header, so text fades there instead of colliding with the bar.
 */
 .hero [data-hero-exit] {
-  opacity: calc(1 - var(--exit, 0) * 1.35);
-  transform: translate3d(0, calc(var(--exit, 0) * -48px), 0);
-  will-change: opacity, transform;
-}
-.hero .hud[data-hero-exit] {
-  opacity: calc(1 - var(--exit, 0) * 3);
+  opacity: calc(1 - var(--exit, 0));
 }
 
 /* ---------- Responsive ---------- */
@@ -304,8 +298,4 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero [data-hero-exit] {
-    transform: none;
-  }
-}
+
