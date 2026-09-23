@@ -1,5 +1,5 @@
 /**
- * PLANE GEOMETRY for the Spatial Quantity Engine demo.
+ * PLANE GEOMETRY for the Quantity by Area Calculator demo.
  * ------------------------------------------------------------------
  * Small, dependency-free and exact for simple polygons:
  *

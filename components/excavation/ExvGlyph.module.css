@@ -1,0 +1,45 @@
+/* Fixed size (same as the other tool's mark) — it must never scale with the layout */
+.glyph {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  overflow: visible;
+  stroke-linecap: square;
+}
+.glyph * {
+  vector-effect: non-scaling-stroke;
+}
+.tin {
+  stroke: var(--text-2);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+.ex {
+  stroke: #e2848c;
+  stroke-width: 1;
+}
+.vol {
+  fill: rgba(226, 132, 140, 0.14);
+  stroke: none;
+}
+.pt {
+  fill: var(--text-1);
+}
+/* the heading plays it once on view and on hover (data-play → .play, lib/effects.ts) */
+:global(.play) .tin {
+  stroke-dasharray: 1;
+  animation: exv-draw 900ms var(--ease-out) both;
+}
+@keyframes exv-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :global(.play) .tin {
+    animation: none;
+  }
+}

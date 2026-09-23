@@ -5,7 +5,7 @@
  * than one part of the UI needs to agree on lives here:
  *
  *   viewport   orientation, display mode, overlays (toolbar, ViewCube,
- *              command line and the Spatial Quantity Engine all read it)
+ *              command line and the Quantity by Area Calculator all read it)
  *   selection  which engineering entity is selected / hovered
  *   activity   what kind of motion should dominate right now
  *
@@ -46,11 +46,12 @@ export type WorkspaceState = {
 
 const initial: WorkspaceState = {
   viewport: {
-    orientation: "iso",
+    // The page opens in FRONT view, turning slowly (see InteractiveViewCube autoSpin)
+    orientation: "front",
     displayMode: "wireframe",
     overlaysVisible: true,
-    azimuth: 45,
-    elevation: 35.3,
+    azimuth: 0,
+    elevation: 0,
     request: 0,
     resetRequest: 0,
   },

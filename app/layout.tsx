@@ -68,6 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {/* The persistent engineering workspace grid behind every section */}
         <div className="workspace-grid cad-grid" aria-hidden="true" />
+        <div className="workspace-light" aria-hidden="true" />
         <a className="skip-link" href="#main">
           Skip to content
         </a>

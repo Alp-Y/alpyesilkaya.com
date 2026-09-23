@@ -23,6 +23,8 @@ export type PointerSnapshot = {
   moved: boolean;
   /** Page scrolled since the last frame. */
   scrolled: boolean;
+  /** Where the current / last primary press started (seq increments per press). */
+  press: { x: number; y: number; target: Element | null; seq: number };
   time: number;
 };
 
@@ -39,6 +41,7 @@ const snapshot: PointerSnapshot = {
   down: false,
   moved: false,
   scrolled: false,
+  press: { x: 0, y: 0, target: null, seq: 0 },
   time: 0,
 };
 
@@ -80,7 +83,10 @@ function onMove(e: PointerEvent) {
   schedule();
 }
 function onDown(e: PointerEvent) {
-  snapshot.down = true;
+  if (e.button === 0) {
+    snapshot.down = true;
+    snapshot.press = { x: e.clientX, y: e.clientY, target: e.target as Element | null, seq: snapshot.press.seq + 1 };
+  }
   onMove(e);
 }
 function onUp(e: PointerEvent) {

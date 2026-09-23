@@ -15,7 +15,7 @@
  *   [data-proximity]                icons that respond to the pointer nearby
  *   [data-play]                     a mark that plays its sequence once on
  *                                   section activation, and again on hover
- *   [data-cmd]                      the hero command line (workspace actions)
+ *   [data-cmd]                      the command line at the foot of the hero (workspace actions)
  *   [data-case-register]            case-study hover preview
  *   [data-copy-email]               click-to-copy email
  *   [data-grid-toggle]              GRID on/off
@@ -30,6 +30,7 @@ import { getCoords, initCadCursor } from "./workspace/cadCursor";
 import { initWorkspaceDom } from "./workspace/dom";
 import { initUcs } from "./workspace/ucs";
 import { initProximity } from "./workspace/proximity";
+import { initLight } from "./workspace/light";
 
 type Cleanup = () => void;
 
@@ -44,6 +45,7 @@ export function initEffects(): Cleanup {
     initStatusCoords(),
     initUcs(),
     initProximity(),
+    initLight(),
     initPlay(),
     initCommandLine(),
     initCasePreview(),
@@ -314,33 +316,74 @@ function initCommandLine(): Cleanup {
     });
   }
 
-  const onSubmit = (e: Event) => {
-    e.preventDefault();
-    const raw = input.value.trim();
-    if (!raw) return;
-    input.value = "";
-    const cmd = raw.toUpperCase();
+  let lastOrigin: { x: number; y: number } | null = null;
+  const run = (raw: string) => {
+    const cmd = raw.trim().toUpperCase();
+    if (!cmd) return;
     if (cmd === "GRID") {
       print(`Command: ${cmd}`);
       document.querySelector<HTMLButtonElement>("[data-grid-toggle]")?.click();
       print(`Grid ${document.documentElement.dataset.grid === "off" ? "off" : "on"}`);
       return;
     }
-    const result = runCommand(raw);
+    const result = runCommand(raw, { origin: lastOrigin ?? centreOf(input) });
     if (result.clear) {
       history.replaceChildren();
       return;
     }
-    print(`Command: ${cmd}`);
+    // Two-line answers (HELP) fill the console on their own; others echo the command first
+    if (result.lines.length < 2) print(`Command: ${cmd}`);
     result.lines.forEach(print);
   };
+  const onSubmit = (e: Event) => {
+    e.preventDefault();
+    const raw = input.value;
+    input.value = "";
+    run(raw);
+  };
+  // Suggested commands: a click runs them exactly as if typed
+  const onChip = (e: MouseEvent) => {
+    const chip = (e.target as HTMLElement).closest<HTMLElement>("[data-cmd-run]");
+    if (!chip) return;
+    e.preventDefault();
+    const r = chip.getBoundingClientRect();
+    lastOrigin = { x: r.left + r.width / 2, y: r.top };
+    run(chip.dataset.cmdRun ?? "");
+    lastOrigin = null;
+  };
+  form.addEventListener("click", onChip);
 
+  // "/" anywhere starts typing (like a CAD command line); clicking the box focuses it
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = e.target as HTMLElement | null;
+    if (t && (t.closest("input, textarea, select, [contenteditable='true']") || t.isContentEditable)) return;
+    e.preventDefault();
+    input.focus({ preventScroll: true });
+    form.scrollIntoView({ block: "nearest", behavior: reducedMotion() ? "auto" : "smooth" });
+  };
+  const onFormDown = (e: PointerEvent) => {
+    if (e.target !== input && !(e.target as HTMLElement).closest("[data-cmd-run]")) {
+      e.preventDefault();
+      input.focus({ preventScroll: true });
+    }
+  };
+  document.addEventListener("keydown", onKey);
+  form.addEventListener("pointerdown", onFormDown);
   form.addEventListener("submit", onSubmit);
   return () => {
+    document.removeEventListener("keydown", onKey);
+    form.removeEventListener("pointerdown", onFormDown);
     form.removeEventListener("submit", onSubmit);
+    form.removeEventListener("click", onChip);
     timers.forEach(clearTimeout);
     lines.forEach((l) => (l.textContent = l.dataset.cmdLine ?? ""));
   };
+}
+
+function centreOf(el: HTMLElement) {
+  const r = el.getBoundingClientRect();
+  return { x: r.left + Math.min(r.width / 2, 160), y: r.top };
 }
 
 /* ---------- Case-study preview: trails the pointer (shared pointer loop) ---------- */

@@ -5,7 +5,7 @@ import { useWorkspace } from "@/lib/workspace/store";
 import styles from "./SqeGlyph.module.css";
 
 /**
- * The Spatial Quantity Engine's mark — the product concept in one symbol:
+ * The Quantity by Area Calculator's mark — the product concept in one symbol:
  *   boundary → metadata tag → work geometry → intersection → quantity
  *
  * It reflects the demo's real state (status-driven, not decoration):

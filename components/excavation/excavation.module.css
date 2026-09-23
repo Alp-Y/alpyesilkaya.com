@@ -1,0 +1,429 @@
+/* ==================================================================
+   AUTOMATIZE EXCAVATION CALCULATIONS — a CAD viewport, not a dashboard.
+   The 3D model dominates; text sits in the viewport like annotations.
+   ================================================================== */
+
+.app {
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: rgba(9, 12, 15, 0.86);
+  overflow: hidden;
+}
+
+.view {
+  position: relative;
+  height: clamp(420px, 58vw, 620px);
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 55%, rgba(150, 175, 205, 0.05), transparent 70%),
+    #07090b;
+  overflow: hidden;
+}
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: pan-y;
+  opacity: 0;
+  transition: opacity var(--motion-demo) var(--ease-out);
+}
+.view[data-ready="true"] .canvas {
+  opacity: 1;
+}
+.loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+}
+
+/* annotations share one voice */
+.caption,
+.readout,
+.mode,
+.callout,
+.tag,
+.nav button,
+.expression,
+.volumeLabel,
+.stats dt {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.caption {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  display: grid;
+  gap: 4px;
+  pointer-events: none;
+  animation: exv-in var(--motion-medium) var(--ease-out) both;
+}
+.caption span {
+  font-size: 10.5px;
+  color: var(--accent);
+}
+.caption b {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-1);
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+@keyframes exv-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+  }
+}
+
+/* labels pinned to the model */
+.labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.callout,
+.tag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  transition: opacity var(--motion-medium) var(--ease-out);
+  will-change: transform;
+}
+.callout[data-show="true"],
+.tag[data-show="true"] {
+  opacity: 1;
+}
+.callout {
+  display: grid;
+  gap: 1px;
+  margin: -64px 0 0 10px;
+  padding: 5px 7px;
+  border-left: 1px solid rgba(217, 225, 234, 0.6);
+  background: rgba(7, 9, 11, 0.75);
+  font-size: 9.5px;
+  color: var(--text-2);
+  text-transform: none;
+}
+.callout b {
+  font-weight: 400;
+  color: var(--text-1);
+}
+.tag {
+  margin: -9px 0 0 -40px;
+  padding: 2px 7px;
+  border: 1px solid rgba(217, 225, 234, 0.4);
+  border-radius: 2px;
+  background: rgba(7, 9, 11, 0.78);
+  font-size: 9.5px;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+.tag[data-kind="ex"] {
+  border-color: rgba(110, 140, 175, 0.7);
+}
+.tag[data-kind="boundary"] {
+  border-color: rgba(62, 224, 143, 0.6);
+  color: var(--accent);
+}
+
+/* the result, inside the viewport */
+.result {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  text-align: right;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(0, 6px, 0);
+  transition:
+    opacity var(--motion-section) var(--ease-out),
+    transform var(--motion-section) var(--ease-out);
+}
+.result[data-show="true"] {
+  opacity: 1;
+  transform: none;
+}
+.expression {
+  font-size: 10px;
+  color: var(--text-3);
+}
+.volume {
+  font-size: clamp(2.2rem, 4.6vw, 3.6rem);
+  font-weight: 560;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: var(--text-1);
+}
+.volume em {
+  font-style: normal;
+  font-size: 0.42em;
+  color: var(--text-2);
+  letter-spacing: 0;
+}
+.volumeLabel {
+  font-size: 10.5px;
+  color: #e2848c;
+}
+.stats {
+  display: grid;
+  gap: 2px;
+  margin-top: 10px;
+  min-width: 220px;
+}
+.stats div {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 3px 0;
+  border-top: 1px solid var(--line);
+}
+.stats dt {
+  font-size: 9.5px;
+  color: var(--text-3);
+}
+.stats dd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-1);
+}
+
+/* furniture */
+.axes {
+  position: absolute;
+  left: 14px;
+  bottom: 56px;
+  width: 40px;
+  height: 40px;
+  fill: none;
+  stroke-width: 1.2;
+  pointer-events: none;
+}
+.axes text {
+  fill: var(--text-3);
+  stroke: none;
+  font-family: var(--font-mono);
+  font-size: 7px;
+}
+.readout,
+.mode {
+  position: absolute;
+  bottom: 58px;
+  font-size: 10px;
+  color: var(--text-3);
+  pointer-events: none;
+  white-space: pre;
+}
+.readout {
+  left: 62px;
+  text-transform: none;
+}
+.readout[data-live="true"] {
+  color: var(--text-2);
+}
+.mode {
+  right: 16px;
+}
+
+/* stage navigation */
+.nav {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px 0;
+  margin: 0;
+  padding: 10px 12px;
+  list-style: none;
+  border-top: 1px solid var(--line);
+  background: rgba(7, 9, 11, 0.8);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.nav li {
+  display: inline-flex;
+  align-items: center;
+}
+.arrow {
+  margin: 0 6px;
+  color: var(--text-3);
+  font-size: 11px;
+}
+.nav button {
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 3px;
+  font-size: 10.5px;
+  color: var(--text-3);
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out);
+}
+.nav button:hover {
+  color: var(--text-1);
+}
+.nav button[data-done="true"] {
+  color: var(--text-2);
+}
+.nav button[aria-current="step"] {
+  color: var(--text-1);
+  background: var(--surface-strong);
+  box-shadow: inset 0 -1px 0 var(--accent);
+}
+
+/* 05 — sections */
+.sections {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px 6px;
+  border-top: 1px solid var(--line);
+  animation: exv-in var(--motion-medium) var(--ease-out) both;
+}
+.stations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.stations button {
+  display: grid;
+  gap: 1px;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
+}
+.stations button b {
+  font-weight: 400;
+  color: var(--text-2);
+}
+.stations button:hover,
+.stations button[aria-selected="true"] {
+  color: var(--text-1);
+  border-color: rgba(62, 224, 143, 0.45);
+}
+.section {
+  width: 100%;
+  max-width: 980px;
+  height: auto;
+  display: block;
+}
+.sGrid {
+  stroke: rgba(150, 175, 205, 0.1);
+}
+.sAxis {
+  stroke: rgba(224, 169, 74, 0.5);
+  stroke-dasharray: 6 3 2 3;
+}
+.sLimit {
+  stroke: rgba(62, 224, 143, 0.55);
+  stroke-dasharray: 3 3;
+}
+.sText {
+  fill: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 9px;
+}
+.sValue {
+  fill: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+.sCut {
+  stroke: none;
+}
+.sEg {
+  fill: none;
+  stroke: #d9e1ea;
+  stroke-width: 1.4;
+}
+.sEx {
+  fill: none;
+  stroke: #e2848c;
+  stroke-width: 1.4;
+}
+.check {
+  font-size: 0.8rem;
+  color: var(--text-3);
+}
+.check b {
+  font-weight: 400;
+  color: var(--text-2);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 20px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+}
+.tagline {
+  font-size: 1.05rem;
+  color: var(--text-1);
+}
+.flow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+.fine {
+  flex-basis: 100%;
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+@media (max-width: 640px) {
+  .result {
+    top: auto;
+    bottom: 96px;
+    right: 12px;
+  }
+  .stats {
+    display: none;
+  }
+  .readout {
+    display: none;
+  }
+  .mode {
+    bottom: 58px;
+    right: 12px;
+  }
+  .nav button {
+    padding: 0 6px;
+    font-size: 9.5px;
+  }
+  .arrow {
+    margin: 0 2px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caption,
+  .sections {
+    animation: none;
+  }
+}

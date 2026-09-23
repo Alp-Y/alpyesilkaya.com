@@ -47,7 +47,7 @@ export type OrientationChange = {
   preset: PresetName | null;
   mode: "free" | "preset";
   /** What is moving the view right now. */
-  interaction: "drag" | "transition" | "inertia" | "rest";
+  interaction: "drag" | "transition" | "inertia" | "spin" | "rest";
 };
 
 const DEG = Math.PI / 180;

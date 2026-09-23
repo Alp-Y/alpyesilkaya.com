@@ -3,149 +3,171 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useWorkspace } from "@/lib/workspace/store";
 import { hoverEntity, selectEntity } from "@/lib/workspace/actions";
-import { registerSpace, setHud, type HudContent } from "@/lib/workspace/cadCursor";
-import { quantity } from "@/lib/format";
-import { bounds, centroid, type Point } from "@/lib/sqe/geometry";
-import { areaLabel, type Analysis } from "@/lib/sqe/engine";
-import { highlightFor } from "@/lib/sqe/selection";
-import { ids, parseId, type Project } from "@/lib/sqe/types";
+import { registerSpace, setHud, type HudContent, type SelectionDetail } from "@/lib/workspace/cadCursor";
+import { coord, num, quantity } from "@/lib/format";
+import { bounds, centroid, intersectPolygons, pointInPolygon, triangulate, type Point, type Polygon } from "@/lib/sqe/geometry";
+import type { Analysis } from "@/lib/sqe/engine";
+import { getSqe, setMulti, stopStory, useSqe, workTypesIn } from "@/lib/sqe/store";
+import { ids, parseId, type Boundary, type Project, type SurveyPoint } from "@/lib/sqe/types";
 import { WORK_TYPES } from "@/lib/sqe/workTypes";
 import styles from "./sqe.module.css";
 
-const PAD = 18; // metres around the drawing
-const MAX_TILT = 60; // degrees — keeps oblique views readable
+const PAD = 24; // metres around an imported drawing
+
+/** CAD layer colours for the reference linework (CAD view). */
+const LAYERS: Record<string, { color: string; dash?: string; label: string }> = {
+  "C-ROAD-EDGE": { color: "#c9d1da", label: "Road edges" },
+  "C-EXIST-ROAD": { color: "#7f8a96", dash: "6 4", label: "Existing roads" },
+  "C-RAMP": { color: "#c9d1da", label: "Ramps" },
+  "C-DRAIN": { color: "#5fb7d9", dash: "10 3 2 3", label: "Watercourse" },
+};
 
 /**
- * The drawing. SVG in drawing units (metres), Y flipped to screen.
- * - Display mode (shared state) changes how geometry is drawn.
- * - View orientation (shared state + live ViewCube events) tilts / rotates
- *   the sheet: TOP = plan view, ISO = an oblique view of the same plan.
- * - Intersections are drawn as the work geometry clipped by the area
- *   (SVG clip-path) — exactly the region the engine measured.
+ * THE DRAWING — aerial image + CAD overlay, in drawing units (metres).
+ *
+ * Story steps: 1 SITE · 2 SURVEY · 3 AREAS · 4 QUANTITIES
+ *
+ * Views (the shared display mode) show different information, not just
+ * different brightness:
+ *   AERIAL    the site as it is: the photo, the area zones, the chosen work
+ *   CAD       the drawing: linework by layer, every work type hatched,
+ *             area polylines with vertex grips, chainage — no photo
+ *   ANALYSIS  the result: each area shaded by its quantity (legend), the
+ *             measured pieces solid, the numbers large
+ *
+ * Drag a window (→) or crossing (←) to select several areas at once.
  */
 export default function SqeViewport({ project, analysis }: { project: Project; analysis: Analysis }) {
+  const step = useSqe((s) => s.step);
+  const workType = useSqe((s) => s.workType);
+  const multi = useSqe((s) => s.multi);
   const displayMode = useWorkspace((s) => s.viewport.displayMode);
-  const overlays = useWorkspace((s) => s.viewport.overlaysVisible);
   const selection = useWorkspace((s) => s.selection);
   const hover = useWorkspace((s) => s.hover);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const planeRef = useRef<HTMLDivElement>(null);
-  const [pxPerUnit, setPxPerUnit] = useState(1.4);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [pxPerUnit, setPxPerUnit] = useState(0.75);
+  const [hoverPoint, setHoverPoint] = useState<SurveyPoint | null>(null);
 
-  // ----- drawing extents → SVG space -----
+  const site = project.site;
+  const origin = useMemo<[number, number]>(() => site?.origin ?? [0, 0], [site]);
+  const view = displayMode === "shaded" ? "aerial" : displayMode === "analysis" ? "analysis" : "cad";
+
+  // ----- extents: the aerial's frame, or the drawing's bounds -----
   const box = useMemo(() => {
-    const pts: Point[] = [
-      ...project.boundaries.flatMap((b) => b.polygon),
-      ...project.work.flatMap((w) => w.geometry.points),
-      ...project.context.flatMap((c) => c.points),
-    ];
-    const b = bounds(pts);
-    return { ...b, w: b.maxX - b.minX + PAD * 2, h: b.maxY - b.minY + PAD * 2 };
-  }, [project]);
-  const X = (x: number) => x - box.minX + PAD;
-  const Y = (y: number) => box.maxY - y + PAD;
+    if (site) return { minX: 0, minY: 0, maxX: site.extent[0], maxY: site.extent[1] };
+    const b = bounds([...project.boundaries.flatMap((x) => x.polygon), ...project.work.flatMap((w) => w.geometry.points)]);
+    return { minX: b.minX - PAD, minY: b.minY - PAD, maxX: b.maxX + PAD, maxY: b.maxY + PAD };
+  }, [project, site]);
+  const W = box.maxX - box.minX;
+  const H = box.maxY - box.minY;
+  const X = (x: number) => x - box.minX;
+  const Y = (y: number) => box.maxY - y;
   const pts = (p: Point[]) => p.map(([x, y]) => `${X(x).toFixed(2)},${Y(y).toFixed(2)}`).join(" ");
-  const fs = (px: number) => px / pxPerUnit; // screen px → drawing units
+  const u = (px: number) => px / pxPerUnit; // screen px → drawing units
 
-  const hl = useMemo(() => highlightFor(selection, analysis), [selection, analysis]);
-  const hoverHl = useMemo(() => highlightFor(hover, analysis), [hover, analysis]);
-  const boundaryByKey = useMemo(() => new Map(project.boundaries.map((b) => [b.key, b])), [project]);
-
-  // ----- measure scale for text sizes -----
   useEffect(() => {
-    const el = planeRef.current;
+    const el = svgRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(([e]) => setPxPerUnit(Math.max(0.2, e.contentRect.width / box.w)));
+    const ro = new ResizeObserver(([e]) => setPxPerUnit(Math.max(0.05, e.contentRect.width / W)));
     ro.observe(el);
     return () => ro.disconnect();
-  }, [box.w]);
+  }, [W]);
 
-  // ----- orientation: follow the ViewCube (live) and the shared state (at rest) -----
-  const orientation = useWorkspace((s) => s.viewport.orientation);
-  const restAz = useWorkspace((s) => s.viewport.azimuth);
-  const restEl = useWorkspace((s) => s.viewport.elevation);
-  const angles = useRef({ az: 0, el: 90 });
+  // ----- drawing coordinates for the HUD + status bar -----
   useEffect(() => {
-    const plane = planeRef.current;
-    if (!plane) return;
-    const apply = (az: number, el: number, live: boolean) => {
-      angles.current = { az, el };
-      const tilt = Math.min(MAX_TILT, Math.max(0, 90 - Math.abs(el)));
-      plane.style.transition = live ? "none" : "";
-      plane.style.transform = tilt < 0.01 && Math.abs(az % 360) < 0.01 ? "none" : `rotateX(${tilt.toFixed(2)}deg) rotateZ(${az.toFixed(2)}deg)`;
-    };
-    const presets: Record<string, [number, number]> = { top: [0, 90], iso: [45, 35.264], front: [0, 0], back: [180, 0], right: [90, 0], left: [270, 0], bottom: [0, -90] };
-    const [az0, el0] = orientation === "free" ? [restAz, restEl] : presets[orientation] ?? [0, 90];
-    apply(az0, el0, false);
-    const onEvent = (e: Event) => {
-      const d = (e as CustomEvent<{ azimuth: number; elevation: number; interaction: string }>).detail;
-      if (d) apply(d.azimuth, d.elevation, d.interaction === "drag");
-    };
-    document.addEventListener("viewcube:orientation", onEvent);
-    return () => document.removeEventListener("viewcube:orientation", onEvent);
-  }, [orientation, restAz, restEl]);
-
-  // ----- drawing coordinates for the HUD / status bar (inverse of the view transform) -----
-  useEffect(() => {
-    const plane = planeRef.current;
-    if (!plane) return;
+    const el = svgRef.current;
+    if (!el) return;
     return registerSpace("sqe", (cx, cy) => {
-      const r = plane.getBoundingClientRect();
-      const w = plane.offsetWidth;
-      const h = plane.offsetHeight;
-      const { az, el } = angles.current;
-      const a = (az * Math.PI) / 180;
-      const t = (Math.min(MAX_TILT, Math.max(0, 90 - Math.abs(el))) * Math.PI) / 180;
-      // screen = [[cos a, −sin a], [cos t·sin a, cos t·cos a]] · local   (about the centre)
-      const sx = cx - (r.left + r.width / 2);
-      const sy = cy - (r.top + r.height / 2);
-      const ct = Math.cos(t) || 1e-6;
-      const lx = Math.cos(a) * sx + (Math.sin(a) * sy) / ct;
-      const ly = -Math.sin(a) * sx + (Math.cos(a) * sy) / ct;
-      const u = (lx + w / 2) * (box.w / w);
-      const v = (ly + h / 2) * (box.h / h);
-      return { x: u + box.minX - PAD, y: box.maxY + PAD - v };
+      const r = el.getBoundingClientRect();
+      const x = box.minX + ((cx - r.left) / r.width) * W;
+      const y = box.maxY - ((cy - r.top) / r.height) * H;
+      return { x: x + origin[0], y: y + origin[1] };
     });
-  }, [box]);
+  }, [box, W, H, origin]);
 
-  // ----- HUD: hovered object, or the selection when hovering empty space / itself -----
+  // ----- window / crossing selection → several areas -----
   useEffect(() => {
-    const describe = (id: string | null, selected: boolean): HudContent | null => {
-      const p = parseId(id);
-      if (!p) return null;
-      if (p.kind === "boundary") {
-        const b = boundaryByKey.get(p.key);
-        if (!b) return null;
-        if (selected) return { title: "SELECTED", lines: [areaLabel(b), b.meta ? `${b.meta.section} · ${b.meta.side}`.toUpperCase() : "UNASSIGNED"] };
-        return { title: b.meta ? "AREA" : "BOUNDARY", lines: [areaLabel(b), quantity(analysis.boundaryArea[b.key] ?? 0, "m²")] };
-      }
-      if (p.kind === "work") {
-        const w = project.work.find((x) => x.code === p.code);
-        if (!w) return null;
-        const t = WORK_TYPES[w.type];
-        const total = analysis.totals[w.code]?.measure ?? 0;
-        const value = t.measure === "length" ? quantity(total, "lm") : quantity(total, "m²");
-        return { title: selected ? "SELECTED" : t.label.toUpperCase(), lines: [[w.code, w.spec].filter(Boolean).join(" · "), value] };
-      }
-      if (p.kind === "intersection" || p.kind === "row") {
-        const i = p.kind === "intersection" ? analysis.intersections.find((x) => x.id === id) : null;
-        const row = p.kind === "row" ? analysis.rows.find((r) => r.id === id) : null;
-        const type = WORK_TYPES[i?.type ?? row!.type];
-        const area = areaLabel(boundaryByKey.get(p.key));
-        const measure = i ? i.measure : row!.intersectionIds.reduce((s, x) => s + (analysis.intersections.find((y) => y.id === x)?.measure ?? 0), 0);
-        const q = i ? i.quantity : row!.quantity;
-        const rows: [string, string][] =
-          type.measure === "volume"
-            ? [["AREA", quantity(measure, "m²")], ["DEPTH", quantity(type.depth ?? 0, "m")], ["VOLUME", quantity(q, "m³")]]
-            : [[type.measure === "length" ? "LENGTH" : "AREA", quantity(q, type.unit)]];
-        return { title: "INTERSECTION", lines: [`${area} × ${type.label.toUpperCase()}`], rows };
-      }
-      return null;
+    const onSelect = (e: Event) => {
+      const d = (e as CustomEvent<SelectionDetail>).detail;
+      const el = svgRef.current;
+      if (d.space !== "sqe" || !el) return;
+      stopStory();
+      const r = el.getBoundingClientRect();
+      const toX = (cx: number) => box.minX + ((cx - r.left) / r.width) * W;
+      const toY = (cy: number) => box.maxY - ((cy - r.top) / r.height) * H;
+      const x0 = toX(d.rect.left);
+      const x1 = toX(d.rect.right);
+      const y0 = toY(d.rect.bottom);
+      const y1 = toY(d.rect.top);
+      const rect: Polygon = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+      const inside = (p: Point) => p[0] >= x0 && p[0] <= x1 && p[1] >= y0 && p[1] <= y1;
+      const keys = project.boundaries
+        .filter((b) =>
+          d.mode === "window"
+            ? b.polygon.every(inside)
+            : b.polygon.some(inside) || intersectPolygons(rect, b.polygon, triangulate(b.polygon)).area > 0.01,
+        )
+        .map((b) => b.key);
+      setMulti({ keys, mode: d.mode });
     };
-    const hovering = hover && hover !== selection;
-    setHud("hover", hovering ? describe(hover, false) : null, "sqe");
-    setHud("selected", !hovering && selection ? describe(selection, true) : null, "sqe");
-  }, [hover, selection, analysis, project, boundaryByKey]);
+    document.addEventListener("cad:selection", onSelect);
+    return () => document.removeEventListener("cad:selection", onSelect);
+  }, [project, box, W, H]);
+
+  // A single pick replaces a multi-selection
+  useEffect(() => {
+    if (selection && getSqe().multi) setMulti(null);
+  }, [selection]);
+
+  const typeInfo = workType ? WORK_TYPES[workType] : null;
+  const qtyIn = useMemo(() => {
+    const m = new Map<string, number>();
+    if (!workType) return m;
+    for (const r of analysis.rows) if (r.type === workType) m.set(r.boundaryKey, r.quantity);
+    return m;
+  }, [analysis, workType]);
+  const maxQty = Math.max(0, ...qtyIn.values());
+  const byKey = useMemo(() => new Map(project.boundaries.map((b) => [b.key, b])), [project]);
+  const multiSet = useMemo(() => new Set(multi?.keys ?? []), [multi]);
+
+  const sel = parseId(selection);
+  const selKey = sel && sel.kind !== "work" ? sel.key : null;
+  const hov = parseId(hover);
+  const hoverKey = hov && hov.kind !== "work" ? hov.key : null;
+  const hoverWork = hov && hov.kind === "work" ? hov.code : null;
+
+  const areaState = (key: string) =>
+    hoverKey === key ? "hover" : selKey === key || multiSet.has(key) ? "selected" : selKey || multiSet.size ? "dim" : "idle";
+
+  // ----- HUD: hovered area (or survey point), else the selection -----
+  useEffect(() => {
+    const describe = (key: string | null, selected: boolean): HudContent | null => {
+      const b = key ? byKey.get(key) : null;
+      if (!b) return null;
+      const id = b.meta?.areaId ?? key!;
+      if (step < 4 || !typeInfo) {
+        return { title: selected ? "SELECTED" : "AREA", lines: [id, (b.meta?.name ?? "Unnamed").toUpperCase()], rows: [["AREA", quantity(analysis.boundaryArea[b.key] ?? 0, "m²")]] };
+      }
+      const q = qtyIn.get(b.key) ?? 0;
+      if (displayMode === "analysis") {
+        return { title: selected ? "SELECTED" : "INTERSECTION", lines: [`${id} × ${typeInfo.label.toUpperCase()}`], rows: [["QUANTITY", quantity(q, typeInfo.unit)]] };
+      }
+      return { title: selected ? "SELECTED" : "AREA", lines: [id], rows: [[typeInfo.label.toUpperCase(), q ? quantity(q, typeInfo.unit) : "—"]] };
+    };
+    const hoveringOther = hoverKey && hoverKey !== selKey;
+    if (hoverPoint) {
+      setHud("hover", { title: "SURVEY POINT", lines: [hoverPoint.id], rows: [["E", coord(hoverPoint.x + origin[0])], ["N", coord(hoverPoint.y + origin[1])], ["Z", coord(hoverPoint.z)]] }, "sqe");
+    } else setHud("hover", hoveringOther ? describe(hoverKey, false) : null, "sqe");
+    let selected: HudContent | null = null;
+    if (!hoveringOther && !hoverPoint) {
+      if (selKey) selected = describe(selKey, true);
+      else if (multi && typeInfo) {
+        const total = multi.keys.reduce((s, k) => s + (qtyIn.get(k) ?? 0), 0);
+        selected = { title: multi.mode === "window" ? "WINDOW SELECTION" : "CROSSING SELECTION", lines: [`${multi.keys.length} AREAS`], rows: [[typeInfo.label.toUpperCase(), quantity(total, typeInfo.unit)]] };
+      }
+    }
+    setHud("selected", selected, "sqe");
+  }, [hoverKey, selKey, hoverPoint, step, typeInfo, qtyIn, displayMode, analysis, byKey, origin, multi]);
 
   useEffect(
     () => () => {
@@ -156,238 +178,316 @@ export default function SqeViewport({ project, analysis }: { project: Project; a
     [],
   );
 
-  const pick = (id: string) => ({
+  const areaProps = (b: Boundary) => ({
     "data-cursor": "select",
-    "data-entity": id,
-    onPointerEnter: () => hoverEntity(id),
+    "data-entity": ids.boundary(b.key),
+    onPointerEnter: () => hoverEntity(ids.boundary(b.key)),
     onPointerLeave: () => hoverEntity(null),
     onClick: (e: React.MouseEvent) => {
       e.stopPropagation();
-      selectEntity(id);
+      setMulti(null);
+      selectEntity(selKey === b.key ? null : ids.boundary(b.key));
     },
   });
 
-  const analysisMode = displayMode === "analysis";
-  const shaded = displayMode !== "wireframe";
+  const labelAt = (b: Boundary): Point => {
+    const c = centroid(b.polygon);
+    if (pointInPolygon(c, b.polygon)) return c;
+    const n = b.polygon.length;
+    const a = b.polygon[Math.floor(n / 4)];
+    const z = b.polygon[Math.floor((3 * n) / 4)];
+    return [(a[0] + z[0]) / 2, (a[1] + z[1]) / 2];
+  };
+
+  const showAreas = step >= 3;
+  const showWork = step >= 4 && !!workType;
+  const types = workTypesIn(analysis);
+  // CAD shows every work type (the drawing); the other views show the chosen one
+  const workTypesShown = view === "cad" ? types : workType ? [workType] : [];
+  const fontPx = 11;
+
+  // vertex grips (CAD view): polygon corners, thinned so curved edges don't turn into a dotted line
+  const grips = (poly: Point[]) => poly.filter((_, i) => i % Math.max(1, Math.round(poly.length / 12)) === 0);
 
   return (
-    <div
-      ref={wrapRef}
-      className={styles.viewport}
-      data-cad-space="sqe"
-      data-mode={displayMode}
-      onClick={() => selectEntity(null)}
-      onPointerLeave={() => hoverEntity(null)}
-    >
-      <div ref={planeRef} className={styles.plane}>
-        <svg
-          className={styles.svg}
-          viewBox={`0 0 ${box.w.toFixed(2)} ${box.h.toFixed(2)}`}
-          role="img"
-          aria-label={`${project.name}: ${project.boundaries.length} project areas and ${project.work.length} pieces of work geometry`}
-        >
-          <defs>
-            {project.boundaries.map((b) => (
-              <clipPath key={b.key} id={`sqe-clip-${b.key}`}>
-                <polygon points={pts(b.polygon)} />
-              </clipPath>
-            ))}
-            <Hatches size={fs(7)} />
-          </defs>
+    <div className={styles.drawing} data-step={step} data-mode={displayMode} data-view={view} data-has-image={!!site}>
+      <svg
+        ref={svgRef}
+        className={styles.svg}
+        viewBox={`0 0 ${W} ${H}`}
+        style={{ aspectRatio: `${W} / ${H}` }}
+        role="img"
+        aria-label={`${project.name}: ${project.boundaries.length} project areas`}
+        data-cad-space="sqe"
+        onPointerDown={() => stopStory()}
+        onClick={() => {
+          selectEntity(null);
+          setMulti(null);
+        }}
+      >
+        <defs>
+          {project.boundaries.map((b) => (
+            <clipPath key={b.key} id={`sqe-clip-${b.key}`}>
+              <polygon points={pts(b.polygon)} />
+            </clipPath>
+          ))}
+          {types.map((t, i) => (
+            <pattern key={t} id={`sqe-hatch-${t}`} width={u(7)} height={u(7)} patternUnits="userSpaceOnUse" patternTransform={`rotate(${[45, -45, 0, 90][i % 4]})`}>
+              <line x1="0" y1="0" x2="0" y2={u(7)} stroke={WORK_TYPES[t].color} strokeWidth={u(1)} />
+            </pattern>
+          ))}
+        </defs>
 
-          {/* Reference drawing */}
-          <g className={styles.context}>
-            {project.context.map((c, i) => (
-              <polyline key={i} points={pts(c.points)} data-style={c.style} />
-            ))}
-          </g>
+        {site && <image className={styles.aerial} href={site.image} x={0} y={0} width={W} height={H} preserveAspectRatio="none" />}
 
-          {/* Project areas */}
-          <g>
-            {project.boundaries.map((b) => {
-              const id = ids.boundary(b.key);
+        {/* Local grid, 50 m */}
+        <g className={styles.grid} aria-hidden="true">
+          {Array.from({ length: Math.floor(W / 50) + 1 }, (_, i) => (
+            <line key={`gx${i}`} x1={i * 50} y1={0} x2={i * 50} y2={H} strokeWidth={u(i % 4 ? 0.5 : 1)} />
+          ))}
+          {Array.from({ length: Math.floor(H / 50) + 1 }, (_, i) => (
+            <line key={`gy${i}`} x1={0} y1={H - i * 50} x2={W} y2={H - i * 50} strokeWidth={u(i % 4 ? 0.5 : 1)} />
+          ))}
+        </g>
+
+        {/* CAD: reference linework by layer + chainage */}
+        {site && view === "cad" && step >= 3 && (
+          <g className={styles.linework} aria-hidden="true">
+            {site.linework.map((l, i) => {
+              const layer = LAYERS[l.layer];
               return (
-                <polygon
-                  key={b.key}
-                  points={pts(b.polygon)}
-                  className={styles.boundary}
-                  data-assigned={!!b.meta}
-                  data-selected={hl.boundaries.has(b.key)}
-                  data-hover={hover === id}
-                  {...pick(id)}
+                <polyline
+                  key={i}
+                  points={pts(l.points)}
+                  stroke={layer?.color ?? "#8d99a6"}
+                  strokeDasharray={layer?.dash ? layer.dash.split(" ").map((d) => u(Number(d))).join(" ") : undefined}
+                  strokeWidth={u(0.9)}
                 />
               );
             })}
-          </g>
-
-          {/* Work geometry */}
-          <g>
-            {project.work.map((w) => {
-              const t = WORK_TYPES[w.type];
-              const id = ids.work(w.code);
-              const state = {
-                "data-selected": hl.work.has(w.code),
-                "data-hover": hover === id,
-                "data-dim": analysisMode,
-              };
-              return w.geometry.kind === "polygon" ? (
-                <polygon
-                  key={w.code}
-                  points={pts(w.geometry.points)}
-                  className={styles.work}
-                  style={{ "--c": t.color, fill: shaded && t.hatch ? `url(#hatch-${t.id})` : undefined } as React.CSSProperties}
-                  {...state}
-                  {...(analysisMode ? {} : pick(id))}
-                />
-              ) : (
-                <g key={w.code} style={{ "--c": t.color } as React.CSSProperties}>
-                  <polyline points={pts(w.geometry.points)} className={styles.workLine} data-kind={w.type} {...state} />
-                  {!analysisMode && <polyline points={pts(w.geometry.points)} className={styles.hitLine} {...pick(id)} />}
-                </g>
-              );
-            })}
-          </g>
-
-          {/* Intersections: work geometry clipped by each area — exactly what was measured */}
-          {(analysisMode || hl.intersections.size > 0 || hoverHl.intersections.size > 0) && (
-            <g>
-              {analysis.intersections.map((i) => {
-                const w = project.work.find((x) => x.code === i.workCode)!;
-                const t = WORK_TYPES[w.type];
-                const selected = hl.intersections.has(i.id);
-                const hovered = hover === i.id || hoverHl.intersections.has(i.id);
-                if (!analysisMode && !selected && !hovered) return null;
-                const common = {
-                  clipPath: `url(#sqe-clip-${i.boundaryKey})`,
-                  "data-selected": selected,
-                  "data-hover": hovered,
-                  style: { "--c": t.color } as React.CSSProperties,
-                  ...(analysisMode ? pick(i.id) : {}),
-                };
-                return w.geometry.kind === "polygon" ? (
-                  <polygon key={i.id} points={pts(w.geometry.points)} className={styles.intersection} {...common} />
-                ) : (
-                  <polyline key={i.id} points={pts(w.geometry.points)} className={styles.intersectionLine} {...common} />
-                );
-              })}
-            </g>
-          )}
-
-          {/* Annotations (hidden by the clean-view control) */}
-          <g className={styles.annotations} data-visible={overlays}>
+            {project.context.map((c, i) => (
+              <polyline key={`c${i}`} points={pts(c.points)} className={styles.centreline} strokeWidth={u(0.8)} strokeDasharray={`${u(14)} ${u(3)} ${u(3)} ${u(3)}`} />
+            ))}
             {project.stations.map((s) => (
-              <g key={s.label} transform={`translate(${X(s.at[0]).toFixed(2)} ${Y(s.at[1]).toFixed(2)}) rotate(${((-s.angle * 180) / Math.PI).toFixed(2)})`}>
-                <line x1="0" y1={-fs(5)} x2="0" y2={fs(5)} className={styles.tick} />
-                <text x={fs(3)} y={-fs(8)} fontSize={fs(9)} className={styles.station}>
+              <g key={s.label} transform={`translate(${X(s.at[0])} ${Y(s.at[1])}) rotate(${(-s.angle * 180) / Math.PI})`}>
+                <line x1={0} y1={-u(6)} x2={0} y2={u(6)} className={styles.tick} strokeWidth={u(1)} />
+                <text y={-u(9)} fontSize={u(9)} textAnchor="middle" className={styles.chainage}>
                   {s.label}
                 </text>
               </g>
             ))}
-            {project.source === "example" && <NorthArrow x={X(box.maxX) - fs(10)} y={Y(box.maxY) + fs(26)} s={fs(1)} />}
           </g>
+        )}
 
-          {/* Area labels: the metadata tag appears once an area is assigned */}
-          <g className={styles.labels}>
+        {/* 02 SURVEY — control point, sight lines, measured points */}
+        {site && (step === 2 || step === 3) && (
+          <g className={styles.survey} data-live={step === 2}>
+            {step === 2 &&
+              site.survey.map((p, i) => (
+                <line key={`s${p.id}`} className={styles.sight} x1={X(site.control.x)} y1={Y(site.control.y)} x2={X(p.x)} y2={Y(p.y)} pathLength={1} strokeWidth={u(0.75)} style={{ animationDelay: `${i * 55}ms` }} />
+              ))}
+            <g className={styles.station} transform={`translate(${X(site.control.x)} ${Y(site.control.y)})`}>
+              <path d={`M0 ${-u(8)} L${u(7)} ${u(5)} L${-u(7)} ${u(5)} Z`} strokeWidth={u(1.2)} />
+              <circle r={u(1.6)} />
+              <text y={u(19)} fontSize={u(10)} textAnchor="middle">
+                {site.control.id}
+              </text>
+            </g>
+            {site.survey.map((p, i) => (
+              <g
+                key={p.id}
+                className={styles.point}
+                transform={`translate(${X(p.x)} ${Y(p.y)})`}
+                style={{ animationDelay: `${step === 2 ? i * 55 + 180 : 0}ms` }}
+                onPointerEnter={() => setHoverPoint(p)}
+                onPointerLeave={() => setHoverPoint(null)}
+                data-cursor="select"
+              >
+                <circle r={u(9)} className={styles.pointHit} />
+                <path d={`M${-u(4)} 0 H${u(4)} M0 ${-u(4)} V${u(4)}`} strokeWidth={u(1.2)} />
+                <circle r={u(2.2)} strokeWidth={u(1)} />
+              </g>
+            ))}
+          </g>
+        )}
+
+        {/* ANALYSIS: each area shaded by its quantity of the chosen type */}
+        {showWork && view === "analysis" && typeInfo && (
+          <g className={styles.choropleth} aria-hidden="true">
             {project.boundaries.map((b) => {
-              const [cx, cy] = centroid(b.polygon);
-              const label = areaLabel(b);
-              const w = fs(label.length * 6.6 + 12);
-              const h = fs(15);
+              const q = qtyIn.get(b.key) ?? 0;
               return (
-                <g
+                <polygon
                   key={b.key}
-                  transform={`translate(${X(cx).toFixed(2)} ${Y(cy).toFixed(2)})`}
-                  className={styles.tag}
+                  points={pts(b.polygon)}
+                  fill={typeInfo.color}
+                  fillOpacity={q && maxQty ? 0.1 + 0.45 * (q / maxQty) : 0.02}
+                  data-state={areaState(b.key)}
+                />
+              );
+            })}
+          </g>
+        )}
+
+        {/* 04 — work geometry: full extent (faint), then the part inside each area */}
+        {showWork &&
+          workTypesShown.map((t) => {
+            const active = t === workType;
+            const items = project.work.filter((w) => w.type === t);
+            return (
+              <g key={t} className={styles.work} data-active={active} style={{ color: WORK_TYPES[t].color } as React.CSSProperties}>
+                {items.map((w) => (
+                  <polygon
+                    key={w.code}
+                    points={pts(w.geometry.points)}
+                    className={styles.workShape}
+                    fill={view === "cad" ? `url(#sqe-hatch-${t})` : "none"}
+                    strokeWidth={u(1)}
+                    data-hover={hoverWork === w.code}
+                  />
+                ))}
+                {active &&
+                  project.boundaries.map((b) => (
+                    <g key={b.key} clipPath={`url(#sqe-clip-${b.key})`} className={styles.cut} data-state={areaState(b.key)}>
+                      {items.map((w) => (
+                        <polygon key={w.code} points={pts(w.geometry.points)} strokeWidth={u(1.4)} data-hover={hoverWork === w.code} data-dim={!!hoverWork && hoverWork !== w.code} />
+                      ))}
+                    </g>
+                  ))}
+              </g>
+            );
+          })}
+
+        {/* 03 — project areas (the hit targets from step 3 on) */}
+        {showAreas && (
+          <g className={styles.areas}>
+            {project.boundaries.map((b) => {
+              const state = areaState(b.key);
+              return (
+                <polygon
+                  key={b.key}
+                  className={styles.area}
+                  data-state={state}
                   data-assigned={!!b.meta}
-                  data-selected={hl.boundaries.has(b.key)}
-                  {...pick(ids.boundary(b.key))}
-                >
-                  <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={fs(2)} />
-                  <text y={fs(3.4)} fontSize={fs(9.5)} textAnchor="middle">
-                    {label}
+                  points={pts(b.polygon)}
+                  pathLength={1}
+                  strokeWidth={u(state === "hover" || state === "selected" ? 1.8 : 1.1)}
+                  {...areaProps(b)}
+                />
+              );
+            })}
+          </g>
+        )}
+
+        {/* CAD: vertex grips on the area polylines */}
+        {showAreas && view === "cad" && (
+          <g className={styles.grips} aria-hidden="true">
+            {project.boundaries.flatMap((b) =>
+              grips(b.polygon).map(([x, y], i) => <rect key={`${b.key}-${i}`} x={X(x) - u(2.5)} y={Y(y) - u(2.5)} width={u(5)} height={u(5)} strokeWidth={u(1)} />),
+            )}
+          </g>
+        )}
+
+        {/* A hovered work item: what each area gets from it */}
+        {showWork && hoverWork && (
+          <g className={styles.splits} aria-hidden="true">
+            {analysis.intersections
+              .filter((i) => i.workCode === hoverWork)
+              .map((i) => {
+                const t = WORK_TYPES[i.type];
+                const text = `${byKey.get(i.boundaryKey)?.meta?.areaId ?? i.boundaryKey} · ${num(i.quantity)} ${t.unit}`;
+                const w = text.length * (fontPx - 1) * 0.6 + 12;
+                return (
+                  <g key={i.id} transform={`translate(${X(i.anchor[0])} ${Y(i.anchor[1])})`}>
+                    <rect x={-u(w / 2)} y={-u(10)} width={u(w)} height={u(20)} rx={u(2)} strokeWidth={u(1)} style={{ stroke: t.color }} />
+                    <text y={u(4)} fontSize={u(fontPx - 1)} textAnchor="middle" className="num">
+                      {text}
+                    </text>
+                  </g>
+                );
+              })}
+          </g>
+        )}
+
+        {/* Labels: ID (+ name in step 3, + quantity in step 4) */}
+        {showAreas && !hoverWork && (
+          <g className={styles.labels} aria-hidden="true">
+            {project.boundaries.map((b) => {
+              const [lx, ly] = labelAt(b);
+              const id = b.meta?.areaId ?? b.key.replace(/^B/, "B-");
+              const q = qtyIn.get(b.key);
+              const second = step === 3 ? b.meta?.name ?? "" : q && typeInfo ? quantity(q, typeInfo.unit) : "";
+              const big = view === "analysis" && step === 4 && !!q;
+              const f1 = big ? fontPx + 1 : fontPx;
+              const f2 = big ? fontPx + 3 : fontPx - 1;
+              const w = Math.max(id.length * f1 * 0.64 + 12, second ? second.length * f2 * 0.6 + 12 : 0);
+              const h = second ? (big ? 42 : 34) : 20;
+              return (
+                <g key={b.key} className={styles.label} data-state={areaState(b.key)} data-empty={step === 4 && !q} data-big={big} transform={`translate(${X(lx)} ${Y(ly)})`}>
+                  <rect x={-u(w / 2)} y={-u(h / 2)} width={u(w)} height={u(h)} rx={u(2)} strokeWidth={u(1)} />
+                  <text y={second ? -u(big ? 5 : 3) : u(4)} fontSize={u(f1)} textAnchor="middle" className={styles.labelId}>
+                    {id}
                   </text>
+                  {second && (
+                    <text y={u(big ? 14 : 11)} fontSize={u(f2)} textAnchor="middle" className={`${styles.labelSub} num`}>
+                      {second}
+                    </text>
+                  )}
                 </g>
               );
             })}
           </g>
+        )}
+      </svg>
 
-          {/* Quantities at each intersection (analysis) */}
-          {analysisMode && overlays && (
-            <g className={styles.quantities}>
-              {analysis.intersections.map((i) => {
-                const t = WORK_TYPES[i.type];
-                const selected = hl.intersections.has(i.id);
-                if (!selected && hl.intersections.size > 0) return null;
-                if (!selected && t.measure === "length") return null; // keep the plan readable
-                return (
-                  <text key={i.id} x={X(i.anchor[0])} y={Y(i.anchor[1])} fontSize={fs(9)} textAnchor="middle" data-selected={selected}>
-                    {quantity(i.quantity, t.unit)}
-                  </text>
-                );
-              })}
-            </g>
+      {/* Sheet furniture: legend (per view) + scale bar + north arrow */}
+      <div className={styles.furniture} aria-hidden="true">
+        <div className={styles.furnitureLeft}>
+          {step >= 4 && view === "cad" && (
+            <ul className={styles.legend}>
+              <li>
+                <i style={{ borderColor: "rgba(233,237,241,0.8)" }} />
+                SQE-AREA
+              </li>
+              {types.map((t) => (
+                <li key={t} data-active={t === workType}>
+                  <i style={{ borderColor: WORK_TYPES[t].color }} />C-{t}
+                </li>
+              ))}
+              {site && (
+                <li>
+                  <i style={{ borderColor: "#c9d1da" }} />C-ROAD
+                </li>
+              )}
+            </ul>
           )}
+          {step >= 4 && view === "analysis" && typeInfo && (
+            <div className={styles.ramp}>
+              <span>{typeInfo.label} per area</span>
+              <i style={{ background: `linear-gradient(90deg, transparent, ${typeInfo.color})` }} />
+              <em className="num">
+                0 <b>{quantity(maxQty, typeInfo.unit)}</b>
+              </em>
+            </div>
+          )}
+          <div className={styles.scale}>
+            <span style={{ width: `${100 * pxPerUnit}px` }} />
+            <em>100 m</em>
+          </div>
+        </div>
+        <svg className={styles.north} viewBox="-10 -14 20 28">
+          <path d="M0 -12 L6 6 L0 2 L-6 6 Z" />
+          <text y="13" textAnchor="middle">
+            N
+          </text>
         </svg>
       </div>
+      {site && view === "aerial" && <p className={styles.credit}>Rendered example site — not a real location</p>}
+      {step === 4 && (
+        <p className={styles.dragHint} aria-hidden="true">
+          Drag → window · ← crossing
+        </p>
+      )}
     </div>
-  );
-}
-
-/** One hatch pattern per work type, in that type's CAD colour. */
-function Hatches({ size }: { size: number }) {
-  const s = Math.max(size, 0.5);
-  return (
-    <>
-      {Object.values(WORK_TYPES)
-        .filter((t) => t.hatch)
-        .map((t) => {
-          const line = { stroke: t.color, strokeWidth: 1, vectorEffect: "non-scaling-stroke" as const, opacity: 0.55 };
-          const id = `hatch-${t.id}`;
-          switch (t.hatch) {
-            case "cross":
-              return (
-                <pattern key={id} id={id} width={s} height={s} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                  <line x1="0" y1="0" x2="0" y2={s} {...line} />
-                  <line x1="0" y1="0" x2={s} y2="0" {...line} />
-                </pattern>
-              );
-            case "dots":
-              return (
-                <pattern key={id} id={id} width={s} height={s} patternUnits="userSpaceOnUse">
-                  <circle cx={s / 2} cy={s / 2} r={s / 9} fill={t.color} opacity={0.6} />
-                </pattern>
-              );
-            case "fine":
-              return (
-                <pattern key={id} id={id} width={s / 2} height={s / 2} patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
-                  <line x1="0" y1="0" x2="0" y2={s / 2} {...line} opacity={0.4} />
-                </pattern>
-              );
-            case "sparse":
-              return (
-                <pattern key={id} id={id} width={s * 1.6} height={s * 1.6} patternUnits="userSpaceOnUse" patternTransform="rotate(-30)">
-                  <line x1="0" y1="0" x2="0" y2={s * 1.6} {...line} opacity={0.4} />
-                </pattern>
-              );
-            default:
-              return (
-                <pattern key={id} id={id} width={s} height={s} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                  <line x1="0" y1="0" x2="0" y2={s} {...line} />
-                </pattern>
-              );
-          }
-        })}
-    </>
-  );
-}
-
-function NorthArrow({ x, y, s }: { x: number; y: number; s: number }) {
-  return (
-    <g transform={`translate(${x} ${y})`} className={styles.north}>
-      <path d={`M0 ${-14 * s} L${5 * s} ${4 * s} L0 ${1 * s} L${-5 * s} ${4 * s} Z`} />
-      <text y={-18 * s} fontSize={9 * s} textAnchor="middle">
-        N
-      </text>
-    </g>
   );
 }

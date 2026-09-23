@@ -16,6 +16,7 @@
 
 /* Heading + mark behave as one object: hover brightens the title and plays the mark */
 .heading {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 18px;
@@ -27,6 +28,7 @@
 .headingText {
   display: grid;
   gap: 8px;
+  min-width: 0; /* long tool names wrap instead of widening the page */
 }
 .title {
   font-size: clamp(1.75rem, 3.4vw, 2.75rem);
@@ -52,37 +54,6 @@
   color: var(--text-2);
 }
 
-/* The workflow as a single engineering sequence */
-.workflow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-family: var(--font-mono);
-  font-size: var(--fs-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-.workflow li {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  white-space: nowrap;
-}
-.workflow li span {
-  color: var(--text-3);
-}
-.workflow li:not(:last-child)::after {
-  content: "→";
-  margin: 0 10px;
-  color: var(--line-strong);
-}
-.workflow li:last-child {
-  color: var(--text-1);
-}
 
 .demo {
   min-width: 0;

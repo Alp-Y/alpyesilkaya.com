@@ -3,18 +3,23 @@
  * ------------------------------------------------------------------
  * ONE cursor system and ONE heads-up display for the whole site.
  *
+ ONE cursor, everywhere (mouse / pen). The native cursor never shows:
+ *   the same crosshair + pickbox is used on every page and section, so it
+ *   never "switches" between the CAD cursor and the system arrow.
+ *
  * CAD spaces
- *   Any element with `data-cad-space="<id>"` is drawing space (the hero,
- *   the Spatial Quantity Engine viewport). Only there is the native cursor
- *   replaced; everywhere else the browser cursor is untouched.
+ *   Elements with `data-cad-space="<id>"` are drawing space (the hero, the
+ *   Quantity by Area Calculator drawing). There the crosshair is clipped to the
+ *   space and the HUD reads drawing coordinates; elsewhere the crosshair
+ *   spans the window and there are no coordinates.
  *
  * Cursor modes (decided from what is under the pointer)
- *   cad          empty drawing space → full crosshair + pickbox
- *   interactive  links / buttons      → small target marker
- *   select       engineering objects  → selection crosshair
- *   text         real text / inputs   → native I-beam, custom cursor hidden
- *   grab         the ViewCube         → native grab / grabbing
- *   hidden       outside CAD spaces
+ *   cad          empty space           → crosshair + pickbox
+ *   interactive  links / buttons       → small target marker
+ *   select       engineering objects   → selection crosshair
+ *   text         inputs / real text    → CAD I-beam
+ *   grab         the ViewCube          → target marker
+ *   hidden       pointer left the window, or touch
  *   Elements can force a mode with `data-cursor="text" | "select" | …`.
  *
  * HUD priority (highest wins, deterministic)
@@ -73,8 +78,24 @@ export function getCoords() {
 
 /* ================================================================== */
 
+/**
+ * WINDOW / CROSSING SELECTION (as in AutoCAD / Civil 3D)
+ *   press on empty drawing space and drag:
+ *   left → right   WINDOW    blue, solid     selects what is fully inside
+ *   right → left   CROSSING  green, dashed   selects what it touches
+ * On release a `cad:selection` event is dispatched on document with
+ * { space, mode, rect: { left, top, right, bottom } } in client pixels;
+ * each CAD space decides what that selects.
+ */
+export type SelectionDetail = {
+  space: string;
+  mode: "window" | "crossing";
+  rect: { left: number; top: number; right: number; bottom: number };
+};
+
 type Els = {
   root: HTMLElement;
+  select: HTMLElement;
   frame: HTMLElement;
   h: HTMLElement;
   v: HTMLElement;
@@ -88,6 +109,7 @@ export function initCadCursor(): () => void {
   if (!root) return () => {};
   const els: Els = {
     root,
+    select: root.querySelector("[data-cc-select]")!,
     frame: root.querySelector("[data-cc-frame]")!,
     h: root.querySelector("[data-cc-h]")!,
     v: root.querySelector("[data-cc-v]")!,
@@ -104,22 +126,84 @@ export function initCadCursor(): () => void {
   let hudVisible = false;
   let hudPos = { x: -9999, y: -9999 };
   let lastRect = { l: 0, t: 0, w: 0, h: 0 };
+  // selection drag state
+  let pressSeq = 0;
+  let sel: { space: string; el: HTMLElement; x: number; y: number; active: boolean } | null = null;
+  let suppressClickUntil = 0;
+  const onClickCapture = (e: MouseEvent) => {
+    if (performance.now() < suppressClickUntil) {
+      e.stopPropagation();
+      e.preventDefault();
+      suppressClickUntil = 0;
+    }
+  };
+  window.addEventListener("click", onClickCapture, true);
 
   const unsubscribe = onFrame((p: PointerSnapshot) => {
+    // ----- window / crossing selection -----
+    if (fine && p.type !== "touch") {
+      if (p.down && p.press.seq !== pressSeq) {
+        pressSeq = p.press.seq;
+        const t = p.press.target;
+        const sp = t?.closest<HTMLElement>("[data-cad-space]");
+        const m = t ? modeFor(t) : "hidden";
+        sel = sp && (m === "cad" || m === "select") && !t?.closest("[data-viewcube]") ? { space: sp.dataset.cadSpace!, el: sp, x: p.press.x, y: p.press.y, active: false } : null;
+      }
+      if (sel && p.down) {
+        const dx = p.x - sel.x;
+        const dy = p.y - sel.y;
+        if (!sel.active && Math.hypot(dx, dy) > 5) {
+          sel.active = true;
+          els.select.dataset.active = "true";
+          document.documentElement.dataset.selecting = "true";
+          window.getSelection()?.removeAllRanges();
+        }
+        if (sel.active) {
+          const kind = dx >= 0 ? "window" : "crossing";
+          els.select.dataset.kind = kind;
+          const l = Math.min(p.x, sel.x);
+          const t = Math.min(p.y, sel.y);
+          els.select.style.transform = `translate3d(${l}px, ${t}px, 0)`;
+          els.select.style.width = `${Math.abs(dx)}px`;
+          els.select.style.height = `${Math.abs(dy)}px`;
+          // size in drawing units, when the space knows its scale
+          const tf = transforms.get(sel.space) ?? defaultTransform(sel.el);
+          const a = tf(sel.x, sel.y);
+          const b = tf(p.x, p.y);
+          const rows: [string, string][] = [["W", coord(Math.abs(b.x - a.x))], ["H", coord(Math.abs(b.y - a.y))]];
+          contexts.set("operation@*", { title: kind === "window" ? "WINDOW" : "CROSSING", lines: [kind === "window" ? "SELECTS FULLY INSIDE" : "SELECTS WHAT IT TOUCHES"], rows });
+        }
+      } else if (sel && !p.down) {
+        if (sel.active) {
+          const detail: SelectionDetail = {
+            space: sel.space,
+            mode: p.x >= sel.x ? "window" : "crossing",
+            rect: { left: Math.min(p.x, sel.x), top: Math.min(p.y, sel.y), right: Math.max(p.x, sel.x), bottom: Math.max(p.y, sel.y) },
+          };
+          suppressClickUntil = performance.now() + 400;
+          document.dispatchEvent(new CustomEvent<SelectionDetail>("cad:selection", { detail }));
+        }
+        sel = null;
+        els.select.dataset.active = "false";
+        delete document.documentElement.dataset.selecting;
+        contexts.delete("operation@*");
+      }
+    }
+
     const target = p.inside ? p.target : null;
     const spaceEl = target?.closest<HTMLElement>("[data-cad-space]") ?? null;
     const space = spaceEl?.dataset.cadSpace;
 
     // ----- cursor mode -----
-    const nextMode: CursorMode = !fine || p.type === "touch" || !spaceEl ? "hidden" : modeFor(target!);
+    const nextMode: CursorMode = !fine || p.type === "touch" || !target ? "hidden" : modeFor(target);
     if (nextMode !== mode) {
       mode = nextMode;
       root.dataset.mode = mode;
     }
 
-    // ----- crosshair (clipped to the CAD space) -----
-    if (spaceEl && fine) {
-      const r = spaceEl.getBoundingClientRect();
+    // ----- crosshair (clipped to the CAD space, or the window elsewhere) -----
+    if (fine && target) {
+      const r = spaceEl ? spaceEl.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, bottom: window.innerHeight };
       const top = Math.max(r.top, 0);
       const bottom = Math.min(r.bottom, window.innerHeight);
       if (r.left !== lastRect.l || top !== lastRect.t || r.width !== lastRect.w || bottom - top !== lastRect.h) {
@@ -205,6 +289,9 @@ export function initCadCursor(): () => void {
 
   return () => {
     unsubscribe();
+    window.removeEventListener("click", onClickCapture, true);
+    contexts.delete("operation@*");
+    delete document.documentElement.dataset.selecting;
     delete document.documentElement.dataset.cadCursor;
     root.dataset.mode = "hidden";
     els.hud.dataset.visible = "false";
@@ -220,7 +307,7 @@ function modeFor(target: Element): CursorMode {
   if (!el) return "cad";
   const explicit = el.dataset.cursor as CursorMode | undefined;
   if (explicit) return explicit;
-  if (el.matches("input, textarea, [contenteditable='true']")) return "text";
+  if (el.matches("input:not([type='checkbox']):not([type='radio']):not([type='file']), textarea, [contenteditable='true']")) return "text";
   return "interactive";
 }
 

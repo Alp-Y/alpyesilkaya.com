@@ -30,21 +30,26 @@ app/
   tools/, case-studies/, about/   ← the other pages
 components/               ← each piece of the UI + its own .module.css
   viewcube/               ← the interactive 3D ViewCube (Three.js)
-  sqe/                    ← the Spatial Quantity Engine demo (UI)
+  earthworks/             ← the hero's cut / fill model (Three.js, follows the ViewCube)
+  excavation/             ← Automatize Excavation Calculations demo (Three.js + section views)
+  sqe/                    ← the Quantity by Area Calculator demo (UI)
 lib/
   content.ts              ← reads the Markdown files
   effects.ts              ← page behaviour: reveals, header, command line…
   format.ts               ← ONE place for number formatting (2 decimals, units)
   workspace/              ← the shared "CAD workspace": view state, actions,
                             pointer, CAD cursor + HUD, commands
-  sqe/                    ← the Spatial Quantity Engine: geometry, DXF reader,
-                            work types, quantity engine
+  sqe/                    ← the Quantity by Area Calculator: geometry, DXF reader,
+                            work types, quantity engine, example site (site.json)
+  earthworks/model.ts     ← the cut / fill maths (grid method)
+  excavation/             ← survey points → TIN (Delaunay) → volume + sections
+scripts/sqe-site.py       ← regenerates the SQE example site + its aerial image (optional)
 ```
 
 ## Everyday tasks
 
 **Add a tool**
-1. Copy `content/tools/spatial-quantity-engine.md` and rename it, e.g. `my-tool.md`. The file name becomes the page address: `/tools/my-tool`.
+1. Copy `content/tools/quantity-by-area-calculator.md` and rename it, e.g. `my-tool.md`. The file name becomes the page address: `/tools/my-tool`.
 2. Edit the text between the `---` lines (title, summary, platform…) and write the page body in Markdown underneath. Remove the `demo: sqe` line — that switches on the live SQE demo.
 3. Optional: put a screenshot in `public/images/` (1600×1000 or larger, 16:10) and set `image: /images/my-tool.png`.
 4. Fields you leave empty (status, version, download, docs) are simply not shown.
@@ -70,8 +75,11 @@ The homepage, `/tools`, the tool's own page and the sitemap all update automatic
 - **One workspace:** the background grid, the CAD cursor, the HUD next to the pointer, the `[−] [VIEW] [DISPLAY]` controls, the ViewCube and the command line all read and write one shared state (`lib/workspace/store.ts`) through one set of actions (`lib/workspace/actions.ts`). Change the view anywhere and everything else follows.
 - **CAD cursor:** only inside CAD spaces (the hero and the SQE drawing), only with a mouse. Everywhere else you get the normal cursor; text fields get the text cursor.
 - **Motion system:** timing and easing tokens (`--motion-*`, `--ease-*`) live in `globals.css`. Reveals are set with `data-reveal="rise" | "lines" | "draw"`. Everything respects the system's *Reduce motion* setting.
-- **Hero command line:** try `HELP`, `TOP`, `FRONT`, `ISO`, `WIREFRAME`, `SHADED`, `ANALYSIS`, `TOOLS`, `DEMO`, `ABOUT`, `CONTACT`, `HOME`, `CLEAR` or `GRID`.
-- **SQE demo:** runs entirely in the browser — imported DXF files are never uploaded. Excavation and fill are demonstration values (area × a representative depth), and the page says so.
+- **Hero earthworks model:** turn the ViewCube and the model turns with it — TOP reads as a cut/fill plan, FRONT as the long section. Volumes are computed from the model (grid method) and labelled as a demonstration.
+- **Command line** (end of section 01): try `HELP`, `TOP`, `FRONT`, `ISO`, `WIREFRAME`, `SHADED`, `ANALYSIS`, `TOOLS`, `DEMO`, `ABOUT`, `CONTACT`, `HOME`, `CLEAR` or `GRID`.
+- **Automatize Excavation Calculations demo:** survey points are triangulated into a TIN; the volume between existing ground and the excavated surface is integrated triangle by triangle inside the boundary (not area × average depth), and sections are cut along the road with an end-area check. Drag to orbit, right-drag to pan, click then scroll to zoom, double-click to reset.
+- **Quantity by Area Calculator demo:** tells its story once when it scrolls into view — site → survey → areas → quantities — then you explore. It runs entirely in the browser; imported DXF files are never uploaded. Excavation volumes are demonstration values (area × a representative depth), and the page says so.
+- **The SQE aerial image is an original render**, generated from the same geometry as the CAD overlay (`scripts/sqe-site.py`), so it lines up exactly and needs no licence. To use a real aerial photo instead you would also need to redraw the areas to match it.
 - **Fonts:** Geist and Geist Mono (open licence) are self-hosted from `app/fonts/`.
 
 ## Deploy

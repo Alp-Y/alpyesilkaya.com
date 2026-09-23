@@ -41,6 +41,19 @@ export type WorkItem = {
 export type ContextLine = { points: Point[]; style: "edge" | "centre" | "context" };
 export type Station = { at: Point; label: string; angle: number };
 
+export type SurveyPoint = { id: string; area: string; x: number; y: number; z: number };
+
+/** The real-world side of the example project: aerial image + site survey. */
+export type SiteInfo = {
+  image: string; // aerial, covering 0…extent in drawing units
+  extent: [number, number]; // metres
+  origin: [number, number]; // grid origin added to coordinates for display (E, N)
+  survey: SurveyPoint[];
+  control: { id: string; x: number; y: number; z: number };
+  /** Reference CAD linework by layer (road edges, existing roads, ramps, drainage). */
+  linework: { layer: string; points: Point[] }[];
+};
+
 export type Project = {
   name: string;
   source: "example" | "dxf";
@@ -48,6 +61,7 @@ export type Project = {
   work: WorkItem[];
   context: ContextLine[];
   stations: Station[];
+  site?: SiteInfo;
 };
 
 export type Intersection = {

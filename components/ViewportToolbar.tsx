@@ -21,7 +21,7 @@ import styles from "./ViewportToolbar.module.css";
  *   [2D Wireframe] display mode (2D Wireframe, Shaded, Analysis)
  *
  * All three read and write the shared workspace state, so the hero
- * toolbar, the Spatial Quantity Engine toolbar, the ViewCube and the
+ * toolbar, the Quantity by Area Calculator toolbar, the ViewCube and the
  * command line always agree.
  */
 export default function ViewportToolbar({ className = "" }: { className?: string }) {

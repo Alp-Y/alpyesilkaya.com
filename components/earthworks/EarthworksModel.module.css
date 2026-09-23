@@ -1,0 +1,142 @@
+/*
+  Earthworks model. The figure is the layout box; the canvas bleeds far
+  beyond it (the hero clips it), so the model floats free and never gets
+  cut off while it turns.
+*/
+.model {
+  position: relative;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+.box {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.canvas {
+  position: absolute;
+  inset: -40% -12% -45% -45%;
+  width: 157%;
+  height: 185%;
+  opacity: 0;
+  pointer-events: auto;
+  transition: opacity var(--motion-demo) var(--ease-out);
+}
+.model:not([data-state="loading"]) .canvas {
+  opacity: 1;
+}
+@media (max-width: 1099px) {
+  .canvas {
+    inset: -18% 0 -18% 0;
+    width: 100%;
+    height: 136%;
+  }
+}
+
+/* Labels pinned to the volumes — shown once the model has built in */
+.tag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-medium) var(--ease-out);
+  will-change: transform;
+}
+.model[data-state="revealed"] .tag {
+  opacity: 1;
+}
+.tag[data-kind="cut"],
+.tag[data-kind="fill"] {
+  color: var(--text-1);
+  background: rgba(9, 12, 15, 0.72);
+  border: 1px solid rgba(226, 132, 140, 0.55);
+}
+.tag[data-kind="fill"] {
+  border-color: rgba(127, 211, 174, 0.55);
+}
+
+/* Legend: a small title block that builds in with the model */
+.legend {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 18px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  pointer-events: none;
+}
+.legend > * {
+  opacity: 0;
+  transform: translate3d(0, 4px, 0);
+  transition:
+    opacity var(--motion-medium) var(--ease-out),
+    transform var(--motion-medium) var(--ease-out);
+}
+.model:not([data-state="loading"]) .legend > * {
+  opacity: 1;
+  transform: none;
+}
+.model:not([data-state="loading"]) .legend > :nth-child(2) {
+  transition-delay: 120ms;
+}
+.model:not([data-state="loading"]) .legend > :nth-child(3) {
+  transition-delay: 240ms;
+}
+.model:not([data-state="loading"]) .legend > :nth-child(4) {
+  transition-delay: 360ms;
+}
+.model:not([data-state="loading"]) .legend > :nth-child(5) {
+  transition-delay: 480ms;
+}
+.legendTitle {
+  flex-basis: 100%;
+  color: var(--text-2);
+  letter-spacing: 0.1em;
+}
+.row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.row i {
+  width: 8px;
+  height: 8px;
+  align-self: center;
+}
+.row[data-kind="cut"] i {
+  border: 1px solid #e2848c;
+  background: rgba(226, 132, 140, 0.18);
+}
+.row[data-kind="fill"] i {
+  border: 1px solid #7fd3ae;
+  background: rgba(127, 211, 174, 0.16);
+}
+.row b {
+  font-weight: 400;
+  color: var(--text-1);
+  text-transform: none;
+}
+.meta {
+  flex-basis: 100%;
+  font-size: 9.5px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .legend > * {
+    transition: none;
+  }
+}

@@ -1,8 +1,10 @@
 import { site } from "@/site.config";
+import CommandLine from "./CommandLine";
 import DimensionChain from "./DimensionChain";
 import UcsIcon from "./UcsIcon";
 import ViewportToolbar from "./ViewportToolbar";
 import InteractiveViewCube from "./viewcube/InteractiveViewCube";
+import EarthworksModel from "./earthworks/EarthworksModel";
 import styles from "./Hero.module.css";
 
 /**
@@ -10,7 +12,7 @@ import styles from "./Hero.module.css";
  * A CAD space (`data-cad-space`): the site-wide CAD cursor and HUD work
  * here, drawing coordinates are measured from the UCS icon (bottom-left).
  * The viewport toolbar, the ViewCube and the command line all drive the
- * same workspace state.
+ * same workspace state; the earthworks model follows it.
  */
 export default function Hero() {
   const [first, ...rest] = site.name.split(" ");
@@ -80,36 +82,20 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Command line — the same actions as the toolbar and ViewCube */}
-      <div className={`container ${styles.cmdWrap}`} data-hero-exit>
+      {/* Earthworks model — follows the ViewCube and the display mode */}
+      <div className={styles.modelWrap} data-hero-exit data-reveal="rise" style={{ "--delay": "650ms" } as React.CSSProperties}>
+        <EarthworksModel className={styles.model} />
+      </div>
+
+      {/* UCS icon (the origin of the hero's drawing coordinates) + command line */}
+      <div className={`container ${styles.base}`} data-hero-exit>
         <div className={styles.ucsWrap} data-overlay>
           <UcsIcon className={styles.ucs} />
-          {/* The UCS origin is also the origin of the hero's drawing coordinates */}
           <span className={styles.origin} data-cad-origin aria-hidden="true" />
         </div>
-        <form className={styles.cmd} data-cmd data-reveal="rise" style={{ "--delay": "1150ms" } as React.CSSProperties}>
-          <div className={styles.cmdHistory} data-cmd-history aria-live="polite">
-            <p data-cmd-line="Command: _OPEN alpyesilkaya.dwg">Command: _OPEN alpyesilkaya.dwg</p>
-          </div>
-          <label className={styles.cmdPrompt}>
-            <span className={styles.cmdCaret} aria-hidden="true">
-              ›
-            </span>
-            <span className="sr-only">
-              Command line. Type a command such as TOP, ANALYSIS, TOOLS, DEMO or HELP, then press Enter.
-            </span>
-            <input
-              className={styles.cmdInput}
-              data-cmd-input
-              type="text"
-              autoComplete="off"
-              autoCapitalize="characters"
-              spellCheck={false}
-              enterKeyHint="go"
-              placeholder="Type a command — try HELP"
-            />
-          </label>
-        </form>
+        <div className={styles.cmdWrap} data-reveal="rise" style={{ "--delay": "1150ms" } as React.CSSProperties}>
+          <CommandLine />
+        </div>
       </div>
     </section>
   );

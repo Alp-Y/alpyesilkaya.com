@@ -34,7 +34,7 @@ export default function HomePage() {
           />
           <div className={styles.toolList}>
             {tools.map((tool, i) => (
-              <ToolFeature key={tool.slug} tool={tool} index={i} withDemo={i === 0} />
+              <ToolFeature key={tool.slug} tool={tool} index={i} withDemo={!!tool.demo} />
             ))}
           </div>
         </div>

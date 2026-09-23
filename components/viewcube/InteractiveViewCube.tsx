@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import ViewCube from "../ViewCube";
 import { getState, watch } from "@/lib/workspace/store";
-import { homeView, reportView } from "@/lib/workspace/actions";
+import { homeView, registerOrbit, reportView } from "@/lib/workspace/actions";
 import { setHud } from "@/lib/workspace/cadCursor";
 import { angle } from "@/lib/format";
 import type { OrientationChange, PresetName } from "./orientation";
@@ -43,7 +43,23 @@ export default function InteractiveViewCube({
   const controllerRef = useRef<ViewCubeController | null>(null);
   const callbackRef = useRef(onOrientationChange);
   const [ready, setReady] = useState(false);
+  // Pulses softly until the visitor first uses it (drag, click, keys — or a view change from elsewhere)
+  const [touched, setTouched] = useState(false);
   const hintId = useId();
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || touched) return;
+    const done = () => setTouched(true);
+    root.addEventListener("pointerdown", done, { once: true });
+    root.addEventListener("keydown", done, { once: true });
+    const unwatch = watch((s) => s.viewport.request + s.viewport.resetRequest, done);
+    return () => {
+      root.removeEventListener("pointerdown", done);
+      root.removeEventListener("keydown", done);
+      unwatch();
+    };
+  }, [touched]);
 
   // Keep the latest callback without re-creating the 3D scene
   useEffect(() => {
@@ -88,10 +104,25 @@ export default function InteractiveViewCube({
               );
             },
             onHover: (name) => setHud("hover", name ? { title: "VIEW", lines: [name] } : null, "hero"),
+            initialView: initialPreset(),
+            // The page opens on a slow turn — it stops the moment the visitor takes over
+            autoSpin: true,
           },
         );
         controllerRef.current = controller;
         const ctl = controller;
+        // Others (the earthworks model) can orbit the same view by dragging
+        registerOrbit({
+          spin: (on) => ctl.setSpin(on),
+          spinning: () => ctl.isSpinning(),
+          start: (x, y, t) => {
+            setTouched(true);
+            ctl.externalDragStart(x, y, t);
+          },
+          move: (x, y, t) => ctl.externalDragMove(x, y, t),
+          end: (t) => ctl.externalDragEnd(t),
+        });
+        unwatch.push(() => registerOrbit(null));
 
         // Follow the workspace: toolbar / command line ask for views, display modes, resets
         ctl.setDisplayMode(getState().viewport.displayMode);
@@ -142,6 +173,7 @@ export default function InteractiveViewCube({
       data-viewcube
       data-cursor="grab"
       data-ready={ready}
+      data-invite={ready && !touched}
       tabIndex={ready ? 0 : -1}
       role="group"
       aria-roledescription="3D orientation control"
@@ -189,6 +221,12 @@ export default function InteractiveViewCube({
       <span ref={liveRef} className="sr-only" aria-live="polite" />
     </div>
   );
+}
+
+/** Start where the shared workspace is (TOP on first load); anything unnamed starts at home. */
+function initialPreset(): PresetName {
+  const o = getState().viewport.orientation;
+  return o === "free" ? "home" : o === "iso" ? "home" : o;
 }
 
 function supportsWebGL(): boolean {

@@ -1,9 +1,9 @@
 ---
 # The flagship tool. Fields left empty are simply not shown on the site.
-title: Spatial Quantity Engine
+title: Quantity by Area Calculator
 order: 1
 demo: sqe
-summary: Define project space once, then use those spatial definitions to organise and calculate engineering quantities — by project area, automatically.
+summary: Quantities, organised by where the work happened. Define the project areas once — the calculator measures the work inside each one.
 platform:
 stack:
 status:
@@ -21,7 +21,7 @@ docs:
 
 Define project space once. Then use those spatial definitions to organise and calculate engineering quantities.
 
-The Spatial Quantity Engine combines **project boundaries with sub-area metadata** and **automated, area-specific quantity reporting**. The same piece of work geometry — an asphalt layer, an excavation, a pipe run — is attributed separately to every project area it crosses.
+The Quantity by Area Calculator combines **project boundaries with sub-area metadata** and **automated, area-specific quantity reporting**. The same piece of work geometry — an asphalt layer, an excavation, a pipe run — is attributed separately to every project area it crosses.
 
 ## Workflow
 

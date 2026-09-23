@@ -28,6 +28,41 @@
   height: var(--vc-size);
 }
 
+/*
+  Invitation: a soft accent glow breathes behind the cube until it is first
+  used — "this can be turned". Stops for good after the first interaction.
+*/
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(62, 224, 143, 0.26) 0%, rgba(62, 224, 143, 0.08) 45%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-section) var(--ease-out);
+}
+.widget[data-invite="true"] .stage::before {
+  animation: vc-invite 2.8s var(--ease-in-out) infinite;
+}
+@keyframes vc-invite {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .widget[data-invite="true"] .stage::before {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
 .stage canvas {
   position: absolute;
   inset: 0;

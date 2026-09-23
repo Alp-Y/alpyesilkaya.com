@@ -22,5 +22,5 @@
 
 .toolList {
   display: grid;
-  gap: clamp(96px, 12vw, 160px);
+  gap: clamp(72px, 8vw, 112px);
 }

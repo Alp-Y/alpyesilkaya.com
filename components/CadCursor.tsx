@@ -7,6 +7,7 @@ import styles from "./CadCursor.module.css";
 export default function CadCursor() {
   return (
     <div className={styles.root} data-cad-cursor data-mode="hidden" aria-hidden="true">
+      <div className={styles.select} data-cc-select data-kind="window" />
       <div className={styles.frame} data-cc-frame>
         <span className={styles.h} data-cc-h />
         <span className={styles.v} data-cc-v />
@@ -17,6 +18,7 @@ export default function CadCursor() {
         <span className={`${styles.corner} ${styles.tr}`} />
         <span className={`${styles.corner} ${styles.bl}`} />
         <span className={`${styles.corner} ${styles.br}`} />
+        <span className={styles.ibeam} />
       </span>
       <div className={styles.hud} data-hud data-visible="false">
         <div className={styles.inner} data-hud-inner />

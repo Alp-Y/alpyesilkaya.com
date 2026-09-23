@@ -7,6 +7,7 @@ import SharedElement from "@/components/SharedElement";
 import PropertiesPalette from "@/components/PropertiesPalette";
 import { ArticleBody, NextItem } from "@/components/ArticleBody";
 import SpatialQuantityEngine from "@/components/sqe/SpatialQuantityEngine";
+import ExcavationDemo from "@/components/excavation/ExcavationDemo";
 import styles from "../../inner.module.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -76,11 +77,9 @@ export default async function ToolPage({ params }: Props) {
         </div>
       </PageHeader>
 
-      {tool.demo === "sqe" ? (
+      {tool.demo === "sqe" || tool.demo === "exv" ? (
         <div className={styles.hero}>
-          <div className="container">
-            <SpatialQuantityEngine />
-          </div>
+          <div className="container">{tool.demo === "sqe" ? <SpatialQuantityEngine /> : <ExcavationDemo />}</div>
         </div>
       ) : (
         tool.image && (

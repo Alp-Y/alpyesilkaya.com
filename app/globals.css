@@ -61,7 +61,7 @@
   /* Space */
   --gutter: clamp(20px, 4vw, 56px);
   --max-width: 1360px;
-  --section-space: clamp(104px, 13vw, 176px);
+  --section-space: clamp(72px, 8vw, 112px);
   --header-h: 60px;
   --status-h: 30px;
   --radius: 5px;
@@ -288,6 +288,41 @@ html[data-grid="off"] .cad-grid {
   mask-image: radial-gradient(ellipse 120% 90% at 40% 35%, #000 30%, rgba(0, 0, 0, 0.35) 100%);
 }
 
+/*
+  Inspection light (lib/workspace/light.ts): ~3–6% brighter around the
+  pointer — felt more than seen. Screen blending can only brighten.
+*/
+.workspace-light {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity var(--motion-section) var(--ease-out);
+  background-image:
+    radial-gradient(circle 260px at var(--lx, -999px) var(--ly, -999px), rgba(160, 185, 215, 0.035), transparent 100%),
+    linear-gradient(rgba(150, 175, 205, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(150, 175, 205, 0.07) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    24px 24px,
+    24px 24px;
+  -webkit-mask-image: radial-gradient(circle 240px at var(--lx, -999px) var(--ly, -999px), #000, transparent);
+  mask-image: radial-gradient(circle 240px at var(--lx, -999px) var(--ly, -999px), #000, transparent);
+}
+.workspace-light[data-on="true"] {
+  opacity: 1;
+}
+html[data-grid="off"] .workspace-light {
+  display: none;
+}
+@media (pointer: coarse) {
+  .workspace-light {
+    display: none;
+  }
+}
+
 /* Tabular figures for anything numeric that can change */
 .num {
   font-variant-numeric: tabular-nums;
@@ -306,22 +341,18 @@ h1,
 }
 
 /*
-  CAD cursor: the native cursor is hidden ONLY inside CAD spaces, and only
-  when the custom cursor is running (fine pointer + JS). Text and inputs
-  keep the I-beam; the ViewCube sets its own grab cursor.
+  CAD cursor: while the custom cursor runs (mouse / pen + JS), the native
+  cursor never shows — one cursor everywhere (lib/workspace/cadCursor.ts).
+  Touch devices and no-JS keep the system cursor.
 */
-html[data-cad-cursor="on"] [data-cad-space],
-html[data-cad-cursor="on"] [data-cad-space] * {
-  cursor: none;
+html[data-cad-cursor="on"],
+html[data-cad-cursor="on"] * {
+  cursor: none !important;
 }
-html[data-cad-cursor="on"] [data-cad-space] [data-cursor="text"],
-html[data-cad-cursor="on"] [data-cad-space] [data-cursor="text"] *,
-html[data-cad-cursor="on"] [data-cad-space] input,
-html[data-cad-cursor="on"] [data-cad-space] textarea {
-  cursor: text;
-}
-html[data-cad-cursor="on"] [data-cad-space] [data-cursor="grab"] {
-  cursor: grab;
+/* While a selection window is dragged, nothing else gets text-selected */
+html[data-selecting] * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
 }
 
 /* Sections soften as they scroll up under the header (lib/effects.ts sets --exit) */

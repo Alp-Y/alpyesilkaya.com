@@ -52,6 +52,10 @@ export type ControllerOptions = {
   onOrientationChange?: (o: OrientationChange) => void;
   /** Hovered face / edge / corner name (e.g. "TOP · FRONT"), or null. */
   onHover?: (name: string | null) => void;
+  /** View to start in (default: the isometric home view). HOME still returns to isometric. */
+  initialView?: PresetName;
+  /** Turn very slowly about the vertical axis until the visitor interacts (not with reduced motion). */
+  autoSpin?: boolean;
 };
 
 /** World units visible from the centre to the edge of the canvas at zoom 1. */
@@ -60,6 +64,7 @@ const CAMERA_DISTANCE = 10;
 const ZOOM_MIN = 0.8;
 const ZOOM_MAX = 1.6;
 const DRAG_THRESHOLD = 5; // px — below this a press is a click
+const SPIN_RATE = (Math.PI * 2) / 80_000; // rad per ms — one turn in 80 s
 const KEY_STEP = toRadians(15);
 const IDLE_DELAY = 6000;
 const MAX_SPIN = 0.008; // rad/ms — caps the flick speed (~460°/s)
@@ -93,6 +98,8 @@ export class ViewCubeController {
   private velocity = { az: 0, el: 0 }; // rad / ms, for inertia after a drag
   private idleOffset = { az: 0, el: 0 };
   private idleActive = false;
+  /** Slow turntable spin (showcase) — stops on the first interaction. */
+  private spinning = false;
   private idlePhase = 0;
   private idleTimer = 0;
   private isVisible = true;
@@ -158,6 +165,15 @@ export class ViewCubeController {
     });
     this.visibilityObserver.observe(el.root);
 
+    if (options.initialView && PRESETS[options.initialView]) {
+      const v = PRESETS[options.initialView];
+      this.azimuth = v.azimuth;
+      this.elevation = v.elevation;
+      this.lastPreset = options.initialView;
+    }
+
+    if (options.autoSpin && !this.motionQuery.matches) this.spinning = true;
+
     this.bindEvents(canvas);
     this.updateCaption();
     this.scheduleIdle();
@@ -217,6 +233,7 @@ export class ViewCubeController {
   }
 
   private onInteract = () => {
+    this.spinning = false;
     this.stopIdle();
     this.scheduleIdle();
   };
@@ -430,12 +447,60 @@ export class ViewCubeController {
     this.goTo(angles, { preset: presetForAngles(angles) });
   }
 
+  /** Start / stop the slow showcase spin (it waits for any running transition). */
+  setSpin(on: boolean) {
+    this.spinning = on && !this.motionQuery.matches;
+    if (this.spinning) this.stopIdle();
+    this.requestRender();
+  }
+  isSpinning() {
+    return this.spinning;
+  }
+
+  /* ============ orbit driven from elsewhere (e.g. dragging the earthworks model) ============ */
+
+  private external: { lastX: number; lastY: number; lastT: number } | null = null;
+
+  externalDragStart(x: number, y: number, t: number) {
+    this.onInteract();
+    this.transition = null;
+    this.velocity.az = this.velocity.el = 0;
+    this.external = { lastX: x, lastY: y, lastT: t };
+    this.dragging = true;
+    this.preDrag = { azimuth: this.azimuth, elevation: this.elevation };
+    this.cube.setRingEmphasis(true);
+    this.requestRender();
+  }
+
+  /** Same feel as dragging the cube, scaled for a larger target (a 600 px drag ≈ 180°). */
+  externalDragMove(x: number, y: number, t: number) {
+    const ex = this.external;
+    if (!ex) return;
+    const k = Math.PI / 600;
+    const dt = Math.max(1, t - ex.lastT);
+    const dAz = -(x - ex.lastX) * k;
+    const dEl = (y - ex.lastY) * k;
+    this.azimuth += dAz;
+    this.elevation = clamp(this.elevation + dEl, -MAX_ELEVATION, MAX_ELEVATION);
+    this.velocity.az = clamp(this.velocity.az * 0.5 + (dAz / dt) * 0.5, -MAX_SPIN, MAX_SPIN);
+    this.velocity.el = clamp(this.velocity.el * 0.5 + (dEl / dt) * 0.5, -MAX_SPIN, MAX_SPIN);
+    this.external = { lastX: x, lastY: y, lastT: t };
+    this.requestRender();
+  }
+
+  externalDragEnd(t: number) {
+    const ex = this.external;
+    this.external = null;
+    this.endDrag(!!ex && t - ex.lastT < 80);
+  }
+
   /* ================= motion ================= */
 
   private goTo(
     target: ViewAngles,
     opts: { zoom?: number; preset?: PresetName | null; duration?: number } = {},
   ) {
+    this.spinning = false;
     this.foldIdle();
     this.velocity.az = this.velocity.el = 0;
     const to = {
@@ -495,6 +560,7 @@ export class ViewCubeController {
   private scheduleIdle() {
     clearTimeout(this.idleTimer);
     if (this.motionQuery.matches || this.disposed) return;
+    if (this.spinning) return;
     this.idleTimer = window.setTimeout(() => {
       const preset = presetForAngles({ azimuth: this.azimuth, elevation: this.elevation });
       // Drift only from the home view or a free view — never from an exact plan/elevation view
@@ -570,8 +636,14 @@ export class ViewCubeController {
       }
     }
 
-    // 3. Idle drift: a few degrees, very slowly
-    if (this.idleActive) {
+    // 3. Showcase spin: one full turn about every 80 s
+    if (this.spinning && !tr && !this.dragging && !this.velocity.az && !this.velocity.el) {
+      this.azimuth += SPIN_RATE * dt;
+      busy = true;
+    }
+
+    // 4. Idle drift: a few degrees, very slowly
+    if (this.idleActive && !this.spinning) {
       this.idlePhase += dt / 1000;
       const ramp = Math.min(1, this.idlePhase / 3); // ease in over 3 s
       this.idleOffset.az = Math.sin(this.idlePhase * 0.55) * toRadians(3) * ramp;
@@ -638,7 +710,9 @@ export class ViewCubeController {
         ? "transition"
         : this.velocity.az || this.velocity.el
           ? "inertia"
-          : "rest";
+          : this.spinning
+            ? "spin"
+            : "rest";
     // The interaction is part of the key: arriving at rest must always be reported,
     // even when the last animation frame was already (almost) on target.
     const key = `${view.azimuth.toFixed(5)}|${view.elevation.toFixed(5)}|${this.zoom.toFixed(4)}|${interaction}`;
