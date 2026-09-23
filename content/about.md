@@ -3,7 +3,7 @@
 # ABOUT PAGE: replace the placeholder text below with your own story.
 # "intro" is the large opening line. "properties" rows are "Label | Value".
 # ─────────────────────────────────────────────────────────────
-intro: Engineering has a lot of boring, repetitive work. Let’s automate it.
+intro: Less repetitive work. More engineering.
 short: "Placeholder: civil engineer with a background in construction project management. I now work on software and automation for the slow, repetitive parts of engineering work: production drawings, manual checks, and moving data between tools."
 properties:
   - Discipline | Civil Engineering
