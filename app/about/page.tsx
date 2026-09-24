@@ -24,7 +24,7 @@ export default function AboutPage() {
       <section className={styles.section}>
         <div className={`container ${styles.grid}`}>
           <aside className={styles.side}>
-            <Portrait priority />
+            <Portrait priority photo={site.atWork} />
             <PropertiesPalette
               title="Engineer.properties"
               rows={properties}

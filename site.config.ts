@@ -33,14 +33,28 @@ export const site = {
   },
 
   /**
-   * Portrait shown in the About section.
-   * Put your photo in /public/images/ (e.g. portrait.jpg, ~1200×1500px)
-   * and change this path.
+   * Photos (in /public/images/). `focus` keeps that part of the photo in
+   * the frame when it is cropped (CSS object-position).
+   *   portrait   the homepage About section
+   *   atWork     the full About page ("More about me")
    */
   portrait: {
-    src: "/images/placeholders/portrait.svg", // TODO: "/images/portrait.jpg"
+    src: "/images/portrait.jpg",
     alt: "Portrait of Alp Yesilkaya",
-    isPlaceholder: true, // TODO: set to false once you add your photo
+    caption: "Fig. 01 / The engineer",
+    focus: "50% 30%",
+    width: 684,
+    height: 1087,
+    isPlaceholder: false,
+  },
+  atWork: {
+    src: "/images/about-at-work.jpg",
+    alt: "Alp Yesilkaya explaining a project on a laptop to a visitor",
+    caption: "Fig. 02 / At work",
+    focus: "88% 40%",
+    width: 1280,
+    height: 1010,
+    isPlaceholder: false,
   },
 
   /** Revision shown in the footer title block. Bump it when you publish changes. */
