@@ -28,7 +28,7 @@ export const site = {
   location: "", // TODO: e.g. "Istanbul, Türkiye" — hidden while empty
 
   links: {
-    github: "https://github.com/", // TODO: your GitHub profile URL
+    github: "https://github.com/Alp-Y",
     linkedin: "https://www.linkedin.com/", // TODO: your LinkedIn profile URL
   },
 

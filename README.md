@@ -84,4 +84,10 @@ The homepage, `/tools`, the tool's own page and the sitemap all update automatic
 
 ## Deploy
 
-Push this folder to a GitHub repository, then import it at vercel.com. There's nothing to configure. Every push to `main` redeploys the site. Add your domain under *Project → Settings → Domains*.
+The site is hosted on **GitHub Pages** and publishes itself:
+
+1. Commit your changes and run `git push` (branch `main`).
+2. GitHub Actions (`.github/workflows/deploy.yml`) runs `npm ci` and `npm run build`, then publishes the `/out` folder. It takes about a minute. Progress and any errors are on the repository's **Actions** tab.
+3. The domain `alpyesilkaya.com` (registered at Namecheap) points to GitHub Pages. It is set under the repository's *Settings → Pages → Custom domain*.
+
+Run `npm run build` locally before pushing. If it fails on your Mac, it will fail on GitHub too, and the live site simply stays on the previous version.

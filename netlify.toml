@@ -1,6 +1,0 @@
-# Netlify build settings (these override the settings in the Netlify UI).
-# The site is a static export: `npm run build` writes everything to /out.
-# Netlify automatically serves out/404.html for pages that don't exist.
-[build]
-  command = "npm run build"
-  publish = "out"
