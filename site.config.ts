@@ -25,11 +25,11 @@ export const site = {
     "Civil engineer building engineering tools that automate everyday workflows: CAD geometry, survey data and quantities.",
 
   email: "alpyesilkaya.dev@gmail.com",
-  location: "", // TODO: e.g. "Istanbul, Türkiye" — hidden while empty
+  location: "Riyadh, KSA",
 
   links: {
     github: "https://github.com/Alp-Y",
-    linkedin: "https://www.linkedin.com/", // TODO: your LinkedIn profile URL
+    linkedin: "https://www.linkedin.com/in/alpyesilkaya/",
   },
 
   /**

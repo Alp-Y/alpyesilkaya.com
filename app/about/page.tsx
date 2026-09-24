@@ -3,7 +3,7 @@ import { getPage } from "@/lib/content";
 import { site } from "@/site.config";
 import PageHeader from "@/components/PageHeader";
 import Portrait from "@/components/Portrait";
-import PropertiesPalette from "@/components/PropertiesPalette";
+import PropertiesPalette, { parseExperience } from "@/components/PropertiesPalette";
 import styles from "./about.module.css";
 
 export const metadata: Metadata = {
@@ -25,7 +25,12 @@ export default function AboutPage() {
         <div className={`container ${styles.grid}`}>
           <aside className={styles.side}>
             <Portrait priority />
-            <PropertiesPalette rows={properties} selection="Engineer (1 selected)" />
+            <PropertiesPalette
+              title="Engineer.properties"
+              rows={properties}
+              selection="Engineer (1 selected)"
+              experience={parseExperience(data.experience)}
+            />
           </aside>
           <div className="prose" data-reveal="rise" dangerouslySetInnerHTML={{ __html: html }} />
         </div>

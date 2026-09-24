@@ -23,3 +23,10 @@
   display: grid;
   gap: 28px;
 }
+
+/* An expanded Properties palette can be taller than the screen: stop sticking so all of it can be scrolled */
+@media (min-width: 1000px) {
+  .side:has([data-open="true"]) {
+    position: static;
+  }
+}

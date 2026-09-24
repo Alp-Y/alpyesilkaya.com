@@ -84,3 +84,161 @@
 .row dd {
   color: var(--text-1);
 }
+
+/* ---------- Experience (foldable, grows the palette downward) ---------- */
+
+.drawer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--motion-section) var(--ease-in-out);
+}
+.drawer[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.drawerInner {
+  min-height: 0;
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+}
+.drawer[data-open="false"] .drawerInner {
+  border-top-color: transparent;
+}
+
+.count {
+  margin-left: 6px;
+  color: var(--text-3);
+}
+
+.entries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.entry {
+  position: relative;
+  padding: 12px 12px 13px 14px;
+  border-top: 1px solid var(--line);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity var(--motion-medium) var(--ease-out),
+    transform var(--motion-medium) var(--ease-out),
+    background-color var(--t-fast) var(--ease);
+}
+.drawer[data-open="true"] .entry {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(120ms + var(--i, 0) * 45ms), calc(120ms + var(--i, 0) * 45ms), 0ms;
+}
+/* Faint selection highlight + a thin layer-colour tick, like hovering an object in CAD */
+.entry::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 13px;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.entry:hover {
+  background: var(--surface);
+}
+.entry:hover::before {
+  opacity: 0.7;
+}
+.entry:hover .company {
+  color: #fff;
+}
+
+.entryHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2px 12px;
+}
+.company {
+  color: var(--text-1);
+  font-weight: 540;
+  letter-spacing: -0.005em;
+  transition: color var(--t-fast) var(--ease);
+}
+.years {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.role {
+  margin-top: 2px;
+  color: var(--text-2);
+}
+.location {
+  color: var(--text-3);
+}
+.summary {
+  margin: 6px 0 0;
+  max-width: 62ch;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--text-3);
+}
+
+/* EXPAND EXPERIENCE ↓ — a palette control, not a website button */
+.toggle {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 12px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
+}
+.toggle:hover {
+  color: var(--text-1);
+  background: var(--surface-strong);
+}
+.toggle:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+.toggleArrow {
+  display: inline-block;
+  color: var(--accent);
+  transition: transform var(--motion-medium) var(--ease-out);
+}
+.toggle[aria-expanded="true"] .toggleArrow {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer,
+  .entry,
+  .toggleArrow {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+  .entry {
+    transform: none;
+  }
+}
+
+.groupStatic,
+.groupStatic:hover {
+  cursor: default;
+  color: var(--text-2);
+}

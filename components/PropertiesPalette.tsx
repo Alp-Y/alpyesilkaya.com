@@ -1,4 +1,23 @@
+import ExperienceDrawer, { type ExperienceItem } from "./ExperienceDrawer";
 import styles from "./PropertiesPalette.module.css";
+
+/**
+ * Turns "Company | Role | Location | Years | One-line summary" rows
+ * (the `experience` list in /content/about.md) into experience items.
+ */
+export function parseExperience(rows: unknown): ExperienceItem[] {
+  if (!Array.isArray(rows)) return [];
+  return rows
+    .map((raw) => String(raw).split("|").map((part) => part.trim()))
+    .filter((parts) => parts[0])
+    .map(([company, role = "", location = "", years = "", ...summary]) => ({
+      company,
+      role,
+      location,
+      years,
+      summary: summary.join(" | "),
+    }));
+}
 
 /**
  * A key/value list styled like the CAD "Properties" palette.
@@ -6,15 +25,19 @@ import styles from "./PropertiesPalette.module.css";
  * A row written as "[Group name]" starts a new foldable group, like the
  * General / Geometry groups in a CAD palette. Rows before the first
  * group go under "General". Empty groups are not shown.
+ * Pass `experience` to add the foldable Experience group and its
+ * EXPAND EXPERIENCE control at the bottom of the palette.
  */
 export default function PropertiesPalette({
   rows,
   title = "Properties",
   selection,
+  experience = [],
 }: {
   rows: string[];
   title?: string;
   selection?: string;
+  experience?: ExperienceItem[];
 }) {
   const groups: { name: string; rows: { label: string; value: string }[] }[] = [{ name: "General", rows: [] }];
   for (const raw of rows) {
@@ -57,6 +80,7 @@ export default function PropertiesPalette({
             </dl>
           </details>
         ))}
+      {experience.length > 0 && <ExperienceDrawer items={experience} />}
     </div>
   );
 }

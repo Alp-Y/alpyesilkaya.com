@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getPage } from "@/lib/content";
 import Portrait from "./Portrait";
-import PropertiesPalette from "./PropertiesPalette";
+import PropertiesPalette, { parseExperience } from "./PropertiesPalette";
 import styles from "./AboutSection.module.css";
 
 /** About (homepage version). Text comes from /content/about.md. */
@@ -40,7 +40,12 @@ export default function AboutSection() {
               </p>
             )}
 
-            <PropertiesPalette rows={properties} selection="Engineer (1 selected)" />
+            <PropertiesPalette
+              title="Engineer.properties"
+              rows={properties}
+              selection="Engineer (1 selected)"
+              experience={parseExperience(data.experience)}
+            />
 
             <div data-reveal="rise" className={styles.more}>
               <Link href="/about" className="link-line">
