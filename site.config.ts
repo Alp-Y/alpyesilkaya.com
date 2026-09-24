@@ -42,9 +42,10 @@ export const site = {
     src: "/images/portrait.jpg",
     alt: "Portrait of Alp Yesilkaya",
     caption: "Fig. 01 / The engineer",
-    focus: "50% 30%",
+    // the frame takes the photo's own shape: nothing is cropped
+    aspect: "684 / 922",
     width: 684,
-    height: 1087,
+    height: 922,
     isPlaceholder: false,
   },
   atWork: {

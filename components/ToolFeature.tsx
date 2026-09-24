@@ -2,17 +2,18 @@ import Link from "next/link";
 import type { Tool } from "@/lib/content";
 import { pad } from "@/lib/content";
 import SqeGlyph from "./sqe/SqeGlyph";
-import SpatialQuantityEngine from "./sqe/SpatialQuantityEngine";
-import ExcavationDemo from "./excavation/ExcavationDemo";
 import ExvGlyph from "./excavation/ExvGlyph";
+import SqePreview from "./previews/SqePreview";
+import ExvPreview from "./previews/ExvPreview";
 import styles from "./ToolFeature.module.css";
 
 /**
- * A flagship tool: heading + mark (one interactive object), the concept in
- * one line, and — optionally — the live demonstration (which tells its own
- * site → survey → areas → quantities story).
+ * A tool on the homepage and /tools: heading + mark, the concept in one
+ * line, and a looping preview of its demonstration. The preview is a link:
+ * the interactive tool lives on the tool's own page.
  */
-export default function ToolFeature({ tool, index, withDemo = false }: { tool: Tool; index: number; withDemo?: boolean }) {
+export default function ToolFeature({ tool, index }: { tool: Tool; index: number }) {
+  const href = `/tools/${tool.slug}`;
   return (
     <article className={styles.feature}>
       <div className={styles.head}>
@@ -33,22 +34,23 @@ export default function ToolFeature({ tool, index, withDemo = false }: { tool: T
         </div>
       </div>
 
-      {withDemo && tool.demo === "sqe" && (
+      {tool.demo === "sqe" && (
         <div className={styles.demo} data-reveal="rise">
-          <SpatialQuantityEngine />
+          <SqePreview href={href} title={tool.title} />
         </div>
       )}
-      {withDemo && tool.demo === "exv" && (
+      {tool.demo === "exv" && (
         <div className={styles.demo} data-reveal="rise">
-          <ExcavationDemo compact />
+          <ExvPreview href={href} title={tool.title} />
         </div>
       )}
-
-      <div className={styles.more}>
-        <Link href={`/tools/${tool.slug}`} className="link-line">
-          More about this tool <span className="arrow" aria-hidden="true">→</span>
-        </Link>
-      </div>
+      {!tool.demo && (
+        <div className={styles.more}>
+          <Link href={href} className="link-line">
+            More about this tool <span className="arrow" aria-hidden="true">→</span>
+          </Link>
+        </div>
+      )}
     </article>
   );
 }

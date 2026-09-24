@@ -136,6 +136,12 @@ const TARGETS: Record<Destination, string> = {
   contact: "contact",
 };
 
+/** Targets that live on their own page (not the homepage). */
+const PAGES: Partial<Record<Destination, string>> = {
+  demo: "/tools/quantity-by-area-calculator/",
+  excavation: "/tools/automatize-excavation-calculations/",
+};
+
 let navTimer = 0;
 let routerPush: ((href: string) => void) | null = null;
 
@@ -148,8 +154,8 @@ export function navigateTo(destination: Destination) {
   const id = TARGETS[destination];
   const el = typeof document !== "undefined" ? document.getElementById(id) : null;
   if (!el) {
-    // Not on the homepage: go there (client-side)
-    routerPush?.(`/#${id}`);
+    // Not on this page: go to the page that has it (client-side)
+    routerPush?.(`${PAGES[destination] ?? "/"}#${id}`);
     return;
   }
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -9,6 +9,8 @@ type Photo = {
   caption?: string;
   /** CSS object-position: which part of the photo stays in the frame */
   focus?: string;
+  /** Frame shape (CSS aspect-ratio), e.g. "3 / 4". Default: 4 / 5 (square on phones). */
+  aspect?: string;
   isPlaceholder?: boolean;
   width?: number;
   height?: number;
@@ -23,7 +25,7 @@ export default function Portrait({ priority = false, photo }: { priority?: boole
   return (
     <figure className={styles.portrait} data-observe>
       <div className={styles.plate}>
-        <div className={styles.frame}>
+        <div className={styles.frame} style={p.aspect ? { aspectRatio: p.aspect } : undefined}>
           <Image
             src={p.src}
             alt={p.alt}

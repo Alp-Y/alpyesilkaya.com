@@ -7,7 +7,7 @@ import { registerSpace, setHud, type HudContent, type SelectionDetail } from "@/
 import { coord, num, quantity } from "@/lib/format";
 import { bounds, centroid, intersectPolygons, pointInPolygon, triangulate, type Point, type Polygon } from "@/lib/sqe/geometry";
 import type { Analysis } from "@/lib/sqe/engine";
-import { getSqe, setMulti, stopStory, useSqe, workTypesIn } from "@/lib/sqe/store";
+import { getSqe, setMulti, stopStory, useSqe, workTypesIn, type Step } from "@/lib/sqe/store";
 import { ids, parseId, type Boundary, type Project, type SurveyPoint } from "@/lib/sqe/types";
 import { WORK_TYPES } from "@/lib/sqe/workTypes";
 import styles from "./sqe.module.css";
@@ -36,12 +36,20 @@ const LAYERS: Record<string, { color: string; dash?: string; label: string }> = 
  *             measured pieces solid, the numbers large
  *
  * Drag a window (→) or crossing (←) to select several areas at once.
+ *
+ * `preview` (homepage): the step and view are given, not read from the
+ * shared stores, and the drawing takes no input (no HUD, no selection),
+ * so a looping preview never changes the rest of the site.
  */
-export default function SqeViewport({ project, analysis }: { project: Project; analysis: Analysis }) {
-  const step = useSqe((s) => s.step);
+export type SqePreviewState = { step: Step; view: "aerial" | "cad" | "analysis" };
+
+export default function SqeViewport({ project, analysis, preview }: { project: Project; analysis: Analysis; preview?: SqePreviewState }) {
+  const storeStep = useSqe((s) => s.step);
+  const step = preview?.step ?? storeStep;
   const workType = useSqe((s) => s.workType);
   const multi = useSqe((s) => s.multi);
-  const displayMode = useWorkspace((s) => s.viewport.displayMode);
+  const sharedMode = useWorkspace((s) => s.viewport.displayMode);
+  const displayMode = preview ? (preview.view === "aerial" ? "shaded" : preview.view === "analysis" ? "analysis" : "wireframe") : sharedMode;
   const selection = useWorkspace((s) => s.selection);
   const hover = useWorkspace((s) => s.hover);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -76,21 +84,21 @@ export default function SqeViewport({ project, analysis }: { project: Project; a
   // ----- drawing coordinates for the HUD + status bar -----
   useEffect(() => {
     const el = svgRef.current;
-    if (!el) return;
+    if (!el || preview) return;
     return registerSpace("sqe", (cx, cy) => {
       const r = el.getBoundingClientRect();
       const x = box.minX + ((cx - r.left) / r.width) * W;
       const y = box.maxY - ((cy - r.top) / r.height) * H;
       return { x: x + origin[0], y: y + origin[1] };
     });
-  }, [box, W, H, origin]);
+  }, [box, W, H, origin, preview]);
 
   // ----- window / crossing selection → several areas -----
   useEffect(() => {
     const onSelect = (e: Event) => {
       const d = (e as CustomEvent<SelectionDetail>).detail;
       const el = svgRef.current;
-      if (d.space !== "sqe" || !el) return;
+      if (d.space !== "sqe" || !el || preview) return;
       stopStory();
       const r = el.getBoundingClientRect();
       const toX = (cx: number) => box.minX + ((cx - r.left) / r.width) * W;
@@ -112,7 +120,7 @@ export default function SqeViewport({ project, analysis }: { project: Project; a
     };
     document.addEventListener("cad:selection", onSelect);
     return () => document.removeEventListener("cad:selection", onSelect);
-  }, [project, box, W, H]);
+  }, [project, box, W, H, preview]);
 
   // A single pick replaces a multi-selection
   useEffect(() => {
@@ -141,6 +149,7 @@ export default function SqeViewport({ project, analysis }: { project: Project; a
 
   // ----- HUD: hovered area (or survey point), else the selection -----
   useEffect(() => {
+    if (preview) return;
     const describe = (key: string | null, selected: boolean): HudContent | null => {
       const b = key ? byKey.get(key) : null;
       if (!b) return null;
@@ -167,7 +176,7 @@ export default function SqeViewport({ project, analysis }: { project: Project; a
       }
     }
     setHud("selected", selected, "sqe");
-  }, [hoverKey, selKey, hoverPoint, step, typeInfo, qtyIn, displayMode, analysis, byKey, origin, multi]);
+  }, [hoverKey, selKey, hoverPoint, step, typeInfo, qtyIn, displayMode, analysis, byKey, origin, multi, preview]);
 
   useEffect(
     () => () => {
@@ -218,12 +227,16 @@ export default function SqeViewport({ project, analysis }: { project: Project; a
         style={{ aspectRatio: `${W} / ${H}` }}
         role="img"
         aria-label={`${project.name}: ${project.boundaries.length} project areas`}
-        data-cad-space="sqe"
-        onPointerDown={() => stopStory()}
-        onClick={() => {
-          selectEntity(null);
-          setMulti(null);
-        }}
+        data-cad-space={preview ? undefined : "sqe"}
+        onPointerDown={preview ? undefined : () => stopStory()}
+        onClick={
+          preview
+            ? undefined
+            : () => {
+                selectEntity(null);
+                setMulti(null);
+              }
+        }
       >
         <defs>
           {project.boundaries.map((b) => (
@@ -483,7 +496,7 @@ export default function SqeViewport({ project, analysis }: { project: Project; a
         </svg>
       </div>
       {site && view === "aerial" && <p className={styles.credit}>Rendered example site, not a real location</p>}
-      {step === 4 && (
+      {step === 4 && !preview && (
         <p className={styles.dragHint} aria-hidden="true">
           Drag → window · ← crossing
         </p>
