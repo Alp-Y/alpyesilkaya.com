@@ -20,20 +20,25 @@
   background: rgba(11, 16, 14, 0.9);
 }
 .history {
-  /* a console: two lines, newest at the bottom — the box never changes height */
+  /* a console: the latest line, newest at the bottom — the box never changes height */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  height: calc(2 * 1.65em + 18px);
-  padding: 10px 18px 8px;
+  height: calc(1.65em + 20px);
+  padding: 10px 18px;
   overflow: hidden;
   color: var(--text-3);
   line-height: 1.65;
 }
 .history p {
+  flex: none; /* never squeeze lines together: the box shows exactly one */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* only the latest line is shown */
+.history p:not(:last-child) {
+  display: none;
 }
 .history p:last-child {
   color: var(--text-2);
@@ -141,20 +146,10 @@
   color: var(--accent);
 }
 
-/* short desktop screens: one history line keeps the console on screen */
-@media (min-width: 900px) and (max-height: 840px) {
-  .history {
-    height: calc(1.65em + 16px);
-  }
-}
-
 @media (max-width: 640px) {
   .history {
-    height: calc(2 * 1.65em + 16px);
-    padding: 8px 14px 6px;
-  }
-  .history p:not(:nth-last-child(-n + 2)) {
-    display: none;
+    height: calc(1.65em + 16px);
+    padding: 8px 14px;
   }
   .chips {
     padding-left: 14px;

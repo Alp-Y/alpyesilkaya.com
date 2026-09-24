@@ -46,7 +46,7 @@ export default function ToolFeature({ tool, index, withDemo = false }: { tool: T
 
       <div className={styles.more}>
         <Link href={`/tools/${tool.slug}`} className="link-line">
-          More about {tool.title} <span className="arrow" aria-hidden="true">→</span>
+          More about this tool <span className="arrow" aria-hidden="true">→</span>
         </Link>
       </div>
     </article>

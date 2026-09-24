@@ -381,16 +381,6 @@
   padding: 14px 16px;
   border-top: 1px solid var(--line);
 }
-.tagline {
-  font-size: 1.05rem;
-  color: var(--text-1);
-}
-.flow {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--accent);
-}
 .fine {
   flex-basis: 100%;
   font-size: 0.75rem;

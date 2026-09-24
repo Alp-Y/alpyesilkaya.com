@@ -84,7 +84,7 @@ export default function SpatialQuantityEngine() {
     <div className={styles.app} id="sqe-demo" data-sqe ref={rootRef}>
       <div className={styles.appBar}>
         <p className={styles.appTitle}>
-          <span className="mono">Quantity by Area Calculator</span>
+          <span className="mono">{project?.source === "dxf" ? "Imported DXF" : "Example project"}</span>
           <span className={styles.appProject}>{project?.name ?? "Loading…"}</span>
         </p>
         <div className={styles.views} role="radiogroup" aria-label="View">

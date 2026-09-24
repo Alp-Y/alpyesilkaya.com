@@ -9,7 +9,7 @@ import styles from "./about.module.css";
 export const metadata: Metadata = {
   title: "About",
   alternates: { canonical: "/about" },
-  description: `About ${site.name}: civil engineer working across engineering, software and automation.`,
+  description: `About ${site.name}: a civil engineer who builds tools for the repetitive parts of engineering work.`,
 };
 
 /** Full About page. Edit the text in /content/about.md. */
@@ -25,7 +25,7 @@ export default function AboutPage() {
         <div className={`container ${styles.grid}`}>
           <aside className={styles.side}>
             <Portrait priority />
-            <PropertiesPalette rows={properties} selection={`${site.name.toUpperCase().replace(" ", "_")} (Engineer)`} />
+            <PropertiesPalette rows={properties} selection="Engineer (1 selected)" />
           </aside>
           <div className="prose" data-reveal="rise" dangerouslySetInnerHTML={{ __html: html }} />
         </div>

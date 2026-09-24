@@ -15,14 +15,15 @@ export default function SiteFooter() {
             <LogoMark className={styles.mark} />
             <div>
               <p className={styles.name}>{site.name}</p>
-              <p className={styles.sub}>{site.disciplines.join(" · ")}</p>
+              <p className={styles.sub}>{site.role}</p>
             </div>
           </div>
 
           <Cell label="Project" value={site.domain} />
           <Cell label="Drawn by" value={site.shortName} />
-          <Cell label="Location" value={site.location} />
-          <Cell label="Revision" value={`${site.revision.code} — ${site.revision.date}`} />
+          {/* Location shows once it is set in site.config.ts; until then a real drawing field */}
+          {site.location ? <Cell label="Location" value={site.location} /> : <Cell label="Units" value="Metres" />}
+          <Cell label="Revision" value={`${site.revision.code} · ${site.revision.date}`} />
 
           <div className={`${styles.cell} ${styles.navCell}`}>
             <span className="mono">Index</span>

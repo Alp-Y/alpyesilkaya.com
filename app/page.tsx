@@ -28,9 +28,7 @@ export default function HomePage() {
           <SectionHeader
             index="02"
             label="Tools"
-            meta={`${tools.length} ${tools.length === 1 ? "tool" : "tools"}`}
             title={["Tools I’ve built."]}
-            intro="Software for real engineering workflows — built around CAD data, engineering metadata and quantities."
           />
           <div className={styles.toolList}>
             {tools.map((tool, i) => (
@@ -45,16 +43,17 @@ export default function HomePage() {
           <SectionHeader
             index="03"
             label="Case Studies"
-            meta="Drawing register"
             title={["How I solved it."]}
-            intro="Real engineering problems, the approach I took, and what changed as a result."
           />
           <CaseRegister cases={cases} />
-          <div className={styles.more} data-reveal="rise">
-            <Link href="/case-studies" className="link-line">
-              All case studies <span className="arrow" aria-hidden="true">→</span>
-            </Link>
-          </div>
+          {/* The link to the full register appears once there is more than one real case study */}
+          {cases.filter((c) => !c.placeholder).length > 1 && (
+            <div className={styles.more} data-reveal="rise">
+              <Link href="/case-studies" className="link-line">
+                All case studies <span className="arrow" aria-hidden="true">→</span>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

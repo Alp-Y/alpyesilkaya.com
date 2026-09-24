@@ -1,17 +1,18 @@
 ---
 # ─────────────────────────────────────────────────────────────
-# PLACEHOLDER CASE STUDY — replace with a real project.
-# Nothing here describes real work yet.
+# COMING SOON — while `placeholder: true`, the site shows this as an
+# unlinked "Coming soon." entry. Replace with a real project, then set
+# placeholder to false (and give it a real title, discipline and year).
 # Results are written as "value | label" (leave empty until you have real numbers).
 # ─────────────────────────────────────────────────────────────
-title: Case study 01 — title placeholder
+title: Coming soon.
 order: 1
 placeholder: true
 discipline: Discipline
 year: 20XX
 role: Your role
 tools:
-summary: Placeholder — one or two sentences on the problem and what changed. Replace with a real project.
+summary: A closer look at the problem, workflow and engineering behind one of the tools.
 results:
 image: /images/placeholders/case-generic.svg
 imageAlt: Placeholder image
@@ -35,7 +36,7 @@ imageAlt: Placeholder image
 
 ## Result
 
-*Placeholder: measurable outcomes — only real, verifiable numbers.*
+*Placeholder: measurable outcomes, only real and verifiable numbers.*
 
 ## Lessons
 

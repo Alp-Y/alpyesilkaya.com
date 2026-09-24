@@ -7,7 +7,7 @@ import styles from "../inner.module.css";
 export const metadata: Metadata = {
   title: "Tools",
   alternates: { canonical: "/tools" },
-  description: "Engineering software and automation tools by Alp Yesilkaya.",
+  description: "Engineering tools that automate everyday engineering workflows, each with a live demonstration.",
 };
 
 export default function ToolsPage() {
@@ -18,7 +18,7 @@ export default function ToolsPage() {
         layer="02-TOOLS"
         crumbs={[{ label: "Tools" }]}
         title={["Tools I’ve built."]}
-        intro="Software for real engineering workflows. Each tool started as a real problem on a real project."
+        intro="Each one automates a specific engineering workflow."
       />
       <section className={styles.section}>
         <div className="container">

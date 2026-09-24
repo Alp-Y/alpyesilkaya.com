@@ -14,18 +14,18 @@ export const site = {
   url: "https://alpyesilkaya.com",
 
   role: "Civil Engineer",
-  disciplines: ["Civil Engineering", "Software", "Automation"],
+  /** The line under the name in the hero, read left to right. */
+  process: ["Civil Engineering", "BIM", "Software Automation"],
 
   /** One-sentence positioning statement shown in the hero. */
-  statement:
-    "A civil engineer building the software and automation that make infrastructure design faster, cleaner and more exact.",
+  statement: "I’m a civil engineer building engineering tools that automate everyday workflows.",
 
   /** Used for search engines and link previews. */
   description:
-    "Alp Yesilkaya — civil engineer working at the intersection of engineering, software and automation. Engineering tools, automation and case studies.",
+    "Civil engineer building engineering tools that automate everyday workflows: CAD geometry, survey data and quantities.",
 
-  email: "hello@alpyesilkaya.com", // TODO: your real contact email
-  location: "Location TBC", // TODO: e.g. "Istanbul, Türkiye"
+  email: "alpyesilkaya.dev@gmail.com",
+  location: "", // TODO: e.g. "Istanbul, Türkiye" — hidden while empty
 
   links: {
     github: "https://github.com/", // TODO: your GitHub profile URL

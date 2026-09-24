@@ -274,7 +274,7 @@ function initStatusCoords(): Cleanup {
   let last = "";
   return onFrame(() => {
     const c = getCoords();
-    const text = c ? `${coord(c.x)}, ${coord(c.y)}` : "—";
+    const text = c ? `${coord(c.x)}, ${coord(c.y)}` : "·";
     if (text !== last) {
       last = text;
       out.textContent = text;
@@ -294,7 +294,7 @@ function initCommandLine(): Cleanup {
     const p = document.createElement("p");
     p.textContent = text;
     history.appendChild(p);
-    while (history.children.length > 2) history.firstElementChild?.remove();
+    while (history.children.length > 1) history.firstElementChild?.remove();
   };
 
   // Type out the opening line once, unless reduced motion is on.
@@ -331,8 +331,9 @@ function initCommandLine(): Cleanup {
       history.replaceChildren();
       return;
     }
-    // Two-line answers (HELP) fill the console on their own; others echo the command first
-    if (result.lines.length < 2) print(`Command: ${cmd}`);
+    if (result.quiet) return; // PARTY: no echo, no output — nothing left behind
+    // The console shows the latest line: the answer (or the command itself if there is none)
+    if (!result.lines.length) print(`Command: ${cmd}`);
     result.lines.forEach(print);
   };
   const onSubmit = (e: Event) => {
@@ -350,6 +351,7 @@ function initCommandLine(): Cleanup {
     lastOrigin = { x: r.left + r.width / 2, y: r.top };
     run(chip.dataset.cmdRun ?? "");
     lastOrigin = null;
+    chip.blur(); // no lingering focus state on the suggestion
   };
   form.addEventListener("click", onChip);
 
@@ -414,7 +416,7 @@ function initCasePreview(): Cleanup {
       currentRow = row;
       const src = row.dataset.preview;
       if (src && img.getAttribute("src") !== src) img.src = src;
-      if (label) label.textContent = `PREVIEW — ${row.querySelector("[data-case-number]")?.textContent ?? ""}`;
+      if (label) label.textContent = `PREVIEW · ${row.querySelector("[data-case-number]")?.textContent ?? ""}`;
     }
     if (isActive !== active) {
       if (isActive && !active) {

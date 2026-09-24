@@ -9,11 +9,14 @@ import styles from "./CaseRegister.module.css";
  * Deliberately different from the Tools showcase.
  * Desktop: hovering a row dims the others and reveals a preview image
  * that trails the cursor. Phones: each row shows a small thumbnail.
+ * Entries marked `placeholder: true` show as an unlinked "Coming soon."
  */
 export default function CaseRegister({ cases }: { cases: CaseStudy[] }) {
+  // Column headings only make sense once there are real entries to read across
+  const hasReal = cases.some((c) => !c.placeholder);
   return (
     <div className={styles.register} data-case-register>
-      <div className={styles.head} aria-hidden="true">
+      <div className={styles.head} aria-hidden="true" hidden={!hasReal}>
         <span className="mono">No.</span>
         <span className="mono">Title</span>
         <span className="mono">Discipline</span>
@@ -25,33 +28,45 @@ export default function CaseRegister({ cases }: { cases: CaseStudy[] }) {
       <ol className={styles.list}>
         {cases.map((c, i) => (
           <li key={c.slug} className={styles.item} style={{ "--i": i } as React.CSSProperties}>
-            <Link href={`/case-studies/${c.slug}`} className={styles.row} data-case-row data-preview={c.image}>
-              <span className={styles.number} data-case-number data-reveal="rise" style={{ "--i": i } as React.CSSProperties}>
-                {pad(i + 1)}
-              </span>
+            {c.placeholder ? (
+              /* Not written yet: an intentional "Coming soon." entry — no link, no fake details */
+              <div className={`${styles.row} ${styles.soon}`}>
+                <span className={styles.number} data-reveal="rise" style={{ "--i": i } as React.CSSProperties}>
+                  {pad(i + 1)}
+                </span>
+                <span className={styles.main} data-reveal="rise" style={{ "--i": i, "--delay": "60ms" } as React.CSSProperties}>
+                  <span className={styles.title}>{c.title}</span>
+                  <span className={styles.summary}>{c.summary}</span>
+                </span>
+              </div>
+            ) : (
+              <Link href={`/case-studies/${c.slug}`} className={styles.row} data-case-row data-preview={c.image}>
+                <span className={styles.number} data-case-number data-reveal="rise" style={{ "--i": i } as React.CSSProperties}>
+                  {pad(i + 1)}
+                </span>
 
-              <span className={styles.main} data-reveal="rise" style={{ "--i": i, "--delay": "60ms" } as React.CSSProperties}>
-                <span className={styles.title}>{c.title}</span>
-                <span className={styles.summary}>{c.summary}</span>
-                {c.placeholder && <span className={`placeholder-tag ${styles.tag}`}>Placeholder</span>}
-              </span>
+                <span className={styles.main} data-reveal="rise" style={{ "--i": i, "--delay": "60ms" } as React.CSSProperties}>
+                  <span className={styles.title}>{c.title}</span>
+                  <span className={styles.summary}>{c.summary}</span>
+                </span>
 
-              <span className={`mono ${styles.discipline}`} data-reveal="rise" style={{ "--i": i, "--delay": "120ms" } as React.CSSProperties}>
-                {c.discipline}
-              </span>
-              <span className={`mono ${styles.year}`} data-reveal="rise" style={{ "--i": i, "--delay": "160ms" } as React.CSSProperties}>
-                {c.year}
-              </span>
+                <span className={`mono ${styles.discipline}`} data-reveal="rise" style={{ "--i": i, "--delay": "120ms" } as React.CSSProperties}>
+                  {c.discipline}
+                </span>
+                <span className={`mono ${styles.year}`} data-reveal="rise" style={{ "--i": i, "--delay": "160ms" } as React.CSSProperties}>
+                  {c.year}
+                </span>
 
-              <span className={styles.go} aria-hidden="true">
-                <span className={styles.goLabel}>View case study</span>
-                <span className="arrow">→</span>
-              </span>
+                <span className={styles.go} aria-hidden="true">
+                  <span className={styles.goLabel}>View case study</span>
+                  <span className="arrow">→</span>
+                </span>
 
-              <span className={styles.thumb} aria-hidden="true">
-                <Image src={c.image} alt="" width={320} height={200} unoptimized={c.image.endsWith(".svg")} />
-              </span>
-            </Link>
+                <span className={styles.thumb} aria-hidden="true">
+                  <Image src={c.image} alt="" width={320} height={200} unoptimized={c.image.endsWith(".svg")} />
+                </span>
+              </Link>
+            )}
             <span className={styles.rule} data-reveal="draw" style={{ "--i": i } as React.CSSProperties} aria-hidden="true" />
           </li>
         ))}

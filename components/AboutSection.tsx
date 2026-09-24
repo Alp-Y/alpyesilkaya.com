@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getPage } from "@/lib/content";
-import { site } from "@/site.config";
 import Portrait from "./Portrait";
 import PropertiesPalette from "./PropertiesPalette";
 import styles from "./AboutSection.module.css";
@@ -17,7 +16,7 @@ export default function AboutSection() {
       <div className="container">
         <div className={styles.annotation}>
           <span className="mono" data-reveal="rise">
-            <span className="accent">04</span> — About
+            <span className="accent">04</span> / About
           </span>
           <span className={styles.rule} data-reveal="draw" />
         </div>
@@ -41,7 +40,7 @@ export default function AboutSection() {
               </p>
             )}
 
-            <PropertiesPalette rows={properties} selection={`${site.name.toUpperCase().replace(" ", "_")} (Engineer)`} />
+            <PropertiesPalette rows={properties} selection="Engineer (1 selected)" />
 
             <div data-reveal="rise" className={styles.more}>
               <Link href="/about" className="link-line">

@@ -123,11 +123,11 @@ export function hoverEntity(id: string | null) {
 
 /* ---------------- navigation ---------------- */
 
-export type Destination = "top" | "disciplines" | "tools" | "demo" | "excavation" | "case-studies" | "about" | "contact";
+export type Destination = "top" | "approach" | "tools" | "demo" | "excavation" | "case-studies" | "about" | "contact";
 
 const TARGETS: Record<Destination, string> = {
   top: "main",
-  disciplines: "disciplines",
+  approach: "approach",
   tools: "tools",
   demo: "sqe-demo",
   excavation: "exv-demo",
@@ -161,12 +161,17 @@ export function navigateTo(destination: Destination) {
 
 /* ---------------- command line ---------------- */
 
-export type CommandResult = { lines: string[]; clear?: boolean };
+/**
+ * `lines` are printed to the console. `quiet` commands (PARTY) print nothing:
+ * their effect is temporary and must leave no trace in the command line.
+ */
+export type CommandResult = { lines: string[]; clear?: boolean; quiet?: boolean };
 
 /** Sections you can go to by name (plus a few natural aliases). */
 const PLACES: Record<string, { to: Destination; label: string }> = {
-  DISCIPLINES: { to: "disciplines", label: "01 · Disciplines" },
-  SKILLS: { to: "disciplines", label: "01 · Disciplines" },
+  APPROACH: { to: "approach", label: "01 · How I work" },
+  "HOW I WORK": { to: "approach", label: "01 · How I work" },
+  DISCIPLINES: { to: "approach", label: "01 · How I work" },
   TOOLS: { to: "tools", label: "02 · Tools" },
   WORK: { to: "tools", label: "02 · Tools" },
   DEMO: { to: "demo", label: "Quantity by Area Calculator" },
@@ -205,11 +210,8 @@ const MODES: Record<string, DisplayMode> = {
 
 const OTHER = ["HELP", "HOME", "CLEAR", "PARTY", "GRID"];
 
-/** The shortest useful help: two lines that fit the console. */
-export const HELP_LINES = [
-  "Go to: DISCIPLINES · TOOLS · EXCAVATION · CASES · ABOUT · CONTACT",
-  "View: TOP · FRONT · ISO · SHADED · ANALYSIS — also HOME · CLEAR · PARTY",
-];
+/** The shortest useful help: one line that fits the console. */
+export const HELP_LINES = ["Try: TOOLS · EXCAVATION · CASES · ABOUT · CONTACT · TOP · ISO · SHADED · PARTY"];
 
 /** Parse and run one command. Every command maps onto an action above. */
 export function runCommand(input: string, opts: { origin?: { x: number; y: number } } = {}): CommandResult {
@@ -249,7 +251,9 @@ export function runCommand(input: string, opts: { origin?: { x: number; y: numbe
       return { lines: [], clear: true };
     case "PARTY":
     case "CONFETTI":
-      return { lines: [launchConfetti(opts.origin) ? "🎉 Party mode." : "Party mode is quiet with reduced motion on 🙂"] };
+      // A temporary easter egg: the confetti is the only output, nothing is echoed
+      launchConfetti(opts.origin);
+      return { lines: [], quiet: true };
     case "OVERLAYS":
     case "CLEAN":
       toggleOverlays();

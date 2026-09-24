@@ -95,9 +95,9 @@
 /*
   Micro-motion: each mark responds in a way that means something.
   Proximity (--prox, 0 → 1 within ~140 px) and hover are subtle; nothing moves on its own.
-    Civil       the datum line extends; the centreline tick grows
-    Software    the brackets open
-    Automation  pulses flow through the process
+    Problem   the scattered sheets drift further apart
+    Approach  pulses flow through the process
+    Result    the check mark settles in
 */
 .icon [data-part] {
   transform-box: fill-box;
@@ -116,6 +116,12 @@
 .icon [data-part="cl"] {
   transform-origin: bottom;
 }
+/* keep the draw-in when the sheets also move on hover */
+:global(.js) .item .icon rect[data-part] {
+  transition:
+    stroke-dashoffset var(--motion-demo) var(--ease) calc(var(--i, 0) * 120ms + 300ms),
+    transform var(--motion-medium) var(--ease-out);
+}
 .icon [data-part="open"] {
   transform: translateX(calc(var(--prox, 0) * -0.6px));
 }
@@ -129,6 +135,13 @@
   stroke-dashoffset: 0;
   opacity: 0;
   transition: opacity var(--motion-fast) var(--ease-out);
+}
+.icon [data-part="tick"] {
+  transform-origin: center;
+}
+.item:hover .icon [data-part="tick"] {
+  transform: scale(1.08);
+  stroke: var(--accent);
 }
 .item:hover .icon [data-part="datum"] {
   transform: scaleX(1.1);

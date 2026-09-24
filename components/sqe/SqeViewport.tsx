@@ -152,7 +152,7 @@ export default function SqeViewport({ project, analysis }: { project: Project; a
       if (displayMode === "analysis") {
         return { title: selected ? "SELECTED" : "INTERSECTION", lines: [`${id} × ${typeInfo.label.toUpperCase()}`], rows: [["QUANTITY", quantity(q, typeInfo.unit)]] };
       }
-      return { title: selected ? "SELECTED" : "AREA", lines: [id], rows: [[typeInfo.label.toUpperCase(), q ? quantity(q, typeInfo.unit) : "—"]] };
+      return { title: selected ? "SELECTED" : "AREA", lines: [id], rows: [[typeInfo.label.toUpperCase(), q ? quantity(q, typeInfo.unit) : "·"]] };
     };
     const hoveringOther = hoverKey && hoverKey !== selKey;
     if (hoverPoint) {
@@ -482,7 +482,7 @@ export default function SqeViewport({ project, analysis }: { project: Project; a
           </text>
         </svg>
       </div>
-      {site && view === "aerial" && <p className={styles.credit}>Rendered example site — not a real location</p>}
+      {site && view === "aerial" && <p className={styles.credit}>Rendered example site, not a real location</p>}
       {step === 4 && (
         <p className={styles.dragHint} aria-hidden="true">
           Drag → window · ← crossing

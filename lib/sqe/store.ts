@@ -115,7 +115,7 @@ export function loadExample() {
 
 export async function importDxf(file: File) {
   if (!/\.dxf$/i.test(file.name)) {
-    set({ error: "Please choose a .dxf file. DWG isn't supported — export or save as DXF first." });
+    set({ error: "Please choose a .dxf file. DWG isn't supported. Export or save as DXF first." });
     return;
   }
   set({ loading: true, error: null });
@@ -178,7 +178,7 @@ export function updateAreaMeta(key: string, patch: Partial<AreaMeta>) {
   if (!state.project) return;
   const boundaries = state.project.boundaries.map((b) => {
     if (b.key !== key) return b;
-    const base: AreaMeta = b.meta ?? b.suggested ?? { areaId: b.key, name: "", section: "—", side: "—" };
+    const base: AreaMeta = b.meta ?? b.suggested ?? { areaId: b.key, name: "", section: "·", side: "·" };
     return { ...b, meta: { ...base, ...patch } };
   });
   // Geometry didn't change, so the analysis is still valid

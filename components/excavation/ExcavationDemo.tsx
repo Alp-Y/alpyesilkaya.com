@@ -268,7 +268,7 @@ export default function ExcavationDemo() {
   return (
     <div className={styles.app} ref={rootRef} id="exv-demo">
       <div ref={viewRef} className={styles.view} data-cad-space="exv" data-ready={ready} data-stage={stage}>
-        <canvas ref={canvasRef} className={styles.canvas} data-cursor="grab" aria-label="3D excavation model — drag to orbit" />
+        <canvas ref={canvasRef} className={styles.canvas} data-cursor="grab" aria-label="3D excavation model, drag to orbit" />
 
         {/* Stage caption (top-left) */}
         <div className={styles.caption} key={stage}>
@@ -423,15 +423,13 @@ export default function ExcavationDemo() {
           </div>
           <SectionView section={section} />
           <p className={styles.check}>
-            Average end area across these sections: <b className="num">{quantity(model.endAreaVolume, "m³")}</b> — a quick check on the TIN
+            Average end area across these sections: <b className="num">{quantity(model.endAreaVolume, "m³")}</b>: a quick check on the TIN
             volume (<b className="num">{quantity(model.volume, "m³")}</b>), which integrates every triangle instead of 20 m slices.
           </p>
         </div>
       )}
 
       <div className={styles.footer}>
-        <p className={styles.tagline}>From surveyed coordinates to verified quantities.</p>
-        <p className={styles.flow}>XYZ → Surface → Boundary → Volume</p>
         <p className={styles.fine}>Demonstration site, generated for this page; the volume is computed from its TIN in your browser.</p>
       </div>
     </div>

@@ -40,16 +40,11 @@ export default function Hero() {
           <ViewportToolbar />
         </div>
         <span className="mono" data-overlay data-reveal="rise" style={{ "--delay": "800ms" } as React.CSSProperties}>
-          Sheet 01 / 05 <span className={styles.hudSep}>—</span> Rev {site.revision.code}
+          Sheet 01 / 05 <span className={styles.hudSep}>·</span> Rev {site.revision.code}
         </span>
       </div>
 
       <div className={`container ${styles.content}`} data-hero-exit>
-        <p className={`mono ${styles.eyebrow}`} data-reveal="rise">
-          <span className={styles.eyebrowDot} aria-hidden="true" />
-          {site.role} — Software &amp; Automation
-        </p>
-
         <h1 id="hero-title" className={styles.title} data-reveal="lines" style={{ "--delay": "120ms" } as React.CSSProperties}>
           <span className="line">
             <span>{first}</span>
@@ -59,7 +54,7 @@ export default function Hero() {
           </span>
         </h1>
 
-        <DimensionChain labels={site.disciplines} delay={550} className={styles.chain} />
+        <DimensionChain labels={site.process} delay={550} className={styles.chain} />
 
         <div className={styles.lower}>
           <p
@@ -89,7 +84,21 @@ export default function Hero() {
 
       {/* UCS icon (the origin of the hero's drawing coordinates) + command line */}
       <div className={`container ${styles.base}`} data-hero-exit>
-        <div className={styles.ucsWrap} data-overlay>
+        {/* Scale bar: bottom-right corner of the sheet, measured from the model (EarthworksModel sets it) */}
+        <div className={styles.scaleBar} data-scale-bar data-overlay aria-hidden="true">
+          <span className={styles.sbBar}>
+            <i />
+            <i />
+          </span>
+          <span className={styles.sbLabels}>
+            <b>0</b>
+            <b data-sb-mid>10</b>
+            <b data-sb-end>20 m</b>
+          </span>
+        </div>
+
+        {/* Builds itself with the rest of the interface: origin, then the X, Y, Z axes */}
+        <div className={styles.ucsWrap} data-overlay data-reveal="ucs" style={{ "--delay": "950ms" } as React.CSSProperties}>
           <UcsIcon className={styles.ucs} />
           <span className={styles.origin} data-cad-origin aria-hidden="true" />
         </div>

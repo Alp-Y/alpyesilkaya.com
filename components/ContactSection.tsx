@@ -12,7 +12,7 @@ export default function ContactSection() {
       <div className="container">
         <div className={styles.annotation}>
           <span className="mono" data-reveal="rise">
-            <span className="accent">05</span> — Contact
+            <span className="accent">05</span> / Contact
           </span>
           <span className={styles.rule} data-reveal="draw" />
         </div>
@@ -58,11 +58,6 @@ export default function ContactSection() {
           <li data-reveal="rise">
             <a href={site.links.linkedin} className="link-line" target="_blank" rel="noopener noreferrer">
               LinkedIn <span className="arrow" aria-hidden="true">↗</span>
-            </a>
-          </li>
-          <li data-reveal="rise">
-            <a href={`mailto:${site.email}`} className="link-line">
-              Email <span className="arrow" aria-hidden="true">↗</span>
             </a>
           </li>
         </ul>

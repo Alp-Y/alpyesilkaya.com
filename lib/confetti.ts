@@ -8,7 +8,11 @@ const COLORS = ["#3ee08f", "#e2848c", "#7fd3ae", "#e9edf1", "#6ea0ff", "#e0a94a"
 
 export function launchConfetti(origin?: { x: number; y: number }) {
   if (typeof window === "undefined" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+  // One burst at a time: a new PARTY replaces a running one
+  document.querySelectorAll("canvas[data-confetti]").forEach((c) => c.remove());
   const canvas = document.createElement("canvas");
+  canvas.dataset.confetti = "";
+  canvas.setAttribute("aria-hidden", "true");
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const W = window.innerWidth;
   const H = window.innerHeight;
@@ -43,6 +47,9 @@ export function launchConfetti(origin?: { x: number; y: number }) {
 
   const start = performance.now();
   const DURATION = 2600;
+  // Safety net: the layer is removed even if animation frames stop (hidden tab)
+  const done = () => canvas.remove();
+  window.setTimeout(done, DURATION + 800);
   let last = start;
   const tick = (now: number) => {
     const dt = Math.min(2.5, (now - last) / 16.7);
@@ -64,8 +71,8 @@ export function launchConfetti(origin?: { x: number; y: number }) {
       ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
       ctx.restore();
     }
-    if (t < 1) requestAnimationFrame(tick);
-    else canvas.remove();
+    if (t < 1 && canvas.isConnected) requestAnimationFrame(tick);
+    else done();
   };
   requestAnimationFrame(tick);
   return true;

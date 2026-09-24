@@ -2,7 +2,7 @@ import styles from "./StatusBar.module.css";
 
 /**
  * Fixed status bar (desktop only), modelled on a CAD application's.
- * - X, Y: the same drawing coordinates as the HUD (metres), "—" outside drawing space.
+ * - X, Y: the same drawing coordinates as the HUD (metres), "·" outside drawing space.
  * - GRID toggles the workspace grid (a real, keyboard-accessible control).
  * - The layer shows which section of the page you are in.
  * Only real information here — no decorative toggles.
@@ -16,7 +16,7 @@ export default function StatusBar() {
 
       <span className={`${styles.coords} num`} aria-hidden="true">
         <span className={styles.coordLabel}>X, Y</span>
-        <span data-coords>—</span>
+        <span data-coords>·</span>
       </span>
 
       <button

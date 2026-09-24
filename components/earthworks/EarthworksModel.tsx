@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { buildModel, LENGTH, VERTICAL_EXAGGERATION } from "@/lib/earthworks/model";
+import { useEffect, useRef, useState } from "react";
 import { getState, watch } from "@/lib/workspace/store";
 import { getOrbit, setOrientation } from "@/lib/workspace/actions";
 import { setHud } from "@/lib/workspace/cadCursor";
 import { onFrame, reducedMotion } from "@/lib/workspace/pointer";
-import { num, quantity } from "@/lib/format";
 import type { EarthworksScene } from "./scene";
 import styles from "./EarthworksModel.module.css";
 
@@ -21,21 +19,14 @@ type OrientationDetail = { quaternion: import("three").Quaternion; zoom: number;
  *
  * The model floats free: its canvas is much larger than its layout box, so
  * nothing is cut off while it turns, and the ground fades out at its edges.
- * Drag the model itself to turn it (the ViewCube follows). The volumes are
- * computed from the model (lib/earthworks/model.ts) and labelled as a
- * demonstration.
+ * Drag the model itself to turn it (the ViewCube follows). In the hero it
+ * is a visual only — no figures; the tools section carries the real demos.
  */
 export default function EarthworksModel({ className = "" }: { className?: string }) {
   const figRef = useRef<HTMLElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const cutRef = useRef<HTMLSpanElement>(null);
-  const fillRef = useRef<HTMLSpanElement>(null);
   const [state, setStateFlag] = useState<"loading" | "ready" | "revealed" | "static">("loading");
-  const totals = useMemo(() => {
-    const m = buildModel();
-    return { cut: m.cut, fill: m.fill };
-  }, []);
 
   useEffect(() => {
     const box = boxRef.current;
@@ -58,35 +49,37 @@ export default function EarthworksModel({ className = "" }: { className?: string
       scene = s;
       s.setReveal(reducedMotion() ? 1 : 0);
 
-      // Labels follow their volumes on screen (canvas px → the box they live in)
-      const offset = { x: 0, y: 0 };
-      s.onRender = () => {
-        const place = (el: HTMLElement | null, p: [number, number, number]) => {
-          if (!el) return;
-          const pr = s.project(p);
-          const x = pr.x + offset.x;
-          const y = pr.y + offset.y;
-          el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
-        };
-        place(cutRef.current, s.model.cutCentre);
-        place(fillRef.current, s.model.fillCentre);
-      };
-
       // Initial view: the workspace's current angles (the cube may not have started yet)
       const v = getState().viewport;
       s.setView(quaternionFromAngles({ azimuth: (v.azimuth * Math.PI) / 180, elevation: (v.elevation * Math.PI) / 180 }), 1);
       s.setMode(v.displayMode);
 
+      // Scale bar on the sheet (in the hero): a real length at the model's current scale
+      let pxPerM = 1;
+      let zoom = 1;
+      const bar = fig.closest<HTMLElement>("[data-hero]")?.querySelector<HTMLElement>("[data-scale-bar]") ?? null;
+      const updateScaleBar = () => {
+        if (!bar) return;
+        const px = pxPerM * zoom;
+        // the round length that draws closest to ~160 px
+        const L = [5, 10, 20, 25, 50, 100, 200].reduce((best, l) => (Math.abs(l * px - 160) < Math.abs(best * px - 160) ? l : best));
+        bar.style.setProperty("--bar", `${(L * px).toFixed(1)}px`);
+        const mid = bar.querySelector("[data-sb-mid]");
+        const end = bar.querySelector("[data-sb-end]");
+        if (mid) mid.textContent = String(L / 2);
+        if (end) end.textContent = `${L} m`;
+      };
+
       // Size + placement: a big canvas, the model centred on its layout box
       const layout = () => {
         const c = canvas.getBoundingClientRect();
         const b = box.getBoundingClientRect();
-        offset.x = c.left - b.left;
-        offset.y = c.top - b.top;
         s.resize(c.width, c.height);
-        // ~75% of the box: the model sits in space with room around it
-        const scale = 0.75 * Math.min(b.width / 132, b.height / 82);
-        s.setAnchor(b.left - c.left + b.width / 2, b.top - c.top + b.height / 2, Math.max(1, scale));
+        // ~90% of the box: the model fills its half of the sheet, with a little air around it
+        const scale = 0.9 * Math.min(b.width / 132, b.height / 82);
+        pxPerM = Math.max(1, scale);
+        s.setAnchor(b.left - c.left + b.width / 2, b.top - c.top + b.height / 2, pxPerM);
+        updateScaleBar();
       };
       const ro = new ResizeObserver(layout);
       ro.observe(canvas);
@@ -99,6 +92,10 @@ export default function EarthworksModel({ className = "" }: { className?: string
       const onOrientation = (e: Event) => {
         const d = (e as CustomEvent<OrientationDetail>).detail;
         if (d?.quaternion) s.setView(d.quaternion, d.zoom);
+        if (d?.zoom && d.zoom !== zoom) {
+          zoom = d.zoom;
+          updateScaleBar();
+        }
         orbiting = d?.interaction === "drag" || d?.interaction === "inertia" || d?.interaction === "transition";
       };
       document.addEventListener("viewcube:orientation", onOrientation);
@@ -174,13 +171,8 @@ export default function EarthworksModel({ className = "" }: { className?: string
             setHud("hover", null, "hero");
             return;
           }
-          const ch = `CH 0+${String(Math.round(hit.x + LENGTH / 2)).padStart(3, "0")}`;
-          const off = `${num(Math.abs(hit.z), 1)} m ${hit.z < 0 ? "L" : "R"}`;
-          if (hit.depth > 0.05)
-            setHud("hover", { title: "CUT · DRAG TO TURN", lines: [`${ch} · ${off}`], rows: [["DEPTH", quantity(hit.depth, "m")], ["GROUND", quantity(hit.ground, "m")], ["DESIGN", quantity(hit.design, "m")]] }, "hero");
-          else if (hit.depth < -0.05)
-            setHud("hover", { title: "FILL · DRAG TO TURN", lines: [`${ch} · ${off}`], rows: [["HEIGHT", quantity(-hit.depth, "m")], ["GROUND", quantity(hit.ground, "m")], ["DESIGN", quantity(hit.design, "m")]] }, "hero");
-          else setHud("hover", { title: "EXISTING GROUND", lines: [`${ch} · ${off}`], rows: [["LEVEL", quantity(hit.ground, "m")]] }, "hero");
+          // A visual, not a readout: the pointer only says what you can do
+          setHud("hover", { title: "DRAG TO TURN", lines: [] }, "hero");
         }),
       );
       cleanups.push(() => setHud("hover", null, "hero"));
@@ -223,33 +215,10 @@ export default function EarthworksModel({ className = "" }: { className?: string
     };
   }, []);
 
-  const net = totals.cut - totals.fill;
-
   return (
-    <figure ref={figRef} className={`${styles.model} ${className}`} data-state={state} aria-label="Earthworks demonstration model: cut and fill volumes">
-      <figcaption className={styles.legend}>
-        <span className={styles.legendTitle}>Earthworks · demonstration model</span>
-        <span className={styles.row} data-kind="cut">
-          <i aria-hidden="true" />
-          Cut <b className="num">{quantity(totals.cut, "m³")}</b>
-        </span>
-        <span className={styles.row} data-kind="fill">
-          <i aria-hidden="true" />
-          Fill <b className="num">{quantity(totals.fill, "m³")}</b>
-        </span>
-        <span className={styles.row}>
-          Net <b className="num">{(net >= 0 ? "+" : "−") + quantity(Math.abs(net), "m³")}</b>
-        </span>
-        <span className={styles.meta}>Drag the model or the ViewCube · V.E. ×{VERTICAL_EXAGGERATION}</span>
-      </figcaption>
+    <figure ref={figRef} className={`${styles.model} ${className}`} data-state={state} aria-label="Earthworks model (cut and fill), drag to turn it">
       <div ref={boxRef} className={styles.box}>
         <canvas ref={canvasRef} className={styles.canvas} />
-        <span ref={cutRef} className={styles.tag} data-kind="cut" aria-hidden="true">
-          Cut
-        </span>
-        <span ref={fillRef} className={styles.tag} data-kind="fill" aria-hidden="true">
-          Fill
-        </span>
       </div>
     </figure>
   );

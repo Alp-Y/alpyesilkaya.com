@@ -89,7 +89,7 @@ export function analyse(project: Project): Analysis {
 
 /** Display ID of an area: its assigned metadata ID, or the provisional key. */
 export function areaLabel(b: Boundary | undefined): string {
-  if (!b) return "—";
+  if (!b) return "·";
   return b.meta?.areaId ?? b.key.replace(/^B/, "B-");
 }
 
@@ -108,7 +108,7 @@ export function autoAssign(boundaries: Boundary[]): Boundary[] {
   const idFor = new Map(sorted.map((b, i) => [b.key, `A${String(i + 1).padStart(2, "0")}`]));
   return boundaries.map((b) => ({
     ...b,
-    meta: b.meta ?? { areaId: idFor.get(b.key)!, name: `Area ${idFor.get(b.key)}`, section: "—", side: "—" },
+    meta: b.meta ?? { areaId: idFor.get(b.key)!, name: `Area ${idFor.get(b.key)}`, section: "·", side: "·" },
   }));
 }
 

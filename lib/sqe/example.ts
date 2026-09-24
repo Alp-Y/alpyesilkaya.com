@@ -18,7 +18,7 @@ const pts = (p: number[][]): Point[] => p.map(([x, y]) => [x, y] as Point);
 
 export function exampleProject(): Project {
   const boundaries: Boundary[] = site.areas.map((a) => {
-    const meta = { areaId: a.id, name: a.name, section: a.section, side: "—" };
+    const meta = { areaId: a.id, name: a.name, section: a.section, side: "·" };
     return { key: a.key, polygon: pts(a.polygon), meta, suggested: meta };
   });
   const work: WorkItem[] = site.work.map((w) => ({

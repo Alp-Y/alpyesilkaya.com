@@ -27,7 +27,7 @@ export default function CommandLine({ className = "" }: { className?: string }) 
           autoCapitalize="characters"
           spellCheck={false}
           enterKeyHint="go"
-          placeholder="type a section, e.g. TOOLS — or HELP"
+          placeholder="e.g. TOOLS or HELP"
         />
         <kbd className={styles.key} aria-hidden="true" title="Press / to type">
           /

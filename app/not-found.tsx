@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <section className={`container ${styles.notFound}`} data-page-layer="404">
       <p className="mono">
-        <span className="accent">Error 404</span> — Object not found
+        <span className="accent">Error 404</span> · Object not found
       </p>
       <h1>This drawing doesn&rsquo;t exist.</h1>
       <div className={styles.console} aria-hidden="true">

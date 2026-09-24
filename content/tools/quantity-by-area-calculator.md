@@ -3,7 +3,7 @@
 title: Quantity by Area Calculator
 order: 1
 demo: sqe
-summary: Quantities, organised by where the work happened. Define the project areas once — the calculator measures the work inside each one.
+summary: Quantities, organised by where the work happened. Define the project areas once, and the calculator measures the work inside each one.
 platform:
 stack:
 status:
@@ -21,7 +21,7 @@ docs:
 
 Define project space once. Then use those spatial definitions to organise and calculate engineering quantities.
 
-The Quantity by Area Calculator combines **project boundaries with sub-area metadata** and **automated, area-specific quantity reporting**. The same piece of work geometry — an asphalt layer, an excavation, a pipe run — is attributed separately to every project area it crosses.
+The Quantity by Area Calculator combines **project boundaries with sub-area metadata** and **automated, area-specific quantity reporting**. The same piece of work geometry (an asphalt layer, an excavation, a pipe run) is attributed separately to every project area it crosses.
 
 ## Workflow
 
@@ -36,7 +36,7 @@ The Quantity by Area Calculator combines **project boundaries with sub-area meta
 
 ## About the demonstration
 
-The interactive demo above runs entirely in your browser. It uses a simplified example road scheme, or a DXF you provide (processed locally — nothing is uploaded).
+The interactive demo above runs entirely in your browser. It uses a simplified example road scheme, or a DXF you provide (processed locally, nothing is uploaded).
 
 Excavation and fill volumes in the demo are **simplified demonstration values**: intersection area × a representative depth. They are not surface-to-surface (TIN) volumes.
 

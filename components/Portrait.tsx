@@ -24,7 +24,7 @@ export default function Portrait({ priority = false }: { priority?: boolean }) {
       <span className={`${styles.crop} ${styles.bl}`} aria-hidden="true" />
       <span className={`${styles.crop} ${styles.br}`} aria-hidden="true" />
       <figcaption className={styles.caption}>
-        <span className="mono">Fig. 01 — {site.name}</span>
+        <span className="mono">Fig. 01 / The engineer</span>
         {isPlaceholder && <span className="placeholder-tag">Photo placeholder</span>}
       </figcaption>
     </figure>

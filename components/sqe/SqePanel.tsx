@@ -22,7 +22,7 @@ import styles from "./sqe.module.css";
 const CAPTIONS: Record<number, { title: string; text: string }> = {
   1: { title: "The site", text: "A motorway under construction: the main line, an interchange and a local road diversion." },
   2: { title: "Survey", text: "Area corners are measured on site with GNSS and a total station. Every point gets real coordinates." },
-  3: { title: "Project areas", text: "The coordinates become closed CAD polylines carrying area metadata — so CAD software knows each area." },
+  3: { title: "Project areas", text: "The coordinates become closed CAD polylines carrying area metadata, so CAD software knows each area." },
   4: { title: "Quantities by area", text: "Work geometry × project area = the quantity in each area. Hover or click an area." },
 };
 
@@ -59,7 +59,7 @@ export default function SqePanel({ project, analysis }: { project: Project; anal
   const caption = imported
     ? {
         title: "Your drawing",
-        text: `${project.boundaries.length} closed ${project.boundaries.length === 1 ? "area" : "areas"} detected${summary ? ` · ${summary.work} work ${summary.work === 1 ? "item" : "items"}` : ""}. Processed in your browser — nothing was uploaded.`,
+        text: `${project.boundaries.length} closed ${project.boundaries.length === 1 ? "area" : "areas"} detected${summary ? ` · ${summary.work} work ${summary.work === 1 ? "item" : "items"}` : ""}. Processed in your browser, nothing was uploaded.`,
       }
     : CAPTIONS[step];
 
@@ -166,7 +166,7 @@ export default function SqePanel({ project, analysis }: { project: Project; anal
                   return (
                     <div key={id} data-current={id === workType}>
                       <dt>{WORK_TYPES[id].label}</dt>
-                      <dd className="num">{q ? quantity(q, WORK_TYPES[id].unit) : "—"}</dd>
+                      <dd className="num">{q ? quantity(q, WORK_TYPES[id].unit) : "·"}</dd>
                     </div>
                   );
                 })}
@@ -186,7 +186,7 @@ export default function SqePanel({ project, analysis }: { project: Project; anal
                   return (
                     <div key={id} data-current={id === workType}>
                       <dt>{WORK_TYPES[id].label}</dt>
-                      <dd className="num">{q ? quantity(q, WORK_TYPES[id].unit) : "—"}</dd>
+                      <dd className="num">{q ? quantity(q, WORK_TYPES[id].unit) : "·"}</dd>
                     </div>
                   );
                 })}
@@ -216,7 +216,7 @@ export default function SqePanel({ project, analysis }: { project: Project; anal
                       <span className={styles.bar} aria-hidden="true">
                         <i style={{ width: `${total ? (q / total) * 100 : 0}%` }} />
                       </span>
-                      <span className="num">{q ? num(q) : "—"}</span>
+                      <span className="num">{q ? num(q) : "·"}</span>
                     </button>
                   </li>
                 ))}

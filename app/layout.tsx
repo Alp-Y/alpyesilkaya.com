@@ -29,8 +29,8 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} — Civil Engineering · Software · Automation`,
-    template: `%s — ${site.name}`,
+    default: `${site.name} | Civil engineer, engineering tools`,
+    template: `%s | ${site.name}`,
   },
   description: site.description,
   alternates: { canonical: "/" },
@@ -38,10 +38,10 @@ export const metadata: Metadata = {
     type: "website",
     url: site.url,
     siteName: site.name,
-    title: `${site.name} — Civil Engineering · Software · Automation`,
+    title: `${site.name} | Civil engineer, engineering tools`,
     description: site.description,
     // Link-preview image (1200×630) in /public — regenerate it if the name or tagline changes
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: `${site.name} — Civil Engineering · Software · Automation` }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: `${site.name} | Civil engineer, engineering tools` }],
   },
   twitter: { card: "summary_large_image" },
 };

@@ -1,38 +1,28 @@
 import SectionHeader from "./SectionHeader";
 import styles from "./Disciplines.module.css";
 
-/** "What I do": the three disciplines in plain language. */
+/** How I work, in three steps: the problem, the approach, the result. */
 const items = [
   {
     index: "01",
-    title: "Civil Engineering",
-    text: "Infrastructure design and construction delivery: alignments, corridors, grading, and the drawings that carry them to site.",
+    title: "Problem",
+    text: "Drawings, quantities, survey files and CAD geometry live in different places, and engineers move, check and re-measure that data by hand, again and again.",
+    // scattered sheets that don't connect
     icon: (
       <>
-        <path d="M2 32h10l6-8h12l6 8h10" pathLength={1} />
-        <path d="M18 24l6-1.2 6 1.2" pathLength={1} />
-        <path d="M24 16v5" pathLength={1} data-part="cl" />
-        <path d="M2 40h44" strokeDasharray="2 3" data-part="datum" />
+        <rect x="4" y="8" width="15" height="19" rx="1" pathLength={1} data-part="open" />
+        <rect x="29" y="5" width="15" height="12" rx="1" pathLength={1} data-part="close" />
+        <rect x="22" y="27" width="18" height="15" rx="1" pathLength={1} />
+        <path d="M19 14l10-4" strokeDasharray="2 3" data-part="datum" />
+        <path d="M13 27l9 7" strokeDasharray="2 3" data-part="datum" />
       </>
     ),
   },
   {
     index: "02",
-    title: "Software",
-    text: "Tools for the platforms engineers actually use — AutoCAD, Civil 3D and Revit — designed like real products, not scripts.",
-    icon: (
-      <>
-        <rect x="5" y="9" width="38" height="30" rx="1.5" pathLength={1} />
-        <path d="M5 16h38" pathLength={1} />
-        <path d="M19 23l-5 4.5 5 4.5" pathLength={1} data-part="open" />
-        <path d="M29 23l5 4.5-5 4.5" pathLength={1} data-part="close" />
-      </>
-    ),
-  },
-  {
-    index: "03",
-    title: "Automation",
-    text: "Repetitive production work turned into checked, repeatable workflows, increasingly with AI-assisted steps where they genuinely help.",
+    title: "Approach",
+    text: "Start from the engineering workflow, then build the tool around its real geometry, metadata and project structure.",
+    // separate inputs, joined into one process
     icon: (
       <>
         <rect x="4" y="10" width="8" height="8" pathLength={1} />
@@ -46,17 +36,29 @@ const items = [
       </>
     ),
   },
+  {
+    index: "03",
+    title: "Result",
+    text: "Repeatable, traceable workflows with fewer manual steps. The engineering decisions stay with the engineer.",
+    // a checked sheet
+    icon: (
+      <>
+        <rect x="9" y="5" width="30" height="38" rx="1.5" pathLength={1} />
+        <path d="M9 13h30" pathLength={1} />
+        <path d="M17 28l5 5 10-11" pathLength={1} data-part="tick" />
+      </>
+    ),
+  },
 ];
 
 export default function Disciplines() {
   return (
-    <section className={styles.section} id="disciplines" data-section="disciplines" data-layer="01-DISCIPLINES">
+    <section className={styles.section} id="approach" data-section="approach" data-layer="01-APPROACH">
       <div className="container">
         <SectionHeader
           index="01"
-          label="Disciplines"
+          label="How I work"
           title={["Engineering,", "written in code."]}
-          intro="I work where infrastructure meets software: I understand the engineering, and I build the tools that make it faster and more exact."
         />
 
         <ol className={styles.grid} data-stagger>

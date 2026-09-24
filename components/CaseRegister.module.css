@@ -109,7 +109,7 @@
     padding-bottom: 14px;
   }
   .row {
-    padding: 40px 0;
+    padding: 32px 0;
   }
   .discipline,
   .year,
@@ -210,4 +210,21 @@
   .row:hover .title {
     transform: none;
   }
+}
+
+/* No real entries yet: no column headings */
+.head[hidden] {
+  display: none !important;
+}
+/* "Coming soon." — not a link: no hover dimming or pointer */
+.soon {
+  cursor: default;
+}
+.list:hover .soon {
+  opacity: 1;
+}
+
+/* no single orphaned word on the last line */
+.summary {
+  text-wrap: pretty;
 }

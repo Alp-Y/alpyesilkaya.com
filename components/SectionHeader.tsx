@@ -27,7 +27,7 @@ export default function SectionHeader({
     <header className={styles.header}>
       <div className={styles.annotation}>
         <span className="mono" data-reveal="rise">
-          <span className="accent">{index}</span> — {label}
+          <span className="accent">{index}</span> / {label}
         </span>
         <span className={styles.rule} data-reveal="draw" style={{ "--delay": "100ms" } as React.CSSProperties} />
         {meta && (

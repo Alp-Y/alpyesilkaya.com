@@ -12,7 +12,7 @@ export default function UcsIcon({ className }: { className?: string }) {
     <svg className={className} viewBox="0 0 64 64" fill="none" aria-hidden="true" data-ucs>
       {(["z", "y", "x"] as const).map((k) => (
         <g key={k} stroke={colors[k]} strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
-          <line data-ucs-line={k} x1={UCS_ORIGIN.x} y1={UCS_ORIGIN.y} x2={g[k].x2} y2={g[k].y2} />
+          <line data-ucs-line={k} pathLength={1} x1={UCS_ORIGIN.x} y1={UCS_ORIGIN.y} x2={g[k].x2} y2={g[k].y2} />
           <path data-ucs-head={k} d={g[k].head} />
           <text
             data-ucs-label={k}
