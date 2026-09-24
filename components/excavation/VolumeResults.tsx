@@ -17,22 +17,22 @@ export default function VolumeResults({ result, calculating }: { result: EngineR
   return (
     <div className={styles.results} aria-busy={calculating}>
       <p className={styles.volume} aria-live="polite">
-        <span className="num">{c ? num(shown) : "—"}</span> <em>m³</em>
+        <span className="num">{c ? num(shown) : "…"}</span> <em>m³</em>
       </p>
       <p className={styles.volumeLabel}>Excavation volume</p>
 
       <dl className={styles.kpis}>
         <div>
           <dt>Area in cut</dt>
-          <dd className="num">{c ? quantity(c.cutArea, "m²") : "—"}</dd>
+          <dd className="num">{c ? quantity(c.cutArea, "m²") : "…"}</dd>
         </div>
         <div>
           <dt>Average depth</dt>
-          <dd className="num">{c ? quantity(c.averageDepth, "m") : "—"}</dd>
+          <dd className="num">{c ? quantity(c.averageDepth, "m") : "…"}</dd>
         </div>
         <div>
           <dt>Maximum depth</dt>
-          <dd className="num">{c ? quantity(c.maxDepth, "m") : "—"}</dd>
+          <dd className="num">{c ? quantity(c.maxDepth, "m") : "…"}</dd>
         </div>
       </dl>
     </div>

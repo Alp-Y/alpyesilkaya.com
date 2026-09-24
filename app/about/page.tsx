@@ -20,7 +20,7 @@ export default function AboutPage() {
 
   return (
     <>
-      <PageHeader layer="04-ABOUT" crumbs={[{ label: "About" }]} title={["About"]} intro={intro} />
+      <PageHeader layer="04-ABOUT" crumbs={[{ label: "About" }]} title={["About"]} intro={intro} compact />
       <section className={styles.section}>
         <div className={`container ${styles.grid}`}>
           <aside className={styles.side}>

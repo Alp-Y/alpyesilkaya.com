@@ -14,14 +14,14 @@ properties:
 # Shown when a visitor clicks EXPAND EXPERIENCE. Newest first, one line each:
 # Company | Role | Location | Years | One-sentence summary
 experience:
-  - Yüksel İnşaat | Technical Office Engineer | Riyadh | 2026 — Present | Major road infrastructure project covering technical-office engineering, quantities, progress measurement and digital engineering workflows.
-  - Otuken Construction | Founder | Ukraine | 2025 — 2026 | Explored residential development opportunities in western Ukraine through market research, feasibility, cost modelling and local partnerships.
-  - Mormaír | Project Manager / Engineer | Glasgow | 2023 — 2025 | Managed £1M in Innovate UK funding and contributed to industrial decarbonization concepts for major UK energy facilities with project values up to £65M.
-  - Nu Static Engineering | Civil Engineer | İzmir | 2022 — 2023 | Worked on wind-energy infrastructure, including structural analysis and foundation design development for the Dren Wind Farm project.
+  - Yüksel İnşaat | Technical Office Engineer | Riyadh | Since 2026 | Major road infrastructure project covering technical-office engineering, quantities, progress measurement and digital engineering workflows.
+  - Otuken Construction | Founder | Ukraine | 2025 → 2026 | Explored residential development opportunities in western Ukraine through market research, feasibility, cost modelling and local partnerships.
+  - Mormaír | Project Manager / Engineer | Glasgow | 2023 → 2025 | Managed £1M in Innovate UK funding and contributed to industrial decarbonization concepts for major UK energy facilities with project values up to £65M.
+  - Nu Static Engineering | Civil Engineer | İzmir | 2022 → 2023 | Worked on wind-energy infrastructure, including structural analysis and foundation design development for the Dren Wind Farm project.
   - Dokuz Eylül University | Research Associate | İzmir | 2021 | Led experimental work on earth-fill dam failure and sediment transport for a TÜBİTAK-funded hydraulic engineering research project.
 ---
 
-I like engineering challenges and finding ways to automate the boring stuff. I also like learning about new technologies and being in the loop while they develop. That’s why I wanted to see if I could literally build myself a suite of engineering tools with AI — and maybe eventually turn it into an app. We’ll see.
+I like engineering challenges and finding ways to automate the boring stuff. I also like learning about new technologies and being in the loop while they develop. That’s why I wanted to see if I could literally build myself a suite of engineering tools with AI, and maybe eventually turn it into an app. We’ll see.
 
 ## Where I’ve worked
 
@@ -29,7 +29,7 @@ I’ve done a bunch of vaguely related stuff over the past few years. I guess I�
 
 Road infrastructure in Riyadh. Industrial decarbonisation projects in Glasgow. Wind-farm foundations in İzmir. A year and a half exploring residential development in western Ukraine with my own company. Before all of that, a hydraulics lab, breaking earth-fill dams on purpose to see how they fail.
 
-Right now I’m a technical office engineer at Yüksel İnşaat, working on a major road project in Riyadh. The full list is in the Properties panel — expand the experience.
+Right now I’m a technical office engineer at Yüksel İnşaat, working on a major road project in Riyadh. If you want the full list, expand the experience in the Properties panel.
 
 ## Education
 
@@ -40,13 +40,3 @@ Right now I’m a technical office engineer at Yüksel İnşaat, working on a ma
 
 - **Project Management Professional (PMP)**, Project Management Institute, 2024
 - **Associate Member**, Global Association for Transition Engineering, 2024
-
-## Elsewhere
-
-Chinese language and culture at Fudan University’s International Cultural Exchange School. Harvard Model United Nations.
-
-Hitchhiked through about 75% of Turkey.
-
-Did caving and mountaineering at university.
-
-Still yearning for more dad lore.

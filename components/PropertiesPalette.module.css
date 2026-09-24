@@ -116,7 +116,6 @@
 }
 .entry {
   position: relative;
-  padding: 12px 12px 13px 14px;
   border-top: 1px solid var(--line);
   opacity: 0;
   transform: translateY(-4px);
@@ -130,34 +129,74 @@
   transform: none;
   transition-delay: calc(120ms + var(--i, 0) * 45ms), calc(120ms + var(--i, 0) * 45ms), 0ms;
 }
-/* Faint selection highlight + a thin layer-colour tick, like hovering an object in CAD */
+/* a thin layer-colour tick on the hovered / open row, like selecting an object in CAD */
 .entry::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 12px;
-  bottom: 13px;
+  top: 0;
+  bottom: 0;
   width: 2px;
   background: var(--accent);
   opacity: 0;
   transition: opacity var(--t-fast) var(--ease);
 }
-.entry:hover {
+.entry:hover,
+.entry[data-active="true"] {
   background: var(--surface);
 }
 .entry:hover::before {
-  opacity: 0.7;
+  opacity: 0.5;
 }
-.entry:hover .company {
-  color: #fff;
+.entry[data-active="true"]::before {
+  opacity: 1;
 }
 
-.entryHead {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 2px 12px;
+/* one row, the same two columns as the properties above: years | company, role */
+.entryRow {
+  display: grid;
+  grid-template-columns: minmax(96px, 36%) minmax(0, 1fr) auto;
+  align-items: start;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.entryRow:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+.entryRow > .years {
+  align-self: stretch;
+  padding: 11px 12px;
+  border-right: 1px solid var(--line);
+}
+.entryMain {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  padding: 9px 4px 9px 12px;
+}
+.entryCaret {
+  width: 28px;
+  padding-top: 9px;
+  text-align: center;
+  font-family: var(--font-mono);
+  color: var(--text-3);
+  transition:
+    transform var(--motion-medium) var(--ease-out),
+    color var(--t-fast) var(--ease);
+}
+.entryRow:hover .entryCaret {
+  color: var(--text-1);
+}
+.entry[data-active="true"] .entryCaret {
+  transform: rotate(45deg);
+  color: var(--accent);
 }
 .company {
   color: var(--text-1);
@@ -165,27 +204,60 @@
   letter-spacing: -0.005em;
   transition: color var(--t-fast) var(--ease);
 }
+.entryRow:hover .company {
+  color: #fff;
+}
 .years {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: 10.5px;
+  line-height: 1.9;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-3);
   white-space: nowrap;
 }
 .role {
-  margin-top: 2px;
+  font-size: 0.8125rem;
   color: var(--text-2);
 }
 .location {
   color: var(--text-3);
 }
+
+/* the summary opens under the row, aligned with the right-hand column */
+.entryMore {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--motion-medium) var(--ease-in-out);
+}
+.entryMore[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.entryMore > div {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(96px, 36%) minmax(0, 1fr) 28px;
+}
 .summary {
-  margin: 6px 0 0;
-  max-width: 62ch;
+  grid-column: 2;
+  margin: 0;
+  padding: 0 4px 12px 12px;
   font-size: 0.8125rem;
   line-height: 1.55;
   color: var(--text-3);
+  opacity: 0;
+  transition: opacity var(--motion-medium) var(--ease-out);
+}
+.entryMore[data-open="true"] .summary {
+  opacity: 1;
+  transition-delay: 90ms;
+}
+/* the years column continues through the open summary, so the table reads as one */
+.entryMore > div::before {
+  content: "";
+  grid-column: 1;
+  border-right: 1px solid var(--line);
 }
 
 /* EXPAND EXPERIENCE ↓ — a palette control, not a website button */
@@ -228,6 +300,9 @@
 @media (prefers-reduced-motion: reduce) {
   .drawer,
   .entry,
+  .entryMore,
+  .summary,
+  .entryCaret,
   .toggleArrow {
     transition-duration: 0.01ms !important;
     transition-delay: 0ms !important;

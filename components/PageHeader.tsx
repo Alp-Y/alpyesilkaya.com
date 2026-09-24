@@ -7,6 +7,7 @@ export default function PageHeader({
   crumbs,
   title,
   intro,
+  compact = false,
   aside,
   children,
 }: {
@@ -15,11 +16,13 @@ export default function PageHeader({
   crumbs: { label: string; href?: string }[];
   title: string[];
   intro?: string;
+  /** A short header: the page content starts right below the title. */
+  compact?: boolean;
   aside?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   return (
-    <header className={styles.header} data-page-layer={layer}>
+    <header className={`${styles.header} ${compact ? styles.compact : ""}`} data-page-layer={layer}>
       <div className="container">
         <nav className={styles.crumbs} aria-label="Breadcrumb" data-reveal="rise">
           <ol>

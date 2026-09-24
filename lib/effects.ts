@@ -51,9 +51,34 @@ export function initEffects(): Cleanup {
     initCasePreview(),
     initCopyEmail(),
     initGridToggle(),
+    initHomeLink(),
   ];
   document.documentElement.classList.add("fx-ready");
   return () => cleanups.forEach((fn) => fn());
+}
+
+/* ---------- Logo: a fresh start at the top of the homepage ---------- */
+/**
+ * The logo reloads the homepage from the top, so the full launch animation
+ * plays again, as if the page had just been opened. It runs before the
+ * Next.js link handler (capture phase) and replaces it.
+ */
+function initHomeLink(): Cleanup {
+  const links = document.querySelectorAll<HTMLAnchorElement>("[data-home-link]");
+  const onClick = (e: MouseEvent) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // new tab etc. as usual
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      history.scrollRestoration = "manual";
+    } catch {}
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    // a real page load on purpose: it is what replays the launch animation
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.assign("/");
+  };
+  links.forEach((l) => l.addEventListener("click", onClick, true));
+  return () => links.forEach((l) => l.removeEventListener("click", onClick, true));
 }
 
 /* ---------- Stagger: index children for staggered timing ---------- */

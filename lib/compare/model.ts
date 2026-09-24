@@ -104,7 +104,7 @@ function ch(x: number) {
   const m = Math.round(x - X0);
   return `${Math.floor(m / 1000)}+${String(m % 1000).padStart(3, "0")}`;
 }
-const span = (x0: number, x1: number) => `Ch ${ch(x0)}–${ch(x1)}`;
+const span = (x0: number, x1: number) => `Ch ${ch(x0)} to ${ch(x1)}`;
 
 type Planned = Entity & { from: number; until?: number };
 
@@ -163,7 +163,7 @@ function build(): Planned[] {
       if (x0 < JX0 && x1 > JX0) add("kerb", line(x0, N_EDGE, JX0, N_EDGE), kerbNorth[i], `North kerb, ${span(x0, JX0)}`);
       add("kerb", line(a, N_EDGE, x1, N_EDGE), kerbNorth[i], `North kerb, ${span(a, x1)}`);
     }
-    add("pipe", line(x0, PIPE_Y, x1, PIPE_Y), pipeFrom[i], `Storm drain, MH${String(i + 1).padStart(2, "0")}–MH${String(i + 2).padStart(2, "0")}`);
+    add("pipe", line(x0, PIPE_Y, x1, PIPE_Y), pipeFrom[i], `Storm drain, MH${String(i + 1).padStart(2, "0")} to MH${String(i + 2).padStart(2, "0")}`);
   }
   // manholes: built with the pipe that reaches them
   for (let j = 0; j <= 10; j++) {
@@ -196,7 +196,7 @@ function build(): Planned[] {
   for (let s = 0; s < 2; s++) {
     const y0 = N_EDGE + s * SIDE_SEG;
     const y1 = y0 + SIDE_SEG;
-    const where = `Side road, ${s === 0 ? "0+000–0+025" : "0+025–0+050"}`;
+    const where = `Side road, ${s === 0 ? "0+000 to 0+025" : "0+025 to 0+050"}`;
     add("kerb", line(JX0, y0, JX0, y1), s === 0 ? 2 : 3, `${where}, west kerb`);
     add("kerb", line(JX1, y0, JX1, y1), s === 0 ? 2 : 3, `${where}, east kerb`);
     if (s === 0) add("asphalt", rect(JX0, y0, JX1, y1), 3, where);

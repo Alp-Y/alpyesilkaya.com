@@ -266,8 +266,8 @@ export default function CompareDemo() {
                       </td>
                       <td>{fmt(r.prev, unit)}</td>
                       <td>{fmt(r.curr, unit)}</td>
-                      <td className={r.added ? styles.pos : styles.zero}>{r.added ? `+${fmt(r.added, unit)}` : "—"}</td>
-                      <td className={r.removed ? styles.neg : styles.zero}>{r.removed ? `−${fmt(r.removed, unit)}` : "—"}</td>
+                      <td className={r.added ? styles.pos : styles.zero}>{r.added ? `+${fmt(r.added, unit)}` : "0"}</td>
+                      <td className={r.removed ? styles.neg : styles.zero}>{r.removed ? `−${fmt(r.removed, unit)}` : "0"}</td>
                       <td className={`${styles.colNet} ${styles.netCell}`}>{signed(r.net, unit)}</td>
                     </tr>
                   );

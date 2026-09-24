@@ -67,3 +67,15 @@
   height: 1px;
   background: var(--line);
 }
+
+/* compact: breadcrumb and title only, so the page content is on screen straight away */
+.compact {
+  padding: calc(var(--header-h) + clamp(20px, 3vw, 36px)) 0 clamp(18px, 2.2vw, 28px);
+}
+.compact .crumbs ol {
+  margin-bottom: clamp(10px, 1.4vw, 16px);
+}
+.compact .title {
+  font-size: clamp(2.25rem, 4.4vw, 3.5rem);
+  letter-spacing: -0.045em;
+}

@@ -12,7 +12,7 @@ export default function SiteHeader() {
   return (
     <header className={styles.header} data-header data-state="top" style={{ viewTransitionName: "site-header" }}>
       <div className={styles.bar}>
-        <Link href="/" className={styles.brand} aria-label={`${site.name}, home`}>
+        <Link href="/" className={styles.brand} aria-label={`${site.name}, home`} data-home-link>
           <LogoMark className={styles.mark} />
           <span className={styles.brandName}>{site.name}</span>
         </Link>
