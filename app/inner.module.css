@@ -11,12 +11,12 @@
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
-  margin-bottom: 22px;
+  margin-bottom: 12px;
 }
 
 /* Big screenshot / cover under the header */
 .hero {
-  padding-top: clamp(48px, 6vw, 80px);
+  padding-top: clamp(12px, 2vw, 28px);
   background: linear-gradient(180deg, transparent, var(--ground-1));
 }
 

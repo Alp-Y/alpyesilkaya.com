@@ -138,7 +138,7 @@ export default function SpatialQuantityEngine() {
 
       <div className={styles.footer}>
         {project && analysis && (
-          <details className={styles.details}>
+          <details className={styles.details} id="sqe-report">
             <summary>Full quantity report</summary>
             <SqeReport project={project} analysis={analysis} />
           </details>

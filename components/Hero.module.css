@@ -150,15 +150,27 @@
     background-color var(--t-fast) var(--ease),
     transform var(--t-fast) var(--ease);
 }
+.primary {
+  border-color: rgba(62, 224, 143, 0.5);
+  background: rgba(62, 224, 143, 0.1);
+}
 .primary .arrow {
   color: var(--accent);
+  transition: transform var(--motion-medium) var(--ease-out);
 }
 .primary:hover {
-  border-color: rgba(62, 224, 143, 0.5);
-  background: var(--accent-glow);
+  border-color: var(--accent);
+  background: rgba(62, 224, 143, 0.18);
+}
+.primary:hover .arrow {
+  transform: translateY(2px);
 }
 .primary:active {
   transform: scale(0.98);
+}
+.primary:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 3px;
 }
 
 /* ---------- Earthworks model ---------- */

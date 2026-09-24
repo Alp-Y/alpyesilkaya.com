@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { nav, site } from "@/site.config";
+import { site } from "@/site.config";
+import { visibleNav } from "@/lib/navigation";
 import LogoMark from "./LogoMark";
 import styles from "./SiteHeader.module.css";
 
@@ -9,6 +10,7 @@ import styles from "./SiteHeader.module.css";
  * is added by lib/effects.ts through the data-* attributes below.
  */
 export default function SiteHeader() {
+  const nav = visibleNav();
   return (
     <header className={styles.header} data-header data-state="top" style={{ viewTransitionName: "site-header" }}>
       <div className={styles.bar}>
@@ -24,11 +26,11 @@ export default function SiteHeader() {
 
         <nav className={styles.nav} aria-label="Main">
           <ul>
-            {nav.map((item, i) => (
+            {nav.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className={styles.navLink} data-nav-link={item.section}>
                   <span className={styles.navIndex} aria-hidden="true">
-                    {String(i + 2).padStart(2, "0")}
+                    {item.index}
                   </span>
                   {item.label}
                 </Link>
@@ -57,10 +59,10 @@ export default function SiteHeader() {
                 <span className="mono">01</span> Home
               </Link>
             </li>
-            {nav.map((item, i) => (
+            {nav.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className={styles.sheetLink} data-menu-link>
-                  <span className="mono">{String(i + 2).padStart(2, "0")}</span> {item.label}
+                  <span className="mono">{item.index}</span> {item.label}
                 </Link>
               </li>
             ))}

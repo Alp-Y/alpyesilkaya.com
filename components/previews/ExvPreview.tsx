@@ -131,7 +131,7 @@ export default function ExvPreview({ href, title }: { href: string; title: strin
           </div>
         )}
       </div>
-      <PreviewBar labels={PHASES.map((p) => p.label)} phase={phase} />
+      <PreviewBar labels={PHASES.map((p) => p.label)} durations={PHASES.map((p) => p.ms)} phase={phase} />
     </Link>
   );
 }

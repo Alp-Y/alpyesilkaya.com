@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { site, nav } from "@/site.config";
+import { site } from "@/site.config";
+import { visibleNav } from "@/lib/navigation";
 import LogoMark from "./LogoMark";
 import styles from "./SiteFooter.module.css";
 
@@ -28,7 +29,7 @@ export default function SiteFooter() {
           <div className={`${styles.cell} ${styles.navCell}`}>
             <span className="mono">Index</span>
             <ul>
-              {nav.map((item) => (
+              {visibleNav().map((item) => (
                 <li key={item.href}>
                   <Link href={item.href}>{item.label}</Link>
                 </li>

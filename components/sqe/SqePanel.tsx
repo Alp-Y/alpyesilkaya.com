@@ -10,7 +10,9 @@ import {
   backToExample,
   setEditNames,
   setMulti,
+  setStep,
   setWorkType,
+  STEPS,
   updateAreaMeta,
   useSqe,
   workTypesIn,
@@ -25,6 +27,14 @@ const CAPTIONS: Record<number, { title: string; text: string }> = {
   3: { title: "Project areas", text: "The coordinates become closed CAD polylines carrying area metadata, so CAD software knows each area." },
   4: { title: "Quantities by area", text: "Work geometry × project area = the quantity in each area. Hover or click an area." },
 };
+
+/** Opens the full report under the drawing and brings it into view. */
+function openReport() {
+  const report = document.getElementById("sqe-report") as HTMLDetailsElement | null;
+  if (!report) return;
+  report.open = true;
+  report.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 /**
  * The side panel — short, one idea at a time (progressive disclosure):
@@ -261,6 +271,21 @@ export default function SqePanel({ project, analysis }: { project: Project; anal
           </div>
           {t.measure === "volume" && <p className={styles.note}>Volume = area × {num(t.depth ?? 0)} m representative depth (demonstration).</p>}
         </>
+      )}
+
+      {/* The way forward: the next step of the story, and at the end the report */}
+      {!imported && (
+        <div className={styles.panelActions}>
+          {step < 4 ? (
+            <button type="button" className={`${styles.primary} ${styles.next}`} onClick={() => setStep((step + 1) as 1 | 2 | 3 | 4)}>
+              Next: {STEPS[step].label} <span aria-hidden="true">→</span>
+            </button>
+          ) : (
+            <button type="button" className={`${styles.primary} ${styles.next}`} onClick={openReport}>
+              Open the full quantity report <span aria-hidden="true">↓</span>
+            </button>
+          )}
+        </div>
       )}
 
       {imported && (

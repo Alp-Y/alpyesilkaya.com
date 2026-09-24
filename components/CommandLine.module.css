@@ -124,6 +124,20 @@
   padding: 8px 12px 10px 18px;
   border-top: 1px solid var(--line);
 }
+/* suggestions stay in the background until the console is in use */
+.chips {
+  opacity: 0.45;
+  transition: opacity var(--motion-medium) var(--ease-out);
+}
+.cmd:hover .chips,
+.cmd:focus-within .chips {
+  opacity: 1;
+}
+@media (hover: none) {
+  .chips {
+    opacity: 0.8;
+  }
+}
 .chips button {
   height: 22px;
   padding: 0 8px;

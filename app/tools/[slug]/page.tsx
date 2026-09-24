@@ -49,6 +49,7 @@ export default async function ToolPage({ params }: Props) {
         crumbs={[{ label: "Tools", href: "/tools" }, { label: tool.title }]}
         title={[tool.title]}
         intro={tool.summary}
+        compact
         aside={
           <>
             {specs.length > 0 && <PropertiesPalette title="Tool properties" rows={specs} />}

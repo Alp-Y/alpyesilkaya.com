@@ -27,7 +27,12 @@ export default function ToolFeature({ tool, index }: { tool: Tool; index: number
             <span className="mono">
               <span className="accent">T-{pad(index + 1)}</span>
             </span>
-            <span className={styles.title}>{tool.title}</span>
+            <span className={styles.title}>
+              {tool.title}
+              <span className={styles.titleArrow} aria-hidden="true">
+                →
+              </span>
+            </span>
           </span>
         </Link>
         <div className={styles.copy} data-reveal="rise">

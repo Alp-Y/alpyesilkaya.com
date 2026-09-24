@@ -4,6 +4,7 @@ import { site } from "@/site.config";
 import PageHeader from "@/components/PageHeader";
 import Portrait from "@/components/Portrait";
 import PropertiesPalette, { parseExperience } from "@/components/PropertiesPalette";
+import { NextItem } from "@/components/ArticleBody";
 import styles from "./about.module.css";
 
 export const metadata: Metadata = {
@@ -35,6 +36,9 @@ export default function AboutPage() {
           <div className="prose" data-reveal="rise" dangerouslySetInnerHTML={{ __html: html }} />
         </div>
       </section>
+
+      {/* where the story goes next, the same way the tool pages end */}
+      <NextItem label="Next" title="Get in touch" href="/#contact" />
     </>
   );
 }

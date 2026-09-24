@@ -14,9 +14,21 @@
     border-color var(--motion-medium) var(--ease-out),
     box-shadow var(--motion-medium) var(--ease-out);
 }
+.card {
+  transition:
+    border-color var(--motion-medium) var(--ease-out),
+    box-shadow var(--motion-medium) var(--ease-out),
+    transform var(--motion-medium) var(--ease-out);
+}
 .card:hover {
   border-color: rgba(62, 224, 143, 0.45);
-  box-shadow: 0 0 0 1px rgba(62, 224, 143, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(62, 224, 143, 0.12),
+    0 18px 40px -24px rgba(0, 0, 0, 0.8);
+  transform: translate3d(0, -2px, 0);
+}
+.card:active {
+  transform: translate3d(0, 0, 0) scale(0.997);
 }
 .card:focus-visible {
   outline: 1px solid var(--accent);
@@ -125,7 +137,25 @@
   color: var(--text-3);
 }
 .phases li {
+  position: relative;
   transition: color var(--motion-medium) var(--ease-out);
+}
+/* the step that is playing fills a thin line: this is a story running, not a set of tabs */
+.phases li[data-on="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  height: 1px;
+  background: var(--accent);
+  transform-origin: left center;
+  animation: pv-progress var(--dur, 2000ms) linear both;
+}
+@keyframes pv-progress {
+  from {
+    transform: scaleX(0);
+  }
 }
 .phases li span {
   opacity: 0.7;
@@ -144,12 +174,27 @@
   font-size: 0.75rem;
   color: var(--text-3);
 }
+/* the card's one action, drawn as a button so it is obviously there to press */
 .cta {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.9375rem;
+  gap: 10px;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid rgba(62, 224, 143, 0.45);
+  border-radius: var(--radius);
+  background: rgba(62, 224, 143, 0.08);
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--text-1);
+  transition:
+    background-color var(--motion-medium) var(--ease-out),
+    border-color var(--motion-medium) var(--ease-out);
+}
+.card:hover .cta,
+.card:focus-visible .cta {
+  border-color: var(--accent);
+  background: rgba(62, 224, 143, 0.16);
 }
 .cta :global(.arrow) {
   color: var(--accent);
@@ -167,7 +212,7 @@
   .cta {
     width: 100%;
     justify-content: space-between;
-    min-height: 32px;
+    min-height: 44px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -317,5 +362,15 @@
   .cmpTop {
     inset: 8px 10px auto;
     font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phases li[data-on="true"]::after {
+    animation: none;
+  }
+  .card:hover,
+  .card:active {
+    transform: none;
   }
 }

@@ -876,6 +876,30 @@
 }
 .primary:hover {
   background: rgba(62, 224, 143, 0.14);
+  border-color: var(--accent);
+}
+.primary:active {
+  transform: scale(0.98);
+}
+.primary:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+/* "Next: …" — the one thing to press in the panel */
+.next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 40px;
+}
+.next span {
+  color: var(--accent);
+  transition: transform var(--motion-medium) var(--ease-out);
+}
+.next:hover span {
+  transform: translateX(3px);
 }
 .link {
   font-family: var(--font-mono);
@@ -936,6 +960,16 @@
 }
 .details summary:hover {
   color: var(--text-1);
+}
+.details summary {
+  min-height: 32px;
+}
+.details summary:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+.details {
+  scroll-margin-top: calc(var(--header-h) + 16px);
 }
 .import {
   display: flex;

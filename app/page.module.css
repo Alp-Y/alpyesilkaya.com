@@ -24,3 +24,28 @@
   display: grid;
   gap: clamp(72px, 8vw, 112px);
 }
+
+/* Case studies, before the first one is written: one quiet line between Tools and About */
+.casesSoon {
+  padding-block: clamp(36px, 4.5vw, 56px);
+}
+.soon {
+  display: grid;
+  gap: 8px 48px;
+  align-items: baseline;
+}
+@media (min-width: 900px) {
+  .soon {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+}
+.soon p {
+  max-width: 48ch;
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--text-3);
+}
+.soon b {
+  font-weight: 500;
+  color: var(--text-2);
+}

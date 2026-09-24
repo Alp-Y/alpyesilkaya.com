@@ -17,6 +17,8 @@ import styles from "./page.module.css";
 export default function HomePage() {
   const tools = getTools();
   const cases = getCaseStudies();
+  const realCases = cases.filter((c) => !c.placeholder);
+  const upcoming = cases.find((c) => c.placeholder);
 
   return (
     <>
@@ -38,6 +40,19 @@ export default function HomePage() {
         </div>
       </section>
 
+      {realCases.length === 0 ? (
+        /* Nothing written yet: a slim note in the page's flow, not a whole section to scroll through */
+        <section className={`${styles.cases} ${styles.casesSoon}`} id="case-studies" data-section="case-studies" data-layer="03-CASE-STUDIES" aria-label="Case studies">
+          <div className={`container ${styles.soon}`} data-reveal="rise">
+            <span className="mono">
+              <span className="accent">03</span> / Case studies
+            </span>
+            <p>
+              <b>Coming soon.</b> {upcoming?.summary}
+            </p>
+          </div>
+        </section>
+      ) : (
       <section className={styles.cases} id="case-studies" data-section="case-studies" data-layer="03-CASE-STUDIES">
         <div className="container">
           <SectionHeader
@@ -47,7 +62,7 @@ export default function HomePage() {
           />
           <CaseRegister cases={cases} />
           {/* The link to the full register appears once there is more than one real case study */}
-          {cases.filter((c) => !c.placeholder).length > 1 && (
+          {realCases.length > 1 && (
             <div className={styles.more} data-reveal="rise">
               <Link href="/case-studies" className="link-line">
                 All case studies <span className="arrow" aria-hidden="true">→</span>
@@ -56,6 +71,7 @@ export default function HomePage() {
           )}
         </div>
       </section>
+      )}
 
       <AboutSection />
       <ContactSection />

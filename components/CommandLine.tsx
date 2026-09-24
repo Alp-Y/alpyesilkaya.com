@@ -35,7 +35,7 @@ export default function CommandLine({ className = "" }: { className?: string }) 
       </label>
       {/* Suggested commands — click to run (the same as typing them) */}
       <div className={styles.chips} aria-label="Suggested commands">
-        {["TOOLS", "EXCAVATION", "CASES", "ABOUT", "CONTACT", "ISO", "HELP", "PARTY"].map((c) => (
+        {["TOOLS", "EXCAVATION", "ABOUT", "CONTACT", "ISO", "HELP", "PARTY"].map((c) => (
           <button key={c} type="button" data-cmd-run={c} data-hud={`RUN|${c}`}>
             {c}
           </button>

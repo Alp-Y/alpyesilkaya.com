@@ -62,10 +62,15 @@ export const site = {
   revision: { code: "A", date: "2026-09" },
 } as const;
 
-/** Main navigation. `href` values starting with "/#" scroll to a homepage section. */
+/**
+ * Main navigation. `href` values starting with "/#" scroll to a homepage section.
+ * `index` is the section's number on the page (it matches the "02 / Tools" labels).
+ * Case Studies only appears once there is a real (non-placeholder) case study,
+ * so the menu never sends a visitor to an empty "coming soon".
+ */
 export const nav = [
-  { label: "Tools", href: "/#tools", section: "tools" },
-  { label: "Case Studies", href: "/#case-studies", section: "case-studies" },
-  { label: "About", href: "/#about", section: "about" },
-  { label: "Contact", href: "/#contact", section: "contact" },
+  { label: "Tools", href: "/#tools", section: "tools", index: "02" },
+  { label: "Case Studies", href: "/#case-studies", section: "case-studies", index: "03" },
+  { label: "About", href: "/#about", section: "about", index: "04" },
+  { label: "Contact", href: "/#contact", section: "contact", index: "05" },
 ] as const;

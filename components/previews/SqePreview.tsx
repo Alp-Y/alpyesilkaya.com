@@ -49,17 +49,22 @@ export default function SqePreview({ href, title }: { href: string; title: strin
       <div className={`${styles.stage} ${styles.sqe}`} aria-hidden="true" data-ready={!!workType}>
         <SqeViewport project={project} analysis={analysis} preview={{ step: current.step, view: current.view }} />
       </div>
-      <PreviewBar labels={PHASES.map((p) => p.label)} phase={phase} />
+      <PreviewBar labels={PHASES.map((p) => p.label)} durations={PHASES.map((p) => p.ms)} phase={phase} />
     </Link>
   );
 }
 
-export function PreviewBar({ labels, phase, note }: { labels: string[]; phase: number; note?: string }) {
+/**
+ * The preview's story, read left to right, with a thin line filling under
+ * the step that is playing (so it reads as progress, not as tabs), and the
+ * one action the card offers.
+ */
+export function PreviewBar({ labels, durations, phase, note }: { labels: string[]; durations?: number[]; phase: number; note?: string }) {
   return (
     <div className={styles.bar}>
       <ol className={styles.phases} aria-hidden="true">
         {labels.map((l, i) => (
-          <li key={l} data-on={i === phase} data-done={i < phase}>
+          <li key={l} data-on={i === phase} data-done={i < phase} style={durations ? ({ "--dur": `${durations[i]}ms` } as React.CSSProperties) : undefined}>
             <span className="num">{String(i + 1).padStart(2, "0")}</span> {l}
           </li>
         ))}

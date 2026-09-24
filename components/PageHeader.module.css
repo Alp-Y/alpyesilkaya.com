@@ -79,3 +79,9 @@
   font-size: clamp(2.25rem, 4.4vw, 3.5rem);
   letter-spacing: -0.045em;
 }
+.compact .intro {
+  max-width: 60ch;
+  margin-top: 10px;
+  font-size: var(--fs-body);
+  line-height: 1.55;
+}

@@ -43,6 +43,28 @@
 .heading:focus-visible .title {
   color: #fff;
 }
+/* the title is a link: an arrow slides in on hover, like the other "go" links on the site */
+.titleArrow {
+  display: inline-block;
+  margin-left: 0.3em;
+  color: var(--accent);
+  font-weight: 400;
+  opacity: 0;
+  transform: translate3d(-8px, 0, 0);
+  transition:
+    opacity var(--motion-medium) var(--ease-out),
+    transform var(--motion-medium) var(--ease-out);
+}
+.heading:hover .titleArrow,
+.heading:focus-visible .titleArrow {
+  opacity: 1;
+  transform: none;
+}
+@media (hover: none) {
+  .titleArrow {
+    display: none;
+  }
+}
 
 .copy {
   display: grid;
