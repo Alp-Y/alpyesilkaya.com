@@ -10,12 +10,12 @@ import type { Layers, SurfaceScene } from "./surfaceScene";
 import { verticalExaggeration } from "./view";
 import styles from "./excavation.module.css";
 
+/** The excavated surface is always shown; these can be switched. */
 const LAYERS: { key: keyof Layers; label: string; swatch: string }[] = [
-  { key: "points", label: "Survey points", swatch: "points" },
+  { key: "points", label: "Points", swatch: "points" },
   { key: "tin", label: "TIN", swatch: "tin" },
   { key: "existing", label: "Existing ground", swatch: "existing" },
-  { key: "excavated", label: "Excavated surface", swatch: "excavated" },
-  { key: "cut", label: "Cut volume", swatch: "cut" },
+  { key: "cut", label: "Cut", swatch: "cut" },
 ];
 
 const BUILD_MS = 2600;

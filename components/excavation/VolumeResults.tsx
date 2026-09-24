@@ -16,10 +16,6 @@ export default function VolumeResults({ result, calculating }: { result: EngineR
 
   return (
     <div className={styles.results} aria-busy={calculating}>
-      <p className={styles.expression}>
-        Existing ground <span aria-hidden="true">−</span>
-        <span className="sr-only">minus</span> Excavated surface
-      </p>
       <p className={styles.volume} aria-live="polite">
         <span className="num">{c ? num(shown) : "—"}</span> <em>m³</em>
       </p>
@@ -27,7 +23,7 @@ export default function VolumeResults({ result, calculating }: { result: EngineR
 
       <dl className={styles.kpis}>
         <div>
-          <dt>Surface area (in cut)</dt>
+          <dt>Area in cut</dt>
           <dd className="num">{c ? quantity(c.cutArea, "m²") : "—"}</dd>
         </div>
         <div>
@@ -38,27 +34,7 @@ export default function VolumeResults({ result, calculating }: { result: EngineR
           <dt>Maximum depth</dt>
           <dd className="num">{c ? quantity(c.maxDepth, "m") : "—"}</dd>
         </div>
-        <div>
-          <dt>Excavated level</dt>
-          <dd className="num">{c ? `${num(c.exZMin)} – ${num(c.exZMax)} m` : "—"}</dd>
-        </div>
-        <div>
-          <dt>Survey points</dt>
-          <dd className="num">{result ? (result.counts.excavated + result.counts.ground).toLocaleString("en-GB") : "—"}</dd>
-        </div>
       </dl>
-
-      {result && c && (
-        <p className={styles.method}>
-          Composite TIN · <span className="num">{c.tris.length.toLocaleString("en-GB")}</span> triangles, each integrated exactly · {result.groundLabel.toLowerCase()}
-          {c.fill > 0.5 && (
-            <>
-              {" "}
-              · fill <span className="num">{quantity(c.fill, "m³")}</span> reported separately
-            </>
-          )}
-        </p>
-      )}
     </div>
   );
 }

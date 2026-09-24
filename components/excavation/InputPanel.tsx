@@ -62,7 +62,7 @@ export default function InputPanel({
     if (!u.parsed.error) onGround({ kind: "points", name: u.name, parsed: u.parsed });
   };
 
-  const preview = dataset.excavated.slice(0, 4);
+  const preview = dataset.excavated.slice(0, 3);
   const more = dataset.excavated.length - preview.length;
 
   return (
@@ -79,18 +79,15 @@ export default function InputPanel({
       {tab === "sample" ? (
         <div role="tabpanel" id={`${id}-p1`} aria-labelledby={`${id}-t1`} className={styles.samples}>
           {SAMPLE_IDS.map((sid) => {
-            const d = getSample(sid);
             const on = source.kind === "sample" && source.id === sid;
             return (
               <button key={sid} type="button" className={styles.sample} aria-pressed={on} onClick={() => onSource({ kind: "sample", id: sid })}>
                 <span className={styles.radio} aria-hidden="true" />
-                <span className={styles.sampleText}>
-                  <b>{SAMPLE_NAMES[sid]}</b>
-                  <span>{d.description}</span>
-                </span>
+                {SAMPLE_NAMES[sid]}
               </button>
             );
           })}
+          {source.kind === "sample" && <p className={styles.sampleNote}>{getSample(source.id).description}</p>}
         </div>
       ) : (
         <div role="tabpanel" id={`${id}-p2`} aria-labelledby={`${id}-t2`} className={styles.uploadPanel}>
