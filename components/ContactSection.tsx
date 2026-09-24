@@ -19,10 +19,7 @@ export default function ContactSection() {
 
         <h2 id="contact-title" className={styles.title} data-reveal="lines">
           <span className="line">
-            <span>Let&rsquo;s build</span>
-          </span>
-          <span className="line" style={{ "--l": 1 } as React.CSSProperties}>
-            <span className={styles.dim}>something precise.</span>
+            <span>Get in touch.</span>
           </span>
         </h2>
 

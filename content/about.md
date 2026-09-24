@@ -1,17 +1,16 @@
 ---
 # ─────────────────────────────────────────────────────────────
 # ABOUT PAGE. The text below the second --- line is the About page body.
-# "intro" is the large opening line. "properties" rows are "Label | Value".
+# "intro" (optional) is a large opening line; leave it out for none.
+# "properties" rows are "Label | Value".
 # ─────────────────────────────────────────────────────────────
-intro: Less repetitive work. More engineering.
 # The Properties panel. "Label | Value" rows; a "[Group]" row starts a new
 # foldable group. Empty groups are hidden.
 properties:
   - Background | Civil Engineering · Project Management
   - Experience | Infrastructure · Energy · Construction
-  - Focus | Engineering workflows & technical systems
   - Working with | Civil 3D · AutoCAD · Data · Automation
-  - Currently | Building tools for infrastructure engineering
+  - Currently | Working as a civil engineer and building tools for engineering workflows with AI
 # Shown when a visitor clicks EXPAND EXPERIENCE. Newest first, one line each:
 # Company | Role | Location | Years | One-sentence summary
 experience:
@@ -22,15 +21,15 @@ experience:
   - Dokuz Eylül University | Research Associate | İzmir | 2021 | Led experimental work on earth-fill dam failure and sediment transport for a TÜBİTAK-funded hydraulic engineering research project.
 ---
 
-I’m a civil engineer. Most of my work has sat where engineering meets delivery: quantities, progress, contracts, and the spreadsheets that hold them together.
-
-That’s where the tools come from. A lot of engineering time goes into moving the same numbers between drawings, surveys and reports by hand. A small, well-made tool does that faster and checks it the same way every time, and leaves the judgement to the engineer.
+I like engineering challenges and finding ways to automate the boring stuff. I also like learning about new technologies and being in the loop while they develop. That’s why I wanted to see if I could literally build myself a suite of engineering tools with AI — and maybe eventually turn it into an app. We’ll see.
 
 ## Where I’ve worked
 
+I’ve done a bunch of vaguely related stuff over the past few years. I guess I’m still doing that in a way, by launching this website too.
+
 Road infrastructure in Riyadh. Industrial decarbonisation projects in Glasgow. Wind-farm foundations in İzmir. A year and a half exploring residential development in western Ukraine with my own company. Before all of that, a hydraulics lab, breaking earth-fill dams on purpose to see how they fail.
 
-Right now I’m a technical office engineer at Yüksel İnşaat, on a major road project in Riyadh. The full list is in the Properties panel: expand the experience.
+Right now I’m a technical office engineer at Yüksel İnşaat, working on a major road project in Riyadh. The full list is in the Properties panel — expand the experience.
 
 ## Education
 
@@ -45,3 +44,9 @@ Right now I’m a technical office engineer at Yüksel İnşaat, on a major road
 ## Elsewhere
 
 Chinese language and culture at Fudan University’s International Cultural Exchange School. Harvard Model United Nations.
+
+Hitchhiked through about 75% of Turkey.
+
+Did caving and mountaineering at university.
+
+Still yearning for more dad lore.

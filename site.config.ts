@@ -18,11 +18,11 @@ export const site = {
   process: ["Civil Engineering", "BIM", "Software Automation"],
 
   /** One-sentence positioning statement shown in the hero. */
-  statement: "I’m a civil engineer building engineering tools that automate everyday workflows.",
+  statement: "I’m a civil engineer learning how to build engineering tools with AI that automate and improve my workflows.",
 
   /** Used for search engines and link previews. */
   description:
-    "Civil engineer building engineering tools that automate everyday workflows: CAD geometry, survey data and quantities.",
+    "Civil engineer learning how to build engineering tools with AI that automate and improve his workflows: CAD geometry, survey data and quantities.",
 
   email: "alpyesilkaya.dev@gmail.com",
   location: "Riyadh, KSA",

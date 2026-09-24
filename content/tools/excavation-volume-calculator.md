@@ -3,7 +3,7 @@
 title: Excavation Volume Calculator
 order: 2
 demo: exv
-summary: Survey points become terrain surfaces, and the excavation volume is calculated across the surface itself, with section views to check it.
+summary: From coordinate and elevation data to presentation-ready reports in seconds.
 platform:
 stack:
 status:
@@ -34,4 +34,4 @@ It is not area × average depth: where the two surfaces cross, a triangle is cli
 
 ## About the demonstration
 
-The Excavation Volume Engine above runs entirely in your browser. The three samples are generated example sites (synthetic data); you can also upload your own X,Y,Z points, which never leave your device. The numbers, sections and the Excel report are computed from the surfaces, live. Placeholder: replace with a description of your own tool.
+The Excavation Volume Engine above runs entirely in your browser. The three samples are generated example sites (synthetic data); you can also upload your own X,Y,Z points, which never leave your device. The numbers, sections and the Excel report are computed from the surfaces, live.

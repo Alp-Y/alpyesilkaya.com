@@ -5,6 +5,8 @@ import SqeGlyph from "./sqe/SqeGlyph";
 import ExvGlyph from "./excavation/ExvGlyph";
 import SqePreview from "./previews/SqePreview";
 import ExvPreview from "./previews/ExvPreview";
+import CmpGlyph from "./compare/CmpGlyph";
+import CmpPreview from "./previews/CmpPreview";
 import styles from "./ToolFeature.module.css";
 
 /**
@@ -20,9 +22,10 @@ export default function ToolFeature({ tool, index }: { tool: Tool; index: number
         <Link href={`/tools/${tool.slug}`} className={styles.heading} data-play data-observe>
           {tool.demo === "sqe" && <SqeGlyph className={styles.glyph} />}
           {tool.demo === "exv" && <ExvGlyph className={styles.glyph} />}
+          {tool.demo === "cmp" && <CmpGlyph className={styles.glyph} />}
           <span className={styles.headingText}>
             <span className="mono">
-              <span className="accent">T-{pad(index + 1)}</span> / {index === 0 ? "Flagship tool" : "Tool"}
+              <span className="accent">T-{pad(index + 1)}</span>
             </span>
             <span className={styles.title}>{tool.title}</span>
           </span>
@@ -42,6 +45,11 @@ export default function ToolFeature({ tool, index }: { tool: Tool; index: number
       {tool.demo === "exv" && (
         <div className={styles.demo} data-reveal="rise">
           <ExvPreview href={href} title={tool.title} />
+        </div>
+      )}
+      {tool.demo === "cmp" && (
+        <div className={styles.demo} data-reveal="rise">
+          <CmpPreview href={href} title={tool.title} />
         </div>
       )}
       {!tool.demo && (

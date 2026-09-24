@@ -185,3 +185,137 @@
     display: none;
   }
 }
+
+/* ---------- drawing comparison: two sheets, overlaid ---------- */
+.cmp {
+  aspect-ratio: 1200 / 660;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 50%, rgba(150, 175, 205, 0.05), transparent 70%),
+    #07090b;
+}
+@media (max-width: 640px) {
+  .cmp {
+    aspect-ratio: 4 / 3;
+  }
+}
+.cmpInner {
+  position: absolute;
+  inset: 0;
+}
+.cmp .cmpSvg {
+  position: absolute;
+  inset: 4% 3%;
+  width: 94%;
+  height: 92%;
+}
+.cmpTop {
+  position: absolute;
+  inset: 12px 14px auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  opacity: 0;
+  transition: opacity var(--motion-medium) var(--ease-out);
+}
+.cmpTop[data-show="true"] {
+  opacity: 1;
+}
+.cmpCounts {
+  opacity: 0;
+  transition: opacity var(--motion-medium) var(--ease-out);
+}
+.cmpCounts[data-show="true"] {
+  opacity: 1;
+}
+.cmpCounts b {
+  font-weight: 500;
+}
+.cmpAdd {
+  color: #3ee08f;
+}
+.cmpRem {
+  color: #ff5a5f;
+}
+.cmpStrip {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.cmpStrip div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.cmpStrip dt {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.cmpStrip dd {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.8vw, 1.45rem);
+  font-weight: 560;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+.cmpStrip dd[data-sign="pos"] {
+  color: #3ee08f;
+}
+.cmpStrip dd[data-sign="neg"] {
+  color: #ff5a5f;
+}
+.cmpStrip dd em {
+  margin-left: 4px;
+  font-style: normal;
+  font-size: 0.55em;
+  font-weight: 400;
+  color: var(--text-2);
+}
+.cmpStrip .cmpOut {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: #ff5a5f;
+  opacity: 0.8;
+}
+@media (max-width: 640px) {
+  .cmpStrip {
+    left: 10px;
+    right: 10px;
+    bottom: 8px;
+    gap: 6px;
+    padding-top: 6px;
+  }
+  .cmpStrip dt {
+    font-size: 8px;
+  }
+  .cmpStrip dd {
+    font-size: 0.8rem;
+  }
+  .cmpStrip dd em,
+  .cmpStrip .cmpOut {
+    display: none;
+  }
+  .cmpTop {
+    inset: 8px 10px auto;
+    font-size: 9px;
+  }
+}

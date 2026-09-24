@@ -8,6 +8,7 @@ import PropertiesPalette from "@/components/PropertiesPalette";
 import { ArticleBody, NextItem } from "@/components/ArticleBody";
 import SpatialQuantityEngine from "@/components/sqe/SpatialQuantityEngine";
 import ExcavationDemo from "@/components/excavation/ExcavationDemo";
+import CompareDemo from "@/components/compare/CompareDemo";
 import styles from "../../inner.module.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -71,15 +72,17 @@ export default async function ToolPage({ params }: Props) {
         <div className={styles.kicker} data-reveal="rise">
           <span className="mono">
             <span className="accent">T-{pad(index + 1)}</span>
-            {tool.platform ? ` / ${tool.platform}` : " / Tool"}
+            {tool.platform ? ` / ${tool.platform}` : ""}
           </span>
           {tool.placeholder && <span className="placeholder-tag">Placeholder content</span>}
         </div>
       </PageHeader>
 
-      {tool.demo === "sqe" || tool.demo === "exv" ? (
+      {tool.demo === "sqe" || tool.demo === "exv" || tool.demo === "cmp" ? (
         <div className={styles.hero}>
-          <div className="container">{tool.demo === "sqe" ? <SpatialQuantityEngine /> : <ExcavationDemo />}</div>
+          <div className="container">
+            {tool.demo === "sqe" ? <SpatialQuantityEngine /> : tool.demo === "exv" ? <ExcavationDemo /> : <CompareDemo />}
+          </div>
         </div>
       ) : (
         tool.image && (

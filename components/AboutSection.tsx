@@ -27,13 +27,19 @@ export default function AboutSection() {
           </div>
 
           <div className={styles.text}>
-            <h2 id="about-title" className={styles.intro} data-reveal="lines">
-              {splitIntro(intro).map((line, i) => (
-                <span key={line} className="line" style={{ "--l": i } as React.CSSProperties}>
-                  <span>{line}</span>
-                </span>
-              ))}
-            </h2>
+            {intro ? (
+              <h2 id="about-title" className={styles.intro} data-reveal="lines">
+                {splitIntro(intro).map((line, i) => (
+                  <span key={line} className="line" style={{ "--l": i } as React.CSSProperties}>
+                    <span>{line}</span>
+                  </span>
+                ))}
+              </h2>
+            ) : (
+              <h2 id="about-title" className="sr-only">
+                About
+              </h2>
+            )}
             {short && (
               <p className={styles.short} data-reveal="rise" style={{ "--delay": "200ms" } as React.CSSProperties}>
                 {short}

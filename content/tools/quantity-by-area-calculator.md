@@ -1,9 +1,9 @@
 ---
-# The flagship tool. Fields left empty are simply not shown on the site.
+# The first tool. Fields left empty are simply not shown on the site.
 title: Quantity by Area Calculator
 order: 1
 demo: sqe
-summary: Quantities, organised by where the work happened. Define the project areas once, and the calculator measures the work inside each one.
+summary: Quantities, organised by where the work happened. Define the project areas once, and the calculator measures the work inside each one, splitting quantities and volumes that cross area boundaries between the areas they cross.
 platform:
 stack:
 status:
@@ -39,5 +39,3 @@ The Quantity by Area Calculator combines **project boundaries with sub-area meta
 The interactive demo above runs entirely in your browser. It uses a simplified example road scheme, or a DXF you provide (processed locally, nothing is uploaded).
 
 Excavation and fill volumes in the demo are **simplified demonstration values**: intersection area × a representative depth. They are not surface-to-surface (TIN) volumes.
-
-*Placeholder: add more detail about the real tool — platform, status and how to get it — when you're ready.*
