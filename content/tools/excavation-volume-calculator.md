@@ -1,6 +1,6 @@
 ---
 # The second tool. Fields left empty are simply not shown on the site.
-title: Automatize Excavation Calculations
+title: Excavation Volume Calculator
 order: 2
 demo: exv
 summary: Survey points become terrain surfaces, and the excavation volume is calculated across the surface itself, with section views to check it.

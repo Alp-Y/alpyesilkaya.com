@@ -139,7 +139,7 @@ const TARGETS: Record<Destination, string> = {
 /** Targets that live on their own page (not the homepage). */
 const PAGES: Partial<Record<Destination, string>> = {
   demo: "/tools/quantity-by-area-calculator/",
-  excavation: "/tools/automatize-excavation-calculations/",
+  excavation: "/tools/excavation-volume-calculator/",
 };
 
 let navTimer = 0;
@@ -184,8 +184,8 @@ const PLACES: Record<string, { to: Destination; label: string }> = {
   QUANTITY: { to: "demo", label: "Quantity by Area Calculator" },
   QUANTITIES: { to: "demo", label: "Quantity by Area Calculator" },
   SQE: { to: "demo", label: "Quantity by Area Calculator" },
-  EXCAVATION: { to: "excavation", label: "Automatize Excavation Calculations" },
-  VOLUME: { to: "excavation", label: "Automatize Excavation Calculations" },
+  EXCAVATION: { to: "excavation", label: "Excavation Volume Calculator" },
+  VOLUME: { to: "excavation", label: "Excavation Volume Calculator" },
   CASES: { to: "case-studies", label: "03 · Case studies" },
   "CASE STUDIES": { to: "case-studies", label: "03 · Case studies" },
   "CASE STUDY": { to: "case-studies", label: "03 · Case studies" },
