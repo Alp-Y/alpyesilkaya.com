@@ -1,6 +1,10 @@
 .portrait {
   position: relative;
   margin: 0;
+}
+/* the photo + its crop marks: the marks always sit on the frame's corners */
+.plate {
+  position: relative;
   padding: 14px;
 }
 
@@ -59,13 +63,13 @@
   border-right-width: 1px;
 }
 .bl {
-  bottom: 38px;
+  bottom: 0;
   left: 0;
   border-bottom-width: 1px;
   border-left-width: 1px;
 }
 .br {
-  bottom: 38px;
+  bottom: 0;
   right: 0;
   border-bottom-width: 1px;
   border-right-width: 1px;
@@ -73,10 +77,21 @@
 
 .caption {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  margin-top: 18px;
+  gap: 8px 12px;
+  margin-top: 6px;
+  padding: 0 14px;
+}
+/* phones and tablets: a portrait, not a full-screen poster */
+@media (max-width: 899px) {
+  .portrait {
+    max-width: 380px;
+  }
+  .frame {
+    aspect-ratio: 1 / 1;
+  }
 }
 
 @media (max-width: 899px) {

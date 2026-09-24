@@ -218,6 +218,10 @@
 .header[data-menu-open="true"] {
   background: rgba(7, 9, 11, 0.97);
   border-bottom-color: var(--line);
+  /* a backdrop-filter would make the header the containing block of the
+     fixed sheet, so the sheet's background would only cover the header */
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 .header[data-menu-open="true"] .sheet {
   opacity: 1;

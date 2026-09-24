@@ -40,7 +40,7 @@ export default function ToolFeature({ tool, index, withDemo = false }: { tool: T
       )}
       {withDemo && tool.demo === "exv" && (
         <div className={styles.demo} data-reveal="rise">
-          <ExcavationDemo />
+          <ExcavationDemo compact />
         </div>
       )}
 

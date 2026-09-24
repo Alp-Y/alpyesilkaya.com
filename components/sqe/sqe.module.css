@@ -1105,3 +1105,27 @@
     animation: none;
   }
 }
+
+/* phones: the drawing is ~190 px tall. The step bar sits above it and the
+   legend / ramp step aside (the same information is in the panel), so
+   nothing covers the drawing. */
+@media (max-width: 640px) {
+  .steps {
+    position: static;
+    padding: 10px 10px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .steps button {
+    height: 32px;
+  }
+  .legend,
+  .ramp {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  /* area labels: ids only (quantities are listed in the panel right below) */
+  .labelSub {
+    display: none;
+  }
+}

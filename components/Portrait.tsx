@@ -7,8 +7,9 @@ export default function Portrait({ priority = false }: { priority?: boolean }) {
   const { src, alt, isPlaceholder } = site.portrait;
   return (
     <figure className={styles.portrait} data-observe>
-      <div className={styles.frame}>
-        <Image
+      <div className={styles.plate}>
+        <div className={styles.frame}>
+          <Image
           src={src}
           alt={alt}
           width={1200}
@@ -17,12 +18,13 @@ export default function Portrait({ priority = false }: { priority?: boolean }) {
           priority={priority}
           unoptimized={src.endsWith(".svg")}
           className={styles.image}
-        />
+          />
+        </div>
+        <span className={`${styles.crop} ${styles.tl}`} aria-hidden="true" />
+        <span className={`${styles.crop} ${styles.tr}`} aria-hidden="true" />
+        <span className={`${styles.crop} ${styles.bl}`} aria-hidden="true" />
+        <span className={`${styles.crop} ${styles.br}`} aria-hidden="true" />
       </div>
-      <span className={`${styles.crop} ${styles.tl}`} aria-hidden="true" />
-      <span className={`${styles.crop} ${styles.tr}`} aria-hidden="true" />
-      <span className={`${styles.crop} ${styles.bl}`} aria-hidden="true" />
-      <span className={`${styles.crop} ${styles.br}`} aria-hidden="true" />
       <figcaption className={styles.caption}>
         <span className="mono">Fig. 01 / The engineer</span>
         {isPlaceholder && <span className="placeholder-tag">Photo placeholder</span>}

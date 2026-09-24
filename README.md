@@ -31,7 +31,9 @@ app/
 components/               ← each piece of the UI + its own .module.css
   viewcube/               ← the interactive 3D ViewCube (Three.js)
   earthworks/             ← the hero's cut / fill model (Three.js, follows the ViewCube)
-  excavation/             ← Automatize Excavation Calculations demo (Three.js + section views)
+  excavation/             ← Excavation Volume Engine demo: input, 3D surfaces (Three.js),
+                            results, section profile, report preview + Excel export
+  ToolPipeline.tsx        ← the Tools section's "data → geometry → quantity → report" strip
   sqe/                    ← the Quantity by Area Calculator demo (UI)
 lib/
   content.ts              ← reads the Markdown files
@@ -42,7 +44,11 @@ lib/
   sqe/                    ← the Quantity by Area Calculator: geometry, DXF reader,
                             work types, quantity engine, example site (site.json)
   earthworks/model.ts     ← the cut / fill maths (grid method)
-  excavation/             ← survey points → TIN (Delaunay) → volume + sections
+  excavation/             ← the Excavation Volume Engine (no UI code):
+                            xyz.ts (read + check XYZ files) · samples.ts (synthetic datasets)
+                            tin.ts (Delaunay TIN) · volume.ts (surface comparison, sections)
+                            engine.ts (runs it all) · reportModel.ts / report.ts (Excel report)
+  xlsx/                   ← a small .xlsx writer (sheets, styles, formulas, charts), no dependency
 scripts/sqe-site.py       ← regenerates the SQE example site + its aerial image (optional)
 ```
 
@@ -77,7 +83,8 @@ The homepage, `/tools`, the tool's own page and the sitemap all update automatic
 - **Motion system:** timing and easing tokens (`--motion-*`, `--ease-*`) live in `globals.css`. Reveals are set with `data-reveal="rise" | "lines" | "draw"`. Everything respects the system's *Reduce motion* setting.
 - **Hero earthworks model:** turn the ViewCube and the model turns with it — TOP reads as a cut/fill plan, FRONT as the long section. Volumes are computed from the model (grid method) and labelled as a demonstration.
 - **Command line** (end of section 01): try `HELP`, `TOP`, `FRONT`, `ISO`, `WIREFRAME`, `SHADED`, `ANALYSIS`, `TOOLS`, `DEMO`, `ABOUT`, `CONTACT`, `HOME`, `CLEAR` or `GRID`.
-- **Automatize Excavation Calculations demo:** survey points are triangulated into a TIN; the volume between existing ground and the excavated surface is integrated triangle by triangle inside the boundary (not area × average depth), and sections are cut along the road with an end-area check. Drag to orbit, right-drag to pan, click then scroll to zoom, double-click to reset.
+- **Excavation Volume Engine demo** (Automatize Excavation Calculations): Input → Surface → Calculate → Inspect → Export. Sample data (three synthetic excavations, each with an existing-ground survey and an as-dug survey) or an uploaded X,Y,Z file; existing ground from the sample survey, a constant level, or a second XYZ file. Both surveys are merged into one composite TIN and cut / fill are integrated exactly per triangle (clipped where the surfaces cross). Area breakdown = equal chainage strips along the excavation's principal axis. Sections (cross / long) are cut from the same TIN and shown in the 3D model. Everything runs in the browser; uploads never leave the device. On the homepage steps 04–05 are folded (`<ExcavationDemo compact />`). Drag to orbit, right-drag to pan, click then scroll (or pinch) to zoom, double-click to reset; arrow keys and +/− work when the model has focus.
+- **Excel report:** `lib/excavation/report.ts` writes the .xlsx (Summary · Input Points · Volume Results · Area Breakdown · Sections, with formulas and native charts). The page's "Download Example Report / Export Results" button generates it in the browser; `app/downloads/example-excavation-report.xlsx/route.ts` writes the same file at build time. Also at build: `/downloads/xyz-template.csv` and `/downloads/sample-xyz-points.csv`.
 - **Quantity by Area Calculator demo:** tells its story once when it scrolls into view — site → survey → areas → quantities — then you explore. It runs entirely in the browser; imported DXF files are never uploaded. Excavation volumes are demonstration values (area × a representative depth), and the page says so.
 - **The SQE aerial image is an original render**, generated from the same geometry as the CAD overlay (`scripts/sqe-site.py`), so it lines up exactly and needs no licence. To use a real aerial photo instead you would also need to redraw the areas to match it.
 - **Fonts:** Geist and Geist Mono (open licence) are self-hosted from `app/fonts/`.

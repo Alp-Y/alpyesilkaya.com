@@ -169,6 +169,13 @@
   height: clamp(240px, 58vw, 420px);
   margin: 8px var(--gutter) 0;
 }
+/* phones: the model reads as a thin plan/section, so give it less empty height */
+@media (max-width: 640px) {
+  .modelWrap {
+    height: clamp(150px, 44vw, 220px);
+    margin-top: 0;
+  }
+}
 .model {
   height: 100%;
 }

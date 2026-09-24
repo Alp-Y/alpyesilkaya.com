@@ -183,3 +183,20 @@
     opacity: 0;
   }
 }
+
+/* phones: a tighter rhythm (the desktop spacing reads as empty space in one column) */
+@media (max-width: 899px) {
+  .grid {
+    gap: 40px;
+  }
+  .item {
+    padding-top: 22px;
+  }
+  .top {
+    margin-bottom: 20px;
+  }
+  .icon {
+    width: 40px;
+    height: 40px;
+  }
+}

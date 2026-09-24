@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import Disciplines from "@/components/Disciplines";
 import SectionHeader from "@/components/SectionHeader";
 import ToolFeature from "@/components/ToolFeature";
+import ToolPipeline from "@/components/ToolPipeline";
 import CaseRegister from "@/components/CaseRegister";
 import AboutSection from "@/components/AboutSection";
 import ContactSection from "@/components/ContactSection";
@@ -30,6 +31,7 @@ export default function HomePage() {
             label="Tools"
             title={["Tools I’ve built."]}
           />
+          <ToolPipeline />
           <div className={styles.toolList}>
             {tools.map((tool, i) => (
               <ToolFeature key={tool.slug} tool={tool} index={i} withDemo={!!tool.demo} />
