@@ -4,8 +4,8 @@
 # "intro" is the large opening line. "properties" rows are "Label | Value".
 # ─────────────────────────────────────────────────────────────
 intro: Less repetitive work. More engineering.
-short: "I’m a civil engineer. For quantities and results, a custom tool is faster, more accurate and, sadly, more reliable than human judgement alone. So I build them."
-# The panel is a small CAD-style profile: keep it to things not said elsewhere on the page.
+# The Properties panel is your CV. "Label | Value" rows; a "[Group]" row starts a new
+# foldable group (e.g. [Experience], [Education], [Skills]). Empty groups are hidden.
 properties:
   - Background | Construction · project management
   - Focus | Engineering workflows & automation

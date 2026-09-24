@@ -3,6 +3,9 @@ import styles from "./PropertiesPalette.module.css";
 /**
  * A key/value list styled like the CAD "Properties" palette.
  * `rows` are strings written as "Label | Value" (see /content/about.md).
+ * A row written as "[Group name]" starts a new foldable group, like the
+ * General / Geometry groups in a CAD palette. Rows before the first
+ * group go under "General". Empty groups are not shown.
  */
 export default function PropertiesPalette({
   rows,
@@ -13,10 +16,17 @@ export default function PropertiesPalette({
   title?: string;
   selection?: string;
 }) {
-  const parsed = rows.map((row) => {
+  const groups: { name: string; rows: { label: string; value: string }[] }[] = [{ name: "General", rows: [] }];
+  for (const raw of rows) {
+    const row = String(raw).trim();
+    const heading = row.match(/^\[(.+)\]$/);
+    if (heading) {
+      groups.push({ name: heading[1].trim(), rows: [] });
+      continue;
+    }
     const [label, ...value] = row.split("|");
-    return { label: label.trim(), value: value.join("|").trim() };
-  });
+    groups[groups.length - 1].rows.push({ label: label.trim(), value: value.join("|").trim() });
+  }
 
   return (
     <div className={styles.palette} data-reveal="rise">
@@ -27,17 +37,26 @@ export default function PropertiesPalette({
         </span>
       </div>
       {selection && <div className={styles.selection}>{selection}</div>}
-      <div className={styles.group}>
-        <span aria-hidden="true">▾</span> General
-      </div>
-      <dl className={styles.rows}>
-        {parsed.map((row) => (
-          <div key={row.label} className={styles.row}>
-            <dt>{row.label}</dt>
-            <dd>{row.value}</dd>
-          </div>
+      {groups
+        .filter((g) => g.rows.length)
+        .map((g) => (
+          <details key={g.name} className={styles.section} open>
+            <summary className={styles.group}>
+              <span className={styles.caret} aria-hidden="true">
+                ▾
+              </span>{" "}
+              {g.name}
+            </summary>
+            <dl className={styles.rows}>
+              {g.rows.map((row, i) => (
+                <div key={`${row.label}-${i}`} className={styles.row}>
+                  <dt>{row.label}</dt>
+                  <dd>{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
         ))}
-      </dl>
     </div>
   );
 }

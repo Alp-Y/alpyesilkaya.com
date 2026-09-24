@@ -32,11 +32,32 @@
 }
 
 .group {
+  display: block;
   padding: 10px 12px 6px;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--text-2);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.group::-webkit-details-marker {
+  display: none;
+}
+.group:hover {
+  color: var(--text-1);
+}
+/* ▾ open, ▸ folded — like a CAD palette */
+.caret {
+  display: inline-block;
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+.section:not([open]) .caret {
+  transform: rotate(-90deg);
+}
+.section + .section {
+  border-top: 1px solid var(--line);
 }
 
 .rows {
