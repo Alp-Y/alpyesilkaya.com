@@ -20,8 +20,8 @@ type OrientationDetail = { quaternion: import("three").Quaternion; zoom: number;
  *
  * The model floats free: its canvas is much larger than its layout box, so
  * nothing is cut off while it turns, and the ground fades out at its edges.
- * Drag the model itself to turn it (the ViewCube follows). In the hero it
- * is a visual only — no figures; the tools section carries the real demos.
+ * Drag the model itself to turn it (the ViewCube follows). Pointing at it
+ * shows where you are on it; the tools section carries the real demos.
  * The hero's model tabs switch it to the other showcase scenes (showcase.ts).
  */
 export default function EarthworksModel({ className = "" }: { className?: string }) {
@@ -176,8 +176,14 @@ export default function EarthworksModel({ className = "" }: { className?: string
             setHud("hover", null, "hero");
             return;
           }
-          // A visual, not a readout: the pointer only says what you can do
-          setHud("hover", { title: "DRAG TO TURN", lines: [] }, "hero");
+          // On the model: what you can do, and where you are on it (metres from the model's
+          // centre; on the road earthworks also the cut or fill depth there, from the model)
+          const rows: [string, string][] = [
+            ["X", `${hit.x.toFixed(1)} m`],
+            ["Y", `${(-hit.z).toFixed(1)} m`],
+          ];
+          if (getHeroModel() === "road" && Math.abs(hit.depth) >= 0.05) rows.push([hit.depth > 0 ? "CUT" : "FILL", `${Math.abs(hit.depth).toFixed(2)} m`]);
+          setHud("hover", { title: "DRAG TO TURN", rows }, "hero");
         }),
       );
       cleanups.push(() => setHud("hover", null, "hero"));

@@ -228,6 +228,7 @@ export default function SqeViewport({ project, analysis, preview }: { project: P
         role="img"
         aria-label={`${project.name}: ${project.boundaries.length} project areas`}
         data-cad-space={preview ? undefined : "sqe"}
+        data-coord-area={preview ? undefined : ""}
         onPointerDown={preview ? undefined : () => stopStory()}
         onClick={
           preview

@@ -196,7 +196,7 @@ export default function SurfaceViewer({
 
   return (
     <div className={styles.viewer}>
-      <div ref={viewRef} className={styles.view} data-cad-space="exv" data-ready={ready && !!result}>
+      <div ref={viewRef} className={styles.view} data-cad-space="exv" data-coord-area data-ready={ready && !!result}>
         <canvas ref={canvasRef} className={styles.canvas} data-cursor="grab" aria-label="3D model of the existing ground and the excavated surface. Drag to orbit." role="img" />
 
         {caption && (

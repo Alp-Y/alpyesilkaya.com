@@ -340,7 +340,8 @@ function resolveHud(target: Element | null, space: string | undefined, mode: Cur
       continue;
     }
     if (slot === "point") {
-      if (!space || !currentCoords || mode === "text" || mode === "hidden") return null;
+      // Only inside a model's demonstration area ([data-coord-area]), never over the plain sheet
+      if (!space || !currentCoords || mode === "text" || mode === "hidden" || !target?.closest("[data-coord-area]")) return null;
       return { title: "", quiet: true, rows: [["X", coord(currentCoords.x)], ["Y", coord(currentCoords.y)]] };
     }
     // A drag / operation is shown wherever the pointer is; other context only in its own space
