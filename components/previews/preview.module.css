@@ -254,6 +254,25 @@
     min-height: 32px;
   }
 }
+/* Phones: one tidy row. Every step shows its number, only the playing step
+   shows its name (the others stay readable to screen readers). */
+@media (max-width: 640px) {
+  .phases {
+    flex-wrap: nowrap;
+    gap: 14px;
+  }
+  .phases li[data-on="false"] .stepLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .phases li {
+    white-space: nowrap;
+  }
+}
 /* the step that is playing fills a thin line: this is a story running, not a set of tabs */
 .phases li[data-on="true"]::after {
   content: "";

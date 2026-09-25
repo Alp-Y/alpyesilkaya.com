@@ -103,7 +103,7 @@ export function PreviewBar({
         {labels.map((l, i) => (
           <li key={l} data-on={i === phase} data-done={i < phase} style={durations ? ({ "--dur": `${durations[i]}ms` } as React.CSSProperties) : undefined}>
             <button type="button" onClick={() => onSeek?.(i)} aria-current={i === phase ? "step" : undefined}>
-              <span className="num">{String(i + 1).padStart(2, "0")}</span> {l}
+              <span className="num">{String(i + 1).padStart(2, "0")}</span> <span className={styles.stepLabel}>{l}</span>
             </button>
           </li>
         ))}

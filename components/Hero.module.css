@@ -40,6 +40,12 @@
 .viewcube {
   --vc-size: 104px;
 }
+/* Small phones: a little smaller, so it clears the viewport toolbar */
+@media (max-width: 360px) {
+  .viewcube {
+    --vc-size: 88px;
+  }
+}
 /* Tablets */
 @media (min-width: 641px) {
   .viewcubeWrap {
@@ -106,9 +112,34 @@
   margin-left: -0.05em;
 }
 
-.chain {
-  max-width: 920px;
-  margin-top: clamp(20px, 3.6vh, 52px);
+/* Disciplines: plain annotation text, separated by the drawing's oblique ticks */
+.disciplines {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 22px;
+  margin: clamp(20px, 3.6vh, 52px) 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 0.85vw, 11.5px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  cursor: default;
+}
+.disciplines li {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.disciplines li::before {
+  content: "";
+  width: 9px;
+  height: 1.5px;
+  background: var(--accent);
+  transform: rotate(-45deg);
 }
 
 /* Statement and actions read as one block, left-aligned under the name */
@@ -205,13 +236,6 @@
   }
 }
 
-@media (min-width: 1100px) {
-  /* the chain stops short of the model */
-  .chain {
-    max-width: min(920px, 46vw);
-  }
-}
-
 /* ---------- Base row: the command line, on the text column ---------- */
 .base {
   display: flex;
@@ -287,13 +311,6 @@
   .ucsWrap :global([data-ucs]) * {
     transition: opacity 200ms linear !important;
     stroke-dashoffset: 0 !important;
-  }
-}
-
-/* The line under the name stays in the text column, clear of the model */
-@media (min-width: 1100px) {
-  .chain {
-    max-width: min(920px, calc(54vw - max(var(--gutter), (100vw - var(--max-width)) / 2) - 40px));
   }
 }
 
@@ -384,12 +401,12 @@
 
 /* ---------- Short desktop screens (e.g. 1366×768, 1280×800) ---------- */
 /* Laptop heights (≤ 900 px, e.g. 1440×900, 1536×864): one tighter, even rhythm
-   — name, 24, chain, 28, statement, 24, actions, 36, command line */
+   — name, 24, disciplines, 28, statement, 24, actions, 36, command line */
 @media (min-width: 900px) and (max-height: 900px) {
   .title {
     font-size: min(var(--fs-display), 14vh);
   }
-  .chain {
+  .disciplines {
     margin-top: 24px;
   }
   .lower {
@@ -405,7 +422,7 @@
   .title {
     font-size: min(var(--fs-display), 12vh);
   }
-  .chain {
+  .disciplines {
     margin-top: 18px;
   }
   .lower {
@@ -441,9 +458,48 @@
   .lower {
     gap: 28px;
   }
+  /* One line: a single leading tick, then dots between the disciplines */
+  .disciplines {
+    gap: 6px 10px;
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+  }
+  .disciplines li + li::before {
+    content: "·";
+    width: auto;
+    height: auto;
+    background: none;
+    transform: none;
+    color: var(--line-strong);
+    letter-spacing: 0;
+  }
+  /* Two full-width buttons, stacked like an app's primary and secondary action */
   .actions {
     width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .primary,
+  .secondary {
     justify-content: space-between;
+    height: 52px;
+    padding: 0 18px;
+    white-space: nowrap;
+  }
+  .secondary {
+    display: flex;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .secondary::after {
+    display: none;
+  }
+  .secondary:active {
+    background: var(--surface);
   }
 }
 

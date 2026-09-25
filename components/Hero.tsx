@@ -1,6 +1,5 @@
 import { site } from "@/site.config";
 import CommandLine from "./CommandLine";
-import DimensionChain from "./DimensionChain";
 import UcsIcon from "./UcsIcon";
 import ViewportToolbar from "./ViewportToolbar";
 import InteractiveViewCube from "./viewcube/InteractiveViewCube";
@@ -54,7 +53,14 @@ export default function Hero() {
           </span>
         </h1>
 
-        <DimensionChain labels={site.process} delay={550} className={styles.chain} />
+        {/* What I work across: a quiet annotation under the name, not a set of tabs */}
+        <ul className={styles.disciplines} aria-label="Disciplines" data-cursor="text">
+          {site.process.map((d, i) => (
+            <li key={d} data-reveal="rise" style={{ "--delay": `${650 + i * 90}ms` } as React.CSSProperties}>
+              {d}
+            </li>
+          ))}
+        </ul>
 
         <div className={styles.lower}>
           <p
@@ -70,7 +76,7 @@ export default function Hero() {
             <a href="#tools" className={styles.primary} data-hud="GO TO|02 · TOOLS">
               View my work <span className="arrow arrow-down" aria-hidden="true">↓</span>
             </a>
-            <a href="#contact" className="link-line" data-hud="GO TO|05 · CONTACT">
+            <a href="#contact" className={`link-line ${styles.secondary}`} data-hud="GO TO|05 · CONTACT">
               Send me a brief <span className="arrow" aria-hidden="true">→</span>
             </a>
           </div>
