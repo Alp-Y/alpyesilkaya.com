@@ -75,6 +75,72 @@
   border-right-width: 1px;
 }
 
+/* ---------- Cut-out on the drawing grid, as a selected object ---------- */
+.selected .frame {
+  background-color: transparent;
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size:
+    96px 96px,
+    96px 96px,
+    24px 24px,
+    24px 24px;
+  background-position: -1px -1px;
+  /* the selection: a dashed highlight around the object */
+  outline: 1px dashed rgba(62, 224, 143, 0.45);
+  outline-offset: 0;
+}
+.selected .image {
+  object-fit: contain;
+  object-position: bottom center;
+  filter: none;
+}
+.grips {
+  position: absolute;
+  inset: 14px;
+  pointer-events: none;
+}
+.grips i {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border: 1px solid var(--accent);
+  background: var(--bg-2, #0b0e12);
+  box-shadow: 0 0 6px rgba(62, 224, 143, 0.35);
+}
+.grips i[data-g="tl"] { top: 0; left: 0; }
+.grips i[data-g="tm"] { top: 0; left: 50%; }
+.grips i[data-g="tr"] { top: 0; left: 100%; }
+.grips i[data-g="ml"] { top: 50%; left: 0; }
+.grips i[data-g="mr"] { top: 50%; left: 100%; }
+.grips i[data-g="bl"] { top: 100%; left: 0; }
+.grips i[data-g="bm"] { top: 100%; left: 50%; }
+.grips i[data-g="br"] { top: 100%; left: 100%; }
+/* grips appear once the photo has uncovered */
+:global(.js) .grips {
+  opacity: 0;
+  transition: opacity var(--motion-medium) var(--ease-out) 500ms;
+}
+:global(.js) .portrait:global(.is-in) .grips,
+:global(.reveal-all) .grips {
+  opacity: 1;
+}
+.selectedLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+}
+.selectedLabel i {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--accent);
+}
+
 .caption {
   display: flex;
   flex-wrap: wrap;
@@ -91,6 +157,9 @@
   }
   .frame {
     aspect-ratio: 1 / 1;
+  }
+  .selected .frame {
+    aspect-ratio: 4 / 5 !important;
   }
 }
 
