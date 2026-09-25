@@ -230,8 +230,8 @@
     position: absolute;
     right: max(var(--gutter), calc((100vw - var(--max-width)) / 2));
     /* close to the text column and nearly as tall as it, so the model fills the sheet */
-    top: calc(var(--header-h) + 52px + 150px);
-    bottom: 40px;
+    top: calc(var(--header-h) + 52px + 172px);
+    bottom: 36px;
     left: var(--split);
     height: auto;
     margin: 0;
@@ -321,6 +321,21 @@
 }
 
 /* ---------- Model tabs + scenario line ---------- */
+/* "Use cases": says what the tabs are */
+.useCases {
+  padding: 0 var(--gutter);
+  margin-top: 10px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.useCases span {
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
 /* Phones / tablets: under the model, before the command line */
 .models {
   display: flex;
@@ -375,6 +390,10 @@
 .story {
   padding: 12px var(--gutter) 20px;
 }
+.storyLine strong {
+  font-weight: 500;
+  color: var(--text-1);
+}
 .storyLine {
   max-width: 46ch;
   font-size: 14px;
@@ -428,10 +447,18 @@
 
 /* Desktop: inside the viewport — tabs under its controls, the line along its bottom edge */
 @media (min-width: 1100px) {
-  .models {
+  .useCases {
     position: absolute;
     z-index: 4;
     top: calc(var(--header-h) + 52px + 44px);
+    left: calc(var(--split) + 4px);
+    padding: 0;
+    margin: 0;
+  }
+  .models {
+    position: absolute;
+    z-index: 4;
+    top: calc(var(--header-h) + 52px + 64px);
     left: calc(var(--split) + 4px);
     padding: 0;
     margin: 0;
@@ -440,7 +467,7 @@
   .story {
     position: absolute;
     z-index: 3;
-    top: calc(var(--header-h) + 52px + 88px);
+    top: calc(var(--header-h) + 52px + 108px);
     left: calc(var(--split) + 4px);
     /* stops short of the ViewCube in the other corner */
     width: min(400px, calc(100vw - var(--split) - max(var(--gutter), (100vw - var(--max-width)) / 2) - 250px));

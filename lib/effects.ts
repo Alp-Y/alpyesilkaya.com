@@ -315,6 +315,31 @@ function initCommandLine(): Cleanup {
   const history = form.querySelector<HTMLElement>("[data-cmd-history]")!;
   const timers: number[] = [];
 
+  // Folded away until wanted: the toggle (or "/") opens it, Escape or a click elsewhere closes it
+  const dock = form.closest<HTMLElement>("[data-cmd-dock]");
+  const toggle = dock?.querySelector<HTMLButtonElement>("[data-cmd-toggle]") ?? null;
+  const isOpen = () => !dock || dock.dataset.open === "true";
+  const setOpen = (open: boolean) => {
+    if (!dock) return;
+    dock.dataset.open = String(open);
+    toggle?.setAttribute("aria-expanded", String(open));
+    if (open) requestAnimationFrame(() => input.focus({ preventScroll: true }));
+    else if (form.contains(document.activeElement)) (document.activeElement as HTMLElement).blur();
+  };
+  const onToggle = () => setOpen(!isOpen());
+  const onFormKey = (e: KeyboardEvent) => {
+    if (e.key !== "Escape" || !dock) return;
+    e.preventDefault();
+    setOpen(false);
+    toggle?.focus();
+  };
+  const onOutside = (e: PointerEvent) => {
+    if (dock && isOpen() && !dock.contains(e.target as Node)) setOpen(false);
+  };
+  toggle?.addEventListener("click", onToggle);
+  form.addEventListener("keydown", onFormKey);
+  document.addEventListener("pointerdown", onOutside);
+
   const print = (text: string) => {
     const p = document.createElement("p");
     p.textContent = text;
@@ -386,8 +411,9 @@ function initCommandLine(): Cleanup {
     const t = e.target as HTMLElement | null;
     if (t && (t.closest("input, textarea, select, [contenteditable='true']") || t.isContentEditable)) return;
     e.preventDefault();
+    setOpen(true);
     input.focus({ preventScroll: true });
-    form.scrollIntoView({ block: "nearest", behavior: reducedMotion() ? "auto" : "smooth" });
+    (dock ?? form).scrollIntoView({ block: "nearest", behavior: reducedMotion() ? "auto" : "smooth" });
   };
   const onFormDown = (e: PointerEvent) => {
     if (e.target !== input && !(e.target as HTMLElement).closest("[data-cmd-run]")) {
@@ -400,6 +426,9 @@ function initCommandLine(): Cleanup {
   form.addEventListener("submit", onSubmit);
   return () => {
     document.removeEventListener("keydown", onKey);
+    document.removeEventListener("pointerdown", onOutside);
+    toggle?.removeEventListener("click", onToggle);
+    form.removeEventListener("keydown", onFormKey);
     form.removeEventListener("pointerdown", onFormDown);
     form.removeEventListener("submit", onSubmit);
     form.removeEventListener("click", onChip);

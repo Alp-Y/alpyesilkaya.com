@@ -13,6 +13,8 @@ export type HeroModel = {
   id: HeroModelId;
   /** Tab label */
   tab: string;
+  /** What the model shows, leading the sentence */
+  title: string;
   /** One specific scenario, in one sentence */
   line: string;
   tool: { name: string; href: string };
@@ -31,6 +33,7 @@ export const HERO_MODELS: HeroModel[] = [
   {
     id: "road",
     tab: "Earthworks",
+    title: "Road earthworks.",
     line: "Turn XYZ survey points into cut and fill volumes and an Excel report, in seconds.",
     tool: { name: "Excavation Volume Calculator", href: "/tools/excavation-volume-calculator" },
     keys: [
@@ -42,6 +45,7 @@ export const HERO_MODELS: HeroModel[] = [
   {
     id: "basement",
     tab: "Basement",
+    title: "Basement excavation.",
     line: "Measure a basement excavation from the ground survey and the dug surface, with sections to check it.",
     tool: { name: "Excavation Volume Calculator", href: "/tools/excavation-volume-calculator" },
     keys: [
@@ -53,6 +57,7 @@ export const HERO_MODELS: HeroModel[] = [
   {
     id: "progress",
     tab: "Progress",
+    title: "Weekly progress.",
     line: "Overlay last week’s and this week’s drawings and get the net quantities for the progress report.",
     tool: { name: "DWG Comparison Tool", href: "/tools/drawing-comparison-tool" },
     keys: [
@@ -65,6 +70,7 @@ export const HERO_MODELS: HeroModel[] = [
   {
     id: "areas",
     tab: "Areas",
+    title: "Project areas.",
     line: "Split one asphalt layer and a pipe trench that cross three project areas into a quantity for each area.",
     tool: { name: "Quantity by Area Calculator", href: "/tools/quantity-by-area-calculator" },
     keys: [
