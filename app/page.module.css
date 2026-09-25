@@ -22,7 +22,6 @@
 
 .toolList {
   display: grid;
-  gap: clamp(72px, 8vw, 112px);
 }
 
 /* Case studies, before the first one is written: one quiet line between Tools and About */

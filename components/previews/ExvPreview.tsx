@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { runEngine, type EngineResult } from "@/lib/excavation/engine";
 import { getSample, type SampleId } from "@/lib/excavation/samples";
@@ -8,6 +7,9 @@ import { num } from "@/lib/format";
 import type { SurfaceScene } from "@/components/excavation/surfaceScene";
 import { PreviewBar } from "./SqePreview";
 import { usePreviewLoop } from "./usePreviewLoop";
+import { useHold } from "./useHold";
+import ViewControls from "./ViewControls";
+import { bindControls } from "@/components/excavation/orbitControls";
 import styles from "./preview.module.css";
 
 /** Survey points → TIN → surfaces → cut volume, then a slow turn, on repeat. */
@@ -25,10 +27,14 @@ const SPIN = 0.00006; // rad / ms
 /**
  * EXCAVATION VOLUME ENGINE — homepage preview. The same live 3D scene and
  * engine as the tool page (so it stays sharp at any size), cycling through
- * the three sample sites. The whole card is a link to the interactive tool.
+ * the three sample sites. Drag to spin it, zoom with +/− (or the wheel once
+ * you have pressed on it); holding it pauses the story. The tool itself
+ * opens from the button beside it.
  */
-export default function ExvPreview({ href, title }: { href: string; title: string }) {
-  const ref = useRef<HTMLAnchorElement>(null);
+export default function ExvPreview({ title }: { title: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const { held, heldRef } = useHold(stageRef);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<SurfaceScene | null>(null);
   const results = useRef<EngineResult[]>([]);
@@ -66,6 +72,7 @@ export default function ExvPreview({ href, title }: { href: string; title: strin
       const start = p === 0 ? Math.min(1, t * 4) : 1;
       if (canvasRef.current) canvasRef.current.style.opacity = String(Math.min(start, end));
     },
+    heldRef,
   );
 
   // start the engine + 3D scene when the preview comes near the viewport
@@ -76,6 +83,7 @@ export default function ExvPreview({ href, title }: { href: string; title: strin
     let cancelled = false;
     let scene: SurfaceScene | null = null;
     let ro: ResizeObserver | null = null;
+    let unbind: (() => void) | null = null;
     const start = async () => {
       if (!supportsWebGL()) return;
       const { SurfaceScene } = await import("@/components/excavation/surfaceScene");
@@ -88,6 +96,7 @@ export default function ExvPreview({ href, title }: { href: string; title: strin
       ro.observe(canvas.parentElement!);
       scene.setData(first);
       scene.setBuild(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 1 : 0);
+      unbind = bindControls(canvas, scene, () => {});
       setShown(first);
       setReady(true);
       // the other two sites, when the browser is idle
@@ -112,6 +121,7 @@ export default function ExvPreview({ href, title }: { href: string; title: strin
       cancelled = true;
       io.disconnect();
       ro?.disconnect();
+      unbind?.();
       scene?.dispose();
       sceneRef.current = null;
     };
@@ -119,9 +129,9 @@ export default function ExvPreview({ href, title }: { href: string; title: strin
 
   const c = shown?.comparison;
   return (
-    <Link href={href} ref={ref} className={styles.card} aria-label={`${title}: open the interactive tool`}>
-      <div className={`${styles.stage} ${styles.exv}`} aria-hidden="true" data-ready={ready}>
-        <canvas ref={canvasRef} className={styles.canvas} />
+    <div ref={ref} className={styles.card} data-held={held}>
+      <div ref={stageRef} className={`${styles.stage} ${styles.exv} ${styles.handle}`} data-ready={ready}>
+        <canvas ref={canvasRef} className={styles.canvas} role="img" aria-label={`${title}: 3D model of an example site. Drag to spin, use the buttons to zoom.`} />
         {shown && c && (
           <div className={styles.overlay} key={shown.dataset.id}>
             <span className={styles.site}>{shown.dataset.name}</span>
@@ -130,9 +140,10 @@ export default function ExvPreview({ href, title }: { href: string; title: strin
             </span>
           </div>
         )}
+        {ready && <ViewControls onIn={() => sceneRef.current?.zoom(0.8)} onOut={() => sceneRef.current?.zoom(1.25)} onReset={() => sceneRef.current?.resetView()} label={title} />}
       </div>
-      <PreviewBar labels={PHASES.map((p) => p.label)} durations={PHASES.map((p) => p.ms)} phase={phase} />
-    </Link>
+      <PreviewBar labels={PHASES.map((p) => p.label)} durations={PHASES.map((p) => p.ms)} phase={phase} held={held} hint="Drag to spin" />
+    </div>
   );
 }
 

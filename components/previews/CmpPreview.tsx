@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import CompareDrawing from "@/components/compare/CompareDrawing";
 import { signed } from "@/lib/compare/format";
@@ -8,6 +7,9 @@ import { getUpdates, ITEMS } from "@/lib/compare/model";
 import { compare } from "@/lib/compare/diff";
 import { PreviewBar } from "./SqePreview";
 import { usePreviewLoop } from "./usePreviewLoop";
+import { useHold } from "./useHold";
+import { usePlanOrbit } from "./usePlanOrbit";
+import ViewControls from "./ViewControls";
 import styles from "./preview.module.css";
 
 /** previous drawing → current drawing → overlay → compare → net quantities, on repeat */
@@ -29,10 +31,15 @@ const ease = (t: number) => 1 - Math.pow(1 - t, 3);
  * DRAWING COMPARISON — homepage preview. Two progress drawings plot in,
  * slide onto each other, the comparison sweeps across, and the net
  * quantities come out; each loop moves to another reporting period.
- * The whole card is a link to the interactive tool.
+ * Drag to spin and tilt the drawings, zoom with +/−; holding it pauses the
+ * story. The tool itself opens from the button beside it.
  */
-export default function CmpPreview({ href, title }: { href: string; title: string }) {
-  const ref = useRef<HTMLAnchorElement>(null);
+export default function CmpPreview({ title }: { title: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const area = useRef<HTMLDivElement>(null);
+  const plan = useRef<HTMLDivElement>(null);
+  const { held, heldRef } = useHold(area);
+  const view = usePlanOrbit(area, plan);
   const pairs = useMemo(() => {
     const u = getUpdates();
     return u.slice(1).map((b, i) => compare(u[i], b));
@@ -53,16 +60,19 @@ export default function CmpPreview({ href, title }: { href: string; title: strin
       else if (p === 3) setF({ a: 1, b: 1, merge: 1, scan: t, res: 0, fade: 1 });
       else setF({ a: 1, b: 1, merge: 1, scan: 1, res: Math.min(1, t * 2.5), fade: t > 0.93 ? 1 - (t - 0.93) / 0.07 : 1 });
     },
+    heldRef,
   );
 
   const cmp = pairs[ORDER[cycle % ORDER.length]];
   const res = ease(f.res);
 
   return (
-    <Link href={href} ref={ref} className={styles.card} aria-label={`${title}: open the interactive tool`}>
-      <div className={`${styles.stage} ${styles.cmp}`} aria-hidden="true">
+    <div ref={ref} className={styles.card} data-held={held}>
+      <div ref={area} className={`${styles.stage} ${styles.cmp} ${styles.handle}`} role="img" aria-label={`${title}: two example progress drawings being compared. Drag to spin, use the buttons to zoom.`}>
         <div className={styles.cmpInner} style={{ opacity: f.fade }}>
-          <CompareDrawing cmp={cmp} merge={f.merge} scan={f.scan} reveal={[f.a, f.b]} className={styles.cmpSvg} />
+          <div ref={plan} className={`${styles.turn} ${styles.cmpTurn}`}>
+            <CompareDrawing cmp={cmp} merge={f.merge} scan={f.scan} reveal={[f.a, f.b]} className={styles.cmpSvg} />
+          </div>
 
           <div className={styles.cmpTop} data-show={f.merge >= 1}>
             <span className={styles.site}>
@@ -89,8 +99,9 @@ export default function CmpPreview({ href, title }: { href: string; title: strin
             })}
           </dl>
         </div>
+        <ViewControls onIn={view.zoomIn} onOut={view.zoomOut} onReset={view.reset} label={title} />
       </div>
-      <PreviewBar labels={PHASES.map((p) => p.label)} durations={PHASES.map((p) => p.ms)} phase={phase} />
-    </Link>
+      <PreviewBar labels={PHASES.map((p) => p.label)} durations={PHASES.map((p) => p.ms)} phase={phase} held={held} hint="Drag to spin" />
+    </div>
   );
 }

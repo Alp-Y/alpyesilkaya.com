@@ -22,7 +22,7 @@ export default function ToolsPage() {
       />
       <section className={styles.section}>
         <div className="container">
-          <div style={{ display: "grid", gap: "clamp(72px, 8vw, 112px)" }}>
+          <div style={{ display: "grid" }}>
             {tools.map((tool, i) => (
               <ToolFeature key={tool.slug} tool={tool} index={i} />
             ))}

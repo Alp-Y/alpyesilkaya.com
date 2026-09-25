@@ -8,7 +8,13 @@ import { useEffect, useRef, useState } from "react";
  * visible, so an off-screen preview costs nothing. With reduced motion
  * the preview holds its last phase and does not move.
  */
-export function usePreviewLoop(ref: React.RefObject<HTMLElement | null>, durations: number[], onTick?: (phase: number, t: number, dt: number) => void) {
+export function usePreviewLoop(
+  ref: React.RefObject<HTMLElement | null>,
+  durations: number[],
+  onTick?: (phase: number, t: number, dt: number) => void,
+  /** while true the story holds where it is (the visitor is handling the preview) */
+  pausedRef?: React.RefObject<boolean>,
+) {
   const [phase, setPhase] = useState(durations.length - 1);
   const [running, setRunning] = useState(false);
   const tickRef = useRef(onTick);
@@ -28,7 +34,7 @@ export function usePreviewLoop(ref: React.RefObject<HTMLElement | null>, duratio
     const total = durations.reduce((a, b) => a + b, 0);
     const frame = (now: number) => {
       raf = 0;
-      const dt = last ? Math.min(64, now - last) : 16;
+      const dt = pausedRef?.current ? 0 : last ? Math.min(64, now - last) : 16;
       last = now;
       clock = (clock + dt) % total;
       let t = clock;

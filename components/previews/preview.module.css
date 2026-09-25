@@ -1,6 +1,7 @@
 /* ==================================================================
-   TOOL PREVIEWS (homepage, /tools) — one looping visual per tool.
-   The whole card is a link to the tool's interactive page.
+   TOOL PREVIEWS (homepage, /tools) — a small live version of each tool.
+   Not a link: you hold it, spin it and zoom it. The tool itself opens
+   from the "Open the interactive tool" button beside it.
    ================================================================== */
 
 .card {
@@ -14,32 +15,123 @@
     border-color var(--motion-medium) var(--ease-out),
     box-shadow var(--motion-medium) var(--ease-out);
 }
-.card {
-  transition:
-    border-color var(--motion-medium) var(--ease-out),
-    box-shadow var(--motion-medium) var(--ease-out),
-    transform var(--motion-medium) var(--ease-out);
-}
-.card:hover {
-  border-color: rgba(62, 224, 143, 0.45);
-  box-shadow:
-    0 0 0 1px rgba(62, 224, 143, 0.12),
-    0 18px 40px -24px rgba(0, 0, 0, 0.8);
-  transform: translate3d(0, -2px, 0);
-}
-.card:active {
-  transform: translate3d(0, 0, 0) scale(0.997);
-}
-.card:focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: 3px;
+/* held: the frame lights up to say "you've got it" */
+.card[data-held="true"] {
+  border-color: rgba(62, 224, 143, 0.4);
+  box-shadow: 0 0 0 1px rgba(62, 224, 143, 0.1);
 }
 
 .stage {
   position: relative;
   overflow: hidden;
   background: #07090b;
-  pointer-events: none; /* the visual never takes input: the card is the link */
+  pointer-events: none;
+}
+/* the visuals you can handle: grab to spin, vertical swipes still scroll the page on touch */
+.handle {
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.handle:active {
+  cursor: grabbing;
+}
+.handle canvas:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+/* the element that turns: transform set by usePlanOrbit */
+.turn {
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.turn,
+.turn * {
+  pointer-events: none;
+}
+.cmpTurn {
+  position: absolute;
+  inset: 0;
+}
+
+/* zoom in / out / reset: small, in the corner, always there (touch has no wheel) */
+.controls {
+  position: absolute;
+  z-index: 3;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: rgba(9, 12, 15, 0.82);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+  opacity: 0.7;
+  transition: opacity var(--motion-medium) var(--ease-out);
+}
+.card:hover .controls,
+.card[data-held="true"] .controls,
+.controls:focus-within {
+  opacity: 1;
+}
+.controls button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1;
+  color: var(--text-2);
+  cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out);
+}
+.controls button + button {
+  border-top: 1px solid var(--line);
+}
+.controls button:hover {
+  color: var(--text-1);
+  background: var(--surface-strong);
+}
+.controls button:active {
+  background: rgba(62, 224, 143, 0.14);
+}
+.controls button:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+.controls svg {
+  width: 14px;
+  height: 14px;
+}
+@media (pointer: coarse) {
+  .controls button {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* what you can do with it, said once, quietly */
+.hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.bar[data-held="true"] .hint {
+  color: var(--accent);
+}
+.bar[data-held="true"] .phases li[data-on="true"]::after {
+  animation-play-state: paused;
 }
 /* both previews share the drawing's proportion, so the two tools line up */
 .exv {
@@ -65,6 +157,7 @@
   opacity: 1;
 }
 .overlay {
+  pointer-events: none;
   position: absolute;
   inset: 12px 14px auto;
   display: flex;
@@ -174,45 +267,10 @@
   font-size: 0.75rem;
   color: var(--text-3);
 }
-/* the card's one action, drawn as a button so it is obviously there to press */
-.cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 34px;
-  padding: 0 14px;
-  border: 1px solid rgba(62, 224, 143, 0.45);
-  border-radius: var(--radius);
-  background: rgba(62, 224, 143, 0.08);
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-1);
-  transition:
-    background-color var(--motion-medium) var(--ease-out),
-    border-color var(--motion-medium) var(--ease-out);
-}
-.card:hover .cta,
-.card:focus-visible .cta {
-  border-color: var(--accent);
-  background: rgba(62, 224, 143, 0.16);
-}
-.cta :global(.arrow) {
-  color: var(--accent);
-  transition: transform var(--motion-medium) var(--ease-out);
-}
-.card:hover .cta :global(.arrow),
-.card:focus-visible .cta :global(.arrow) {
-  transform: translateX(4px);
-}
 @media (max-width: 640px) {
   .phases {
     gap: 2px 10px;
     font-size: 9px;
-  }
-  .cta {
-    width: 100%;
-    justify-content: space-between;
-    min-height: 44px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -254,6 +312,8 @@
   height: 92%;
 }
 .cmpTop {
+  pointer-events: none;
+  z-index: 2;
   position: absolute;
   inset: 12px 14px auto;
   display: flex;
@@ -288,6 +348,8 @@
   color: #ff5a5f;
 }
 .cmpStrip {
+  pointer-events: none;
+  z-index: 2;
   position: absolute;
   left: 14px;
   right: 14px;
@@ -368,9 +430,5 @@
 @media (prefers-reduced-motion: reduce) {
   .phases li[data-on="true"]::after {
     animation: none;
-  }
-  .card:hover,
-  .card:active {
-    transform: none;
   }
 }

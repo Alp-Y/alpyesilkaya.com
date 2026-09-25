@@ -1,12 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import SqeViewport, { type SqePreviewState } from "@/components/sqe/SqeViewport";
 import { analyse } from "@/lib/sqe/engine";
 import { exampleProject } from "@/lib/sqe/example";
 import { getSqe, loadExample, useSqe } from "@/lib/sqe/store";
 import { usePreviewLoop } from "./usePreviewLoop";
+import { useHold } from "./useHold";
+import { usePlanOrbit } from "./usePlanOrbit";
+import ViewControls from "./ViewControls";
 import styles from "./preview.module.css";
 
 /** Satellite image → survey points → CAD areas → quantities → analysis, on repeat. */
@@ -20,14 +22,21 @@ const PHASES: (SqePreviewState & { label: string; ms: number })[] = [
 
 /**
  * QUANTITY BY AREA — homepage preview. The real drawing from the tool
- * page, looping through its story on its own. The whole card is a link to
- * the interactive tool.
+ * page, looping through its story on its own. It is something to handle,
+ * not a link: drag to spin and tilt the plan, zoom with +/−. Holding it
+ * pauses the story. The tool itself opens from the button beside it.
  */
-export default function SqePreview({ href, title }: { href: string; title: string }) {
-  const ref = useRef<HTMLAnchorElement>(null);
+export default function SqePreview({ title }: { title: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const area = useRef<HTMLDivElement>(null);
+  const plan = useRef<HTMLDivElement>(null);
+  const { held, heldRef } = useHold(area);
+  const view = usePlanOrbit(area, plan);
   const { phase } = usePreviewLoop(
     ref,
     PHASES.map((p) => p.ms),
+    undefined,
+    heldRef,
   );
   const storeProject = useSqe((s) => s.project);
   const workType = useSqe((s) => s.workType);
@@ -45,23 +54,26 @@ export default function SqePreview({ href, title }: { href: string; title: strin
   const current = PHASES[phase];
 
   return (
-    <Link href={href} ref={ref} className={styles.card} aria-label={`${title}: open the interactive tool`}>
-      <div className={`${styles.stage} ${styles.sqe}`} aria-hidden="true" data-ready={!!workType}>
-        <SqeViewport project={project} analysis={analysis} preview={{ step: current.step, view: current.view }} />
+    <div ref={ref} className={styles.card} data-held={held}>
+      <div ref={area} className={`${styles.stage} ${styles.sqe} ${styles.handle}`} data-ready={!!workType} role="img" aria-label={`${title}: example drawing. Drag to spin, use the buttons to zoom.`}>
+        <div ref={plan} className={styles.turn}>
+          <SqeViewport project={project} analysis={analysis} preview={{ step: current.step, view: current.view }} />
+        </div>
+        <ViewControls onIn={view.zoomIn} onOut={view.zoomOut} onReset={view.reset} label={title} />
       </div>
-      <PreviewBar labels={PHASES.map((p) => p.label)} durations={PHASES.map((p) => p.ms)} phase={phase} />
-    </Link>
+      <PreviewBar labels={PHASES.map((p) => p.label)} durations={PHASES.map((p) => p.ms)} phase={phase} held={held} hint="Drag to spin" />
+    </div>
   );
 }
 
 /**
  * The preview's story, read left to right, with a thin line filling under
- * the step that is playing (so it reads as progress, not as tabs), and the
- * one action the card offers.
+ * the step that is playing (so it reads as progress, not as tabs). The line
+ * stops while the preview is held.
  */
-export function PreviewBar({ labels, durations, phase, note }: { labels: string[]; durations?: number[]; phase: number; note?: string }) {
+export function PreviewBar({ labels, durations, phase, held = false, hint }: { labels: string[]; durations?: number[]; phase: number; held?: boolean; hint?: string }) {
   return (
-    <div className={styles.bar}>
+    <div className={styles.bar} data-held={held}>
       <ol className={styles.phases} aria-hidden="true">
         {labels.map((l, i) => (
           <li key={l} data-on={i === phase} data-done={i < phase} style={durations ? ({ "--dur": `${durations[i]}ms` } as React.CSSProperties) : undefined}>
@@ -69,10 +81,11 @@ export function PreviewBar({ labels, durations, phase, note }: { labels: string[
           </li>
         ))}
       </ol>
-      {note && <span className={styles.note}>{note}</span>}
-      <span className={styles.cta}>
-        Open the interactive tool <span className="arrow">→</span>
-      </span>
+      {hint && (
+        <span className={styles.hint} aria-hidden="true">
+          {held ? "Paused" : hint}
+        </span>
+      )}
     </div>
   );
 }
