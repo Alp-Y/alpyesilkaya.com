@@ -54,7 +54,11 @@ export type ControllerOptions = {
   onHover?: (name: string | null) => void;
   /** View to start in (default: the isometric home view). HOME still returns to isometric. */
   initialView?: PresetName;
-  /** Turn very slowly about the vertical axis until the visitor interacts (not with reduced motion). */
+  /**
+   * Turn slowly about the vertical axis (not with reduced motion). After the
+   * visitor turns the view, it waits, eases back to the starting view and spins
+   * again. A view they chose on purpose (a preset, a cube face) stays put.
+   */
   autoSpin?: boolean;
 };
 
@@ -64,7 +68,9 @@ const CAMERA_DISTANCE = 10;
 const ZOOM_MIN = 0.8;
 const ZOOM_MAX = 1.6;
 const DRAG_THRESHOLD = 5; // px — below this a press is a click
-const SPIN_RATE = (Math.PI * 2) / 80_000; // rad per ms — one turn in 80 s
+const SPIN_RATE = (Math.PI * 2) / 61_500; // rad per ms — one turn in about 61.5 s
+const RESUME_DELAY = 2000; // ms without interaction before the spin comes back
+const RESUME_DURATION = 1400; // ms to ease back to the starting view
 const KEY_STEP = toRadians(15);
 const IDLE_DELAY = 6000;
 const MAX_SPIN = 0.008; // rad/ms — caps the flick speed (~460°/s)
@@ -75,6 +81,8 @@ type Transition = {
   start: number;
   duration: number;
   preset: PresetName | null;
+  /** The ease back to the starting view; the spin restarts when it ends. */
+  resume?: boolean;
 };
 
 export class ViewCubeController {
@@ -98,8 +106,13 @@ export class ViewCubeController {
   private velocity = { az: 0, el: 0 }; // rad / ms, for inertia after a drag
   private idleOffset = { az: 0, el: 0 };
   private idleActive = false;
-  /** Slow turntable spin (showcase) — stops on the first interaction. */
+  /** Slow turntable spin (showcase) — pauses while the visitor interacts. */
   private spinning = false;
+  /** Where the spin started; it eases back here before spinning again. */
+  private startView: ViewAngles = { azimuth: HOME.azimuth, elevation: HOME.elevation };
+  private resumeTimer = 0;
+  /** The visitor picked this view on purpose, so the spin does not come back. */
+  private held = false;
   private idlePhase = 0;
   private idleTimer = 0;
   private isVisible = true;
@@ -111,6 +124,7 @@ export class ViewCubeController {
   private preDrag: ViewAngles | null = null;
   private pinch: { distance: number; zoom: number } | null = null;
   private engaged = false; // wheel zooms only after the visitor has interacted with the widget
+  private pointerOver = false; // the pointer is on the cube: the spin waits
   private hovered: Region | null = null;
 
   // Frame loop
@@ -172,6 +186,7 @@ export class ViewCubeController {
       this.lastPreset = options.initialView;
     }
 
+    this.startView = { azimuth: this.azimuth, elevation: this.elevation };
     if (options.autoSpin && !this.motionQuery.matches) this.spinning = true;
 
     this.bindEvents(canvas);
@@ -184,7 +199,7 @@ export class ViewCubeController {
 
   /** Animate to a named view. */
   goToPreset(name: PresetName) {
-    this.goTo(PRESETS[name], { zoom: name === "home" ? 1 : this.zoom, preset: name });
+    this.goTo(PRESETS[name], { zoom: name === "home" ? 1 : this.zoom, preset: name, hold: true });
   }
 
   /** Follow the workspace display mode (wireframe / shaded / analysis). */
@@ -195,7 +210,7 @@ export class ViewCubeController {
 
   /** Home: default isometric view and default zoom. */
   goHome() {
-    this.goTo(HOME, { zoom: 1, preset: "home" });
+    this.goTo(HOME, { zoom: 1, preset: "home", hold: true });
   }
 
   dispose() {
@@ -203,6 +218,7 @@ export class ViewCubeController {
     this.disposed = true;
     cancelAnimationFrame(this.frame);
     clearTimeout(this.idleTimer);
+    clearTimeout(this.resumeTimer);
     this.events.abort();
     this.resizeObserver.disconnect();
     this.visibilityObserver.disconnect();
@@ -223,8 +239,23 @@ export class ViewCubeController {
     canvas.addEventListener("pointercancel", this.onPointerCancel, opts);
     canvas.addEventListener("pointerleave", this.onPointerLeave, opts);
     canvas.addEventListener("lostpointercapture", this.onPointerCancel, opts);
-    this.el.root.addEventListener("pointerenter", this.onInteract, opts);
-    this.el.root.addEventListener("pointerleave", () => (this.engaged = false), opts);
+    this.el.root.addEventListener(
+      "pointerenter",
+      () => {
+        this.pointerOver = true;
+        this.onInteract();
+      },
+      opts,
+    );
+    this.el.root.addEventListener(
+      "pointerleave",
+      () => {
+        this.engaged = false;
+        this.pointerOver = false;
+        this.scheduleResume();
+      },
+      opts,
+    );
     this.el.root.addEventListener("wheel", this.onWheel, { signal: this.events.signal, passive: false });
     this.el.root.addEventListener("keydown", this.onKeyDown, opts);
     this.el.root.addEventListener("focus", this.onInteract, opts);
@@ -236,6 +267,7 @@ export class ViewCubeController {
     this.spinning = false;
     this.stopIdle();
     this.scheduleIdle();
+    this.scheduleResume();
   };
 
   private onPointerDown = (e: PointerEvent) => {
@@ -279,6 +311,7 @@ export class ViewCubeController {
     if (press && press.id === e.pointerId) {
       if (!this.dragging && Math.hypot(e.clientX - press.x, e.clientY - press.y) > DRAG_THRESHOLD) {
         this.dragging = true;
+        this.held = false;
         this.preDrag = { azimuth: this.azimuth, elevation: this.elevation };
         this.cube.setHover(null);
         if (this.hovered) this.options.onHover?.(null);
@@ -444,7 +477,7 @@ export class ViewCubeController {
   private selectRegion(region: Region) {
     const angles = anglesForRegion(region);
     this.cube.setActive(region);
-    this.goTo(angles, { preset: presetForAngles(angles) });
+    this.goTo(angles, { preset: presetForAngles(angles), hold: true });
   }
 
   /** Start / stop the slow showcase spin (it waits for any running transition). */
@@ -467,6 +500,7 @@ export class ViewCubeController {
     this.velocity.az = this.velocity.el = 0;
     this.external = { lastX: x, lastY: y, lastT: t };
     this.dragging = true;
+    this.held = false;
     this.preDrag = { azimuth: this.azimuth, elevation: this.elevation };
     this.cube.setRingEmphasis(true);
     this.requestRender();
@@ -498,9 +532,13 @@ export class ViewCubeController {
 
   private goTo(
     target: ViewAngles,
-    opts: { zoom?: number; preset?: PresetName | null; duration?: number } = {},
+    opts: { zoom?: number; preset?: PresetName | null; duration?: number; hold?: boolean; resume?: boolean } = {},
   ) {
     this.spinning = false;
+    if (!opts.resume) {
+      this.held = !!opts.hold;
+      clearTimeout(this.resumeTimer);
+    }
     this.foldIdle();
     this.velocity.az = this.velocity.el = 0;
     const to = {
@@ -518,7 +556,7 @@ export class ViewCubeController {
     let duration = opts.duration ?? clamp(350 + (angle / Math.PI) * 300, 350, 650);
     if (this.motionQuery.matches) duration = 80;
 
-    this.transition = { from, to, start: performance.now(), duration, preset: opts.preset ?? null };
+    this.transition = { from, to, start: performance.now(), duration, preset: opts.preset ?? null, resume: !!opts.resume };
     this.cube.pulseArc(to.azimuth);
     this.requestRender();
   }
@@ -553,6 +591,22 @@ export class ViewCubeController {
     this.lastPreset = preset;
     this.updateCaption();
     this.scheduleIdle();
+    this.scheduleResume();
+  }
+
+  /* ================= spin comes back ================= */
+
+  /** After a quiet moment, ease back to the starting view and spin again. */
+  private scheduleResume() {
+    clearTimeout(this.resumeTimer);
+    if (!this.options.autoSpin || this.spinning || this.held || this.motionQuery.matches) return;
+    this.resumeTimer = window.setTimeout(() => {
+      if (this.spinning || this.held || this.disposed) return;
+      // Still being handled (pointer on the cube, a drag, a flick, a view change): wait again
+      const busy = this.pointerOver || this.dragging || this.press || this.external || this.pinch || this.transition || this.velocity.az || this.velocity.el;
+      if (busy) return this.scheduleResume();
+      this.goTo(this.startView, { zoom: 1, duration: RESUME_DURATION, resume: true });
+    }, RESUME_DELAY);
   }
 
   /* ================= idle drift ================= */
@@ -615,6 +669,7 @@ export class ViewCubeController {
         this.elevation = tr.to.elevation;
         this.zoom = tr.to.zoom;
         this.transition = null;
+        if (tr.resume) this.spinning = true;
         this.settle();
       } else {
         busy = true;

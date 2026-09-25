@@ -3,11 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * "Holding" a preview: while the pointer is over it (or a finger is on it,
- * plus a few seconds after), its looping story pauses so the visitor can
- * turn it and look at it without it changing under them.
+ * "Holding" a preview pauses its looping story, so the visitor can look at it
+ * without it changing under them.
+ *   "hover" (default): while the pointer is over it, or a finger is on it
+ *                      plus a few seconds after (for previews you turn by dragging).
+ *   "press":           only while it is pressed and held; a quick click or tap
+ *                      does not pause, and letting go plays on.
  */
-export function useHold(ref: React.RefObject<HTMLElement | null>) {
+const PRESS_DELAY = 180; // ms of pressing before it counts as holding
+
+export function useHold(ref: React.RefObject<HTMLElement | null>, mode: "hover" | "press" = "hover") {
   const [held, setHeld] = useState(false);
   const heldRef = useRef(false);
 
@@ -20,20 +25,26 @@ export function useHold(ref: React.RefObject<HTMLElement | null>) {
       setHeld(v);
     };
     const enter = (e: PointerEvent) => {
-      if (e.pointerType === "mouse") set(true);
+      if (mode === "hover" && e.pointerType === "mouse") set(true);
     };
     const leave = (e: PointerEvent) => {
-      if (e.pointerType === "mouse") set(false);
+      if (mode === "press") {
+        // let go outside the preview: it plays on
+        clearTimeout(timer);
+        set(false);
+      } else if (e.pointerType === "mouse") set(false);
     };
-    const down = () => {
+    const down = (e: PointerEvent) => {
       clearTimeout(timer);
-      set(true);
+      if (mode === "press") {
+        if (e.button !== 0) return;
+        timer = window.setTimeout(() => set(true), PRESS_DELAY);
+      } else set(true);
     };
     const up = (e: PointerEvent) => {
-      if (e.pointerType !== "mouse") {
-        clearTimeout(timer);
-        timer = window.setTimeout(() => set(false), 4000);
-      }
+      clearTimeout(timer);
+      if (mode === "press") set(false);
+      else if (e.pointerType !== "mouse") timer = window.setTimeout(() => set(false), 4000);
     };
     el.addEventListener("pointerenter", enter);
     el.addEventListener("pointerleave", leave);
@@ -48,7 +59,7 @@ export function useHold(ref: React.RefObject<HTMLElement | null>) {
       el.removeEventListener("pointerup", up);
       el.removeEventListener("pointercancel", up);
     };
-  }, [ref]);
+  }, [ref, mode]);
 
   return { held, heldRef };
 }

@@ -35,10 +35,10 @@ export default function Hero() {
 
       {/* Viewport controls + sheet annotation */}
       <div className={`container ${styles.hud}`} data-hero-exit>
-        <div data-reveal="rise" style={{ "--delay": "700ms" } as React.CSSProperties}>
+        <div className={styles.toolbar} data-reveal="rise" style={{ "--delay": "700ms" } as React.CSSProperties}>
           <ViewportToolbar />
         </div>
-        <span className="mono" data-overlay data-reveal="rise" style={{ "--delay": "800ms" } as React.CSSProperties}>
+        <span className={`mono ${styles.sheet}`} data-overlay data-reveal="rise" style={{ "--delay": "800ms" } as React.CSSProperties}>
           Sheet 01 / 05 <span className={styles.hudSep}>·</span> Rev {site.revision.code}
         </span>
       </div>
@@ -81,6 +81,23 @@ export default function Hero() {
             </a>
           </div>
         </div>
+      </div>
+
+      {/* Desktop: the model sits in a drawn viewport, like model space in CAD. Its
+          controls (top left), ViewCube (top right), UCS icon and scale bar
+          (bottom corners) all sit inside it, with a key to what you are looking at. */}
+      <div className={styles.viewport} data-hero-exit data-reveal="rise" style={{ "--delay": "600ms" } as React.CSSProperties} aria-hidden="true">
+        <i className={styles.corner} data-c="tl" />
+        <i className={styles.corner} data-c="tr" />
+        <i className={styles.corner} data-c="bl" />
+        <i className={styles.corner} data-c="br" />
+        <span className={`mono ${styles.legend}`}>
+          <span className={styles.key} data-k="cut" />
+          Cut
+          <span className={styles.key} data-k="fill" />
+          Fill
+          <span className={styles.legendHint}>· Drag to turn</span>
+        </span>
       </div>
 
       {/* Earthworks model — follows the ViewCube and the display mode */}

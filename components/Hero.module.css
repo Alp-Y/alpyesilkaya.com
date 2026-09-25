@@ -238,6 +238,107 @@
   }
 }
 
+/* ---------- Viewport frame (desktop) ---------- */
+.viewport {
+  display: none;
+}
+@media (min-width: 1100px) {
+  .viewport {
+    --vp-top: calc(var(--header-h) + 52px);
+    --vp-inset: 14px;
+    display: block;
+    position: absolute;
+    z-index: 0;
+    top: var(--vp-top);
+    bottom: 16px;
+    left: calc(var(--split) - 12px);
+    right: max(var(--gutter), calc((100vw - var(--max-width)) / 2));
+    border: 1px solid rgba(255, 255, 255, 0.045);
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.012);
+    pointer-events: none;
+  }
+  /* corner brackets, the same mark as the photo frame in About */
+  .corner {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 0 solid var(--line-strong);
+  }
+  .corner[data-c="tl"] {
+    top: -1px;
+    left: -1px;
+    border-top-width: 1px;
+    border-left-width: 1px;
+  }
+  .corner[data-c="tr"] {
+    top: -1px;
+    right: -1px;
+    border-top-width: 1px;
+    border-right-width: 1px;
+  }
+  .corner[data-c="bl"] {
+    bottom: -1px;
+    left: -1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+  }
+  .corner[data-c="br"] {
+    bottom: -1px;
+    right: -1px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+  }
+  /* key: on the same baseline as the UCS icon and the scale bar */
+  .legend {
+    position: absolute;
+    left: 76px;
+    bottom: calc(clamp(20px, 3vh, 32px) - 6px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+  .key {
+    width: 8px;
+    height: 8px;
+    border-radius: 1px;
+  }
+  .key[data-k="cut"] {
+    background: #e2848c;
+  }
+  .key[data-k="fill"] {
+    margin-left: 10px;
+    background: #7fd3ae;
+  }
+  .legendHint {
+    margin-left: 6px;
+  }
+
+  /* the viewport controls move into the frame's top-left corner */
+  .hud {
+    position: static;
+  }
+  .toolbar {
+    position: absolute;
+    z-index: 4;
+    top: calc(var(--header-h) + 52px + 12px);
+    left: calc(var(--split) + 4px);
+  }
+  .sheet {
+    margin-left: auto;
+  }
+  /* and the ViewCube into its top-right corner */
+  .viewcubeWrap {
+    top: calc(var(--header-h) + 52px + 10px);
+    right: calc(max(var(--gutter), calc((100vw - var(--max-width)) / 2)) + 10px);
+  }
+}
+
 /* ---------- Base row: the command line, on the text column ---------- */
 .base {
   display: flex;

@@ -1,10 +1,10 @@
 ---
 # The third tool. Fields left empty are simply not shown on the site.
 # Placeholder name: replace with the tool's real name when you're ready.
-title: Drawing Comparison Tool
+title: DWG Comparison Tool
 order: 3
 demo: cmp
-summary: Two progress drawings, overlaid. What was taken out and what was added is found and coloured automatically, and the net quantity for the period is calculated.
+summary: Two progress drawings, overlaid. Removals and additions are found and coloured automatically, and the net quantity for the period is calculated.
 platform:
 stack:
 status:
@@ -24,7 +24,7 @@ Every progress update starts with the same question: **what changed since the la
 
 Done by hand, that means opening two drawings side by side and hunting for the differences: which kerbs are new, which asphalt areas were extended, and whether anything that was reported last time has since been taken out or redrawn. It is slow, and a single missed object makes the progress quantities wrong.
 
-The Drawing Comparison Tool, part of my custom Civil 3D tools, does it the other way round. It lays the **previous** and the **current** progress drawings on top of each other and compares every object. Whatever is only in the previous drawing was **taken out** (red). Whatever is only in the current drawing was **added** (green). Everything else is unchanged. The net quantity for the period follows directly, and goes into the report.
+The DWG Comparison Tool, part of my custom Civil 3D tools, does it the other way round. It lays the **previous** and the **current** progress drawings on top of each other and compares every object. Whatever is only in the previous drawing was **taken out** (red). Whatever is only in the current drawing was **added** (green). Everything else is unchanged. The net quantity for the period follows directly, and goes into the report.
 
 ## How it works
 

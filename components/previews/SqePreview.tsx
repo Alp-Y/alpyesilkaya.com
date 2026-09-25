@@ -24,13 +24,13 @@ const PHASES: (SqePreviewState & { label: string; ms: number })[] = [
  * page, looping through its story on its own. The steps underneath are
  * buttons (jump to one and the story carries on from there), and once the
  * areas are drawn you can point at them and click them. Pointing at the
- * drawing holds the story still. The tool itself opens from the button
+ * drawing never stops it; pressing and holding on it does. The tool itself opens from the button
  * beside it.
  */
 export default function SqePreview({ title }: { title: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const area = useRef<HTMLDivElement>(null);
-  const { held, heldRef } = useHold(area);
+  const { held, heldRef } = useHold(area, "press");
   const { phase, seek } = usePreviewLoop(
     ref,
     PHASES.map((p) => p.ms),

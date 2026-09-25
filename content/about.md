@@ -10,7 +10,11 @@ properties:
   - Background | Civil Engineering · Project Management
   - Experience | Infrastructure · Energy · Construction
   - Working with | Civil 3D · AutoCAD · Data · Automation
-  - Currently | Working as a civil engineer and building tools for engineering workflows with AI
+  - Currently | Technical office engineer in Riyadh, building engineering tools with AI on the side
+  - "[Tools]"
+  - AI assistants | ChatGPT Codex · Claude Code
+  - Languages | TypeScript · Python · CSS
+  - Built on | Next.js · React · Three.js
 # Shown when a visitor clicks EXPAND EXPERIENCE. Newest first, one line each:
 # Company | Role | Location | Years | One-sentence summary
 experience:

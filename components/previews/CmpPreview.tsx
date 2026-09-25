@@ -32,13 +32,13 @@ const ease = (t: number) => 1 - Math.pow(1 - t, 3);
  * The steps underneath are buttons (jump to one and the story carries on
  * from there). Once the comparison has run, point at a coloured object to
  * see what it is and how much it adds or takes away; pointing at the
- * drawing holds the story still. The tool itself opens from the button
+ * drawing never stops it; pressing and holding on it does. The tool itself opens from the button
  * beside it.
  */
 export default function CmpPreview({ title }: { title: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const area = useRef<HTMLDivElement>(null);
-  const { held, heldRef } = useHold(area);
+  const { held, heldRef } = useHold(area, "press");
   const [tip, setTip] = useState<{ e: Diffed; x: number; y: number } | null>(null);
   const onHover = useCallback((e: Diffed | null, ev?: React.PointerEvent) => {
     const box = area.current?.getBoundingClientRect();
