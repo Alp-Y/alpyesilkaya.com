@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getState, watch } from "@/lib/workspace/store";
-import { getOrbit, setOrientation } from "@/lib/workspace/actions";
+import { getOrbit } from "@/lib/workspace/actions";
+import { getHeroModel, heroModel, type HeroModelId } from "@/lib/heroModels";
 import { setHud } from "@/lib/workspace/cadCursor";
 import { onFrame, reducedMotion } from "@/lib/workspace/pointer";
 import type { EarthworksScene } from "./scene";
@@ -21,6 +22,7 @@ type OrientationDetail = { quaternion: import("three").Quaternion; zoom: number;
  * nothing is cut off while it turns, and the ground fades out at its edges.
  * Drag the model itself to turn it (the ViewCube follows). In the hero it
  * is a visual only — no figures; the tools section carries the real demos.
+ * The hero's model tabs switch it to the other showcase scenes (showcase.ts).
  */
 export default function EarthworksModel({ className = "" }: { className?: string }) {
   const figRef = useRef<HTMLElement>(null);
@@ -43,10 +45,16 @@ export default function EarthworksModel({ className = "" }: { className?: string
     const cleanups: (() => void)[] = [];
 
     const start = async () => {
-      const [{ EarthworksScene }, { quaternionFromAngles }] = await Promise.all([import("./scene"), import("../viewcube/orientation")]);
+      const [{ EarthworksScene }, { quaternionFromAngles }, { SHOWCASE }] = await Promise.all([
+        import("./scene"),
+        import("../viewcube/orientation"),
+        import("./showcase"),
+      ]);
       if (cancelled) return;
       const s = new EarthworksScene(canvas);
       scene = s;
+      const build = (id: Exclude<HeroModelId, "road">) => SHOWCASE[id]();
+      s.setModel(getHeroModel(), build);
       s.setReveal(reducedMotion() ? 1 : 0);
 
       // Initial view: the workspace's current angles (the cube may not have started yet)
@@ -147,10 +155,7 @@ export default function EarthworksModel({ className = "" }: { className?: string
             const hero = fig.closest<HTMLElement>("[data-hero]");
             const past = hero ? y > hero.offsetHeight * 0.18 : false;
             const orbit = getOrbit();
-            if (down && past && !orbiting && !dragging && orbit && !orbit.spinning()) {
-              setOrientation("front");
-              orbit.spin(true);
-            }
+            if (down && past && !orbiting && !dragging && orbit && !orbit.spinning()) orbit.showcase(heroModel(getHeroModel()).view);
           }
           const inside = p.inside && p.target === canvas;
           if (!inside) {
@@ -178,7 +183,37 @@ export default function EarthworksModel({ className = "" }: { className?: string
       cleanups.push(() => setHud("hover", null, "hero"));
       setStateFlag("ready");
 
-      // ----- build-in: a sweep across the model, once, when it is in view -----
+      // ----- build-in: a sweep across the model -----
+      let sweepId = 0;
+      const sweep = (delay: number, D: number) => {
+        const id = ++sweepId;
+        const t0 = performance.now() + delay;
+        const tick = (now: number) => {
+          if (cancelled || id !== sweepId) return;
+          const t = Math.min(1, Math.max(0, (now - t0) / D));
+          s.setReveal(t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+          if (t < 1) requestAnimationFrame(tick);
+          else setStateFlag("revealed");
+        };
+        requestAnimationFrame(tick);
+      };
+
+      // ----- switching models: draw the new one in, and show it from its own angle -----
+      const onModel = (e: Event) => {
+        const id = (e as CustomEvent<{ id: HeroModelId }>).detail?.id;
+        if (!id) return;
+        s.setModel(id, build);
+        if (reducedMotion()) s.setReveal(1);
+        else {
+          s.setReveal(0);
+          sweep(0, 1100);
+        }
+        getOrbit()?.showcase(heroModel(id).view);
+      };
+      document.addEventListener("hero:model", onModel);
+      cleanups.push(() => document.removeEventListener("hero:model", onModel));
+
+      // once, when it first comes into view
       if (reducedMotion()) {
         setStateFlag("revealed");
         return;
@@ -187,16 +222,7 @@ export default function EarthworksModel({ className = "" }: { className?: string
         ([entry]) => {
           if (!entry.isIntersecting) return;
           io.disconnect();
-          const t0 = performance.now() + 250;
-          const D = 1500;
-          const tick = (now: number) => {
-            if (cancelled) return;
-            const t = Math.min(1, Math.max(0, (now - t0) / D));
-            s.setReveal(t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-            if (t < 1) requestAnimationFrame(tick);
-            else setStateFlag("revealed");
-          };
-          requestAnimationFrame(tick);
+          sweep(250, 1500);
         },
         { threshold: 0.2 },
       );
@@ -216,7 +242,7 @@ export default function EarthworksModel({ className = "" }: { className?: string
   }, []);
 
   return (
-    <figure ref={figRef} className={`${styles.model} ${className}`} data-state={state} aria-label="Earthworks model (cut and fill), drag to turn it">
+    <figure ref={figRef} className={`${styles.model} ${className}`} data-state={state} aria-label="3D model of the selected engineering scene, drag to turn it">
       <div ref={boxRef} className={styles.box}>
         <canvas ref={canvasRef} className={styles.canvas} />
       </div>

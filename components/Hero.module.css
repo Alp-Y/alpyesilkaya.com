@@ -40,12 +40,12 @@
   right: max(calc(var(--gutter) - 8px), calc((100vw - var(--max-width)) / 2 - 8px));
 }
 .viewcube {
-  --vc-size: 104px;
+  --vc-size: 86px;
 }
 /* Small phones: a little smaller, so it clears the viewport toolbar */
 @media (max-width: 360px) {
   .viewcube {
-    --vc-size: 88px;
+    --vc-size: 74px;
   }
 }
 /* Tablets */
@@ -54,7 +54,7 @@
     top: calc(var(--header-h) + 36px);
   }
   .viewcube {
-    --vc-size: 156px;
+    --vc-size: 128px;
   }
 }
 /* Desktop */
@@ -63,7 +63,7 @@
     top: calc(var(--header-h) + 40px);
   }
   .viewcube {
-    --vc-size: 200px;
+    --vc-size: 164px;
   }
 }
 
@@ -230,8 +230,8 @@
     position: absolute;
     right: max(var(--gutter), calc((100vw - var(--max-width)) / 2));
     /* close to the text column and nearly as tall as it, so the model fills the sheet */
-    top: calc(var(--header-h) + 120px);
-    bottom: 64px;
+    top: calc(var(--header-h) + 110px);
+    bottom: 118px;
     left: var(--split);
     height: auto;
     margin: 0;
@@ -289,35 +289,6 @@
     border-bottom-width: 1px;
     border-right-width: 1px;
   }
-  /* key: on the same baseline as the UCS icon and the scale bar */
-  .legend {
-    position: absolute;
-    left: 76px;
-    bottom: calc(clamp(20px, 3vh, 32px) - 6px);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-3);
-    white-space: nowrap;
-  }
-  .key {
-    width: 8px;
-    height: 8px;
-    border-radius: 1px;
-  }
-  .key[data-k="cut"] {
-    background: #e2848c;
-  }
-  .key[data-k="fill"] {
-    margin-left: 10px;
-    background: #7fd3ae;
-  }
-  .legendHint {
-    margin-left: 6px;
-  }
 
   /* the viewport controls move into the frame's top-left corner */
   .hud {
@@ -336,6 +307,133 @@
   .viewcubeWrap {
     top: calc(var(--header-h) + 52px + 10px);
     right: calc(max(var(--gutter), calc((100vw - var(--max-width)) / 2)) + 10px);
+  }
+}
+
+/* ---------- Model tabs + scenario line ---------- */
+/* Phones / tablets: under the model, before the command line */
+.models {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px var(--gutter);
+  margin-top: 6px;
+}
+.models::-webkit-scrollbar {
+  display: none;
+}
+.modelTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  height: 28px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.02);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
+}
+.modelTab:hover {
+  color: var(--text-1);
+  border-color: var(--line-strong);
+}
+.modelTab[aria-selected="true"] {
+  color: var(--text-1);
+  border-color: rgba(62, 224, 143, 0.5);
+  background: rgba(62, 224, 143, 0.08);
+}
+.modelTab[aria-selected="true"] :global(.num) {
+  color: var(--accent);
+}
+.modelTab:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.story {
+  padding: 12px var(--gutter) 20px;
+}
+.storyLine {
+  max-width: 46ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+  animation: story-in 420ms var(--ease) both;
+}
+@keyframes story-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+  }
+}
+.storyMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 10px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.storyKey {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.storyKey i {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+}
+.storyTool {
+  color: var(--accent);
+  transition: opacity var(--t-fast) var(--ease);
+}
+.storyTool:hover {
+  opacity: 0.8;
+}
+@media (prefers-reduced-motion: reduce) {
+  .storyLine {
+    animation: none;
+  }
+}
+
+/* Desktop: inside the viewport — tabs under its controls, the line along its bottom edge */
+@media (min-width: 1100px) {
+  .models {
+    position: absolute;
+    z-index: 4;
+    top: calc(var(--header-h) + 52px + 44px);
+    left: calc(var(--split) + 4px);
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+  }
+  .story {
+    position: absolute;
+    z-index: 3;
+    left: calc(var(--split) + 76px);
+    bottom: calc(clamp(20px, 3vh, 32px) - 6px);
+    /* stops short of the scale bar in the other corner */
+    width: min(440px, calc(100vw - var(--split) - max(var(--gutter), (100vw - var(--max-width)) / 2) - 330px));
+    padding: 0;
+  }
+  .storyLine {
+    font-size: 13.5px;
   }
 }
 

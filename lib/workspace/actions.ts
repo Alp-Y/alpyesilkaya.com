@@ -305,6 +305,8 @@ export type OrbitApi = {
   /** Slow showcase spin on / off, and whether it is running. */
   spin: (on: boolean) => void;
   spinning: () => boolean;
+  /** Ease to a view (degrees), make it the spin's home, and spin from it. */
+  showcase: (view: { azimuth: number; elevation: number }) => void;
   start: (x: number, y: number, t: number) => void;
   move: (x: number, y: number, t: number) => void;
   end: (t: number) => void;

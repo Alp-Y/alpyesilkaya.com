@@ -4,6 +4,7 @@ import UcsIcon from "./UcsIcon";
 import ViewportToolbar from "./ViewportToolbar";
 import InteractiveViewCube from "./viewcube/InteractiveViewCube";
 import EarthworksModel from "./earthworks/EarthworksModel";
+import HeroModels from "./HeroModels";
 import styles from "./Hero.module.css";
 
 /**
@@ -84,26 +85,22 @@ export default function Hero() {
       </div>
 
       {/* Desktop: the model sits in a drawn viewport, like model space in CAD. Its
-          controls (top left), ViewCube (top right), UCS icon and scale bar
-          (bottom corners) all sit inside it, with a key to what you are looking at. */}
+          controls and model tabs (top left), ViewCube (top right), UCS icon,
+          scenario line and scale bar (along the bottom) all sit inside it. */}
       <div className={styles.viewport} data-hero-exit data-reveal="rise" style={{ "--delay": "600ms" } as React.CSSProperties} aria-hidden="true">
         <i className={styles.corner} data-c="tl" />
         <i className={styles.corner} data-c="tr" />
         <i className={styles.corner} data-c="bl" />
         <i className={styles.corner} data-c="br" />
-        <span className={`mono ${styles.legend}`}>
-          <span className={styles.key} data-k="cut" />
-          Cut
-          <span className={styles.key} data-k="fill" />
-          Fill
-          <span className={styles.legendHint}>· Drag to turn</span>
-        </span>
       </div>
 
       {/* Earthworks model — follows the ViewCube and the display mode */}
       <div className={styles.modelWrap} data-hero-exit data-reveal="rise" style={{ "--delay": "650ms" } as React.CSSProperties}>
         <EarthworksModel className={styles.model} />
       </div>
+
+      {/* Model tabs + what the matching tool does in that scene */}
+      <HeroModels />
 
       {/* UCS icon (the origin of the hero's drawing coordinates) + command line */}
       <div className={`container ${styles.base}`} data-hero-exit>

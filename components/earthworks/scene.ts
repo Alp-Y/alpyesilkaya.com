@@ -9,6 +9,10 @@
  *   design surface    road formation + side slopes
  *   cut               red volume between ground (top) and design (bottom)
  *   fill              green volume between design (top) and ground (bottom)
+ *
+ * The hero can switch to the other showcase models (showcase.ts); they are
+ * built the first time they are shown and share the camera, lights, fit and
+ * build-in sweep.
  */
 
 import {
@@ -46,6 +50,8 @@ import {
   sample,
   type EarthworksModel,
 } from "@/lib/earthworks/model";
+import type { HeroModelId } from "@/lib/heroModels";
+import type { ShowcaseModel } from "./showcase";
 
 export type DisplayMode = "wireframe" | "shaded" | "analysis";
 
@@ -70,6 +76,10 @@ export class EarthworksScene {
   private scene = new Scene();
   private camera = new OrthographicCamera(-1, 1, 1, -1, 1, 1000);
   private root = new Group();
+  private road = new Group();
+  private showcase: Partial<Record<Exclude<HeroModelId, "road">, ShowcaseModel>> = {};
+  private current: HeroModelId = "road";
+  private mode: DisplayMode = "wireframe";
   private groundLines: LineSegments;
   private groundMesh: Mesh;
   private design: Mesh;
@@ -186,12 +196,10 @@ export class EarthworksScene {
     scanGeo.setAttribute("position", new BufferAttribute(new Float32Array([0, -2, -WIDTH / 2, 0, -2, WIDTH / 2]), 3));
     this.scan = new Line(scanGeo, new LineBasicMaterial({ color: COLORS.fill, transparent: true, opacity: 0 }));
 
-    this.root.add(this.groundMesh, this.groundLines, this.design, this.cut, this.fill, this.cutWalls, this.fillWalls, this.cutEdges, this.fillEdges, this.edges, this.scan);
+    this.road.add(this.groundMesh, this.groundLines, this.design, this.cut, this.fill, this.cutWalls, this.fillWalls, this.cutEdges, this.fillEdges, this.edges);
+    this.root.add(this.road, this.scan);
     this.renderer.localClippingEnabled = true;
-    this.root.traverse((o) => {
-      const mat = (o as Mesh).material as { clippingPlanes?: Plane[] } | undefined;
-      if (mat && o !== this.scan) mat.clippingPlanes = [this.clip];
-    });
+    this.clipAll(this.road);
     this.scene.add(this.root);
     // Light from above and the north-west: tops bright, walls in shade — reads as solid
     this.scene.add(new AmbientLight(0xffffff, 0.55));
@@ -293,7 +301,32 @@ export class EarthworksScene {
     return [mesh(faces, 0.16), mesh(walls, 0.32), new LineSegments(lg, new LineBasicMaterial({ color: edge, transparent: true, opacity: 0.8 }))];
   }
 
+  /** Every material in `obj` is swept in (and out) by the build-in clip plane. */
+  private clipAll(obj: Group) {
+    obj.traverse((o) => {
+      const mat = (o as Mesh).material as { clippingPlanes?: Plane[] } | undefined;
+      if (mat) mat.clippingPlanes = [this.clip];
+    });
+  }
+
+  /** Show another model; the others are built the first time they are needed. */
+  setModel(id: HeroModelId, build: (id: Exclude<HeroModelId, "road">) => ShowcaseModel) {
+    if (id !== "road" && !this.showcase[id]) {
+      const m = build(id);
+      this.clipAll(m.group);
+      m.setMode(this.mode);
+      this.showcase[id] = m;
+      this.root.add(m.group);
+    }
+    this.current = id;
+    this.road.visible = id === "road";
+    for (const [k, m] of Object.entries(this.showcase)) if (m) m.group.visible = k === id;
+    this.requestRender();
+  }
+
   setMode(mode: DisplayMode) {
+    this.mode = mode;
+    for (const m of Object.values(this.showcase)) m?.setMode(mode);
     const shaded = mode === "shaded";
     const analysis = mode === "analysis";
     this.groundMesh.visible = shaded;
@@ -370,6 +403,12 @@ export class EarthworksScene {
   probe(px: number, py: number): Probe {
     const ndc = new Vector2((px / this.width) * 2 - 1, -(py / this.height) * 2 + 1);
     this.raycaster.setFromCamera(ndc, this.camera);
+    if (this.current !== "road") {
+      // the showcase models: only "is there something to grab here"
+      const m = this.showcase[this.current];
+      const hit = m && this.raycaster.intersectObjects(m.pick, false)[0];
+      return hit ? { x: hit.point.x, z: hit.point.z, ground: 0, design: 0, depth: 0 } : null;
+    }
     // (the raycaster ignores visibility, so the shaded ground is always pickable)
     const hits = this.raycaster.intersectObjects([this.design, this.groundMesh], false);
     const hit = hits[0];

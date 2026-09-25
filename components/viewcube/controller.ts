@@ -490,6 +490,17 @@ export class ViewCubeController {
     return this.spinning;
   }
 
+  /**
+   * Show a model from its own best angle: ease there, make it the view the
+   * spin returns to, and spin from it.
+   */
+  showcase(view: ViewAngles) {
+    this.startView = { azimuth: view.azimuth, elevation: clamp(view.elevation, -MAX_ELEVATION, MAX_ELEVATION) };
+    this.held = false;
+    clearTimeout(this.resumeTimer);
+    this.goTo(this.startView, { zoom: 1, duration: 900, resume: true });
+  }
+
   /* ============ orbit driven from elsewhere (e.g. dragging the earthworks model) ============ */
 
   private external: { lastX: number; lastY: number; lastT: number } | null = null;
@@ -669,7 +680,7 @@ export class ViewCubeController {
         this.elevation = tr.to.elevation;
         this.zoom = tr.to.zoom;
         this.transition = null;
-        if (tr.resume) this.spinning = true;
+        if (tr.resume) this.spinning = !!this.options.autoSpin && !this.motionQuery.matches;
         this.settle();
       } else {
         busy = true;

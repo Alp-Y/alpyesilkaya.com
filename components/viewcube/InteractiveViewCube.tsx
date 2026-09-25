@@ -115,6 +115,7 @@ export default function InteractiveViewCube({
         registerOrbit({
           spin: (on) => ctl.setSpin(on),
           spinning: () => ctl.isSpinning(),
+          showcase: (v) => ctl.showcase({ azimuth: (v.azimuth * Math.PI) / 180, elevation: (v.elevation * Math.PI) / 180 }),
           start: (x, y, t) => {
             setTouched(true);
             ctl.externalDragStart(x, y, t);
