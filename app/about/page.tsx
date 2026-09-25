@@ -38,7 +38,7 @@ export default function AboutPage() {
       </section>
 
       {/* where the story goes next, the same way the tool pages end */}
-      <NextItem label="Next" title="Get in touch" href="/#contact" />
+      <NextItem label="Next" title="Send me a brief" href="/#contact" />
     </>
   );
 }

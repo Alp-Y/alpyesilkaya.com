@@ -71,7 +71,7 @@ export default function Hero() {
               View my work <span className="arrow arrow-down" aria-hidden="true">↓</span>
             </a>
             <a href="#contact" className="link-line" data-hud="GO TO|05 · CONTACT">
-              Get in touch <span className="arrow" aria-hidden="true">→</span>
+              Send me a brief <span className="arrow" aria-hidden="true">→</span>
             </a>
           </div>
         </div>

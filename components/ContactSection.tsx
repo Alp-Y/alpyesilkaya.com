@@ -19,7 +19,10 @@ export default function ContactSection() {
 
         <h2 id="contact-title" className={styles.title} data-reveal="lines">
           <span className="line">
-            <span>Get in touch.</span>
+            <span>Got a workflow</span>
+          </span>
+          <span className="line" style={{ "--l": 1 } as React.CSSProperties}>
+            <span>worth automating?</span>
           </span>
         </h2>
 
