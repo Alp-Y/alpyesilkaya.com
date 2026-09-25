@@ -24,7 +24,8 @@ type Photo = {
 /**
  * A photo inside a frame with crop marks. Uncovers with a wipe from the bottom.
  * Defaults to the portrait in site.config; pass `photo` for another one.
- * A cut-out with `selected` has no frame or marks: it fades into the drawing grid.
+ * A cut-out with `selected` sits in a CAD viewport frame (hairline border, corner
+ * brackets) and fades into it: the soft edges are baked into the image itself.
  */
 export default function Portrait({ priority = false, photo }: { priority?: boolean; photo?: Photo }) {
   const p: Photo = photo ?? site.portrait;
@@ -45,14 +46,10 @@ export default function Portrait({ priority = false, photo }: { priority?: boole
             style={p.focus ? { objectPosition: p.focus } : undefined}
           />
         </div>
-        {!selected && (
-          <>
-            <span className={`${styles.crop} ${styles.tl}`} aria-hidden="true" />
-            <span className={`${styles.crop} ${styles.tr}`} aria-hidden="true" />
-            <span className={`${styles.crop} ${styles.bl}`} aria-hidden="true" />
-            <span className={`${styles.crop} ${styles.br}`} aria-hidden="true" />
-          </>
-        )}
+        <span className={`${styles.crop} ${styles.tl}`} aria-hidden="true" />
+        <span className={`${styles.crop} ${styles.tr}`} aria-hidden="true" />
+        <span className={`${styles.crop} ${styles.bl}`} aria-hidden="true" />
+        <span className={`${styles.crop} ${styles.br}`} aria-hidden="true" />
       </div>
       <figcaption className={styles.caption}>
         <span className="mono">{p.caption ?? "Fig. 01 / The engineer"}</span>
