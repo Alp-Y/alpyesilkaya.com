@@ -1,4 +1,5 @@
 import { site } from "@/site.config";
+import { sectionNumbers } from "@/lib/sections";
 import styles from "./ContactSection.module.css";
 
 /**
@@ -7,12 +8,13 @@ import styles from "./ContactSection.module.css";
  * and a small Copy button sits next to it.
  */
 export default function ContactSection() {
+  const num = sectionNumbers().contact;
   return (
-    <section className={styles.section} id="contact" data-section="contact" data-layer="05-CONTACT" aria-labelledby="contact-title">
+    <section className={styles.section} id="contact" data-section="contact" data-layer={`${num}-CONTACT`} aria-labelledby="contact-title">
       <div className="container">
         <div className={styles.annotation}>
           <span className="mono" data-reveal="rise">
-            <span className="accent">05</span> / Contact
+            <span className="accent">{num}</span> / Contact
           </span>
           <span className={styles.rule} data-reveal="draw" />
         </div>

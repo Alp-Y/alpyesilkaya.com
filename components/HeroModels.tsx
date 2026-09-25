@@ -31,10 +31,10 @@ export default function HeroModels() {
 
   return (
     <>
-      <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-reveal="fade" style={{ "--delay": "860ms" } as React.CSSProperties}>
+      <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "860ms" } as React.CSSProperties}>
         Use cases <span>· pick one to see it in 3D</span>
       </p>
-      <div className={styles.models} role="tablist" aria-labelledby="hero-use-cases" onKeyDown={onKey} data-hero-exit data-reveal="fade" style={{ "--delay": "880ms" } as React.CSSProperties}>
+      <div className={styles.models} role="tablist" aria-labelledby="hero-use-cases" onKeyDown={onKey} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "880ms" } as React.CSSProperties}>
         {HERO_MODELS.map((h, i) => (
           <button
             key={h.id}
@@ -59,6 +59,7 @@ export default function HeroModels() {
         aria-labelledby={`hero-model-${m.id}`}
         className={styles.story}
         data-hero-exit
+        data-overlay
         data-reveal="fade"
         style={{ "--delay": "960ms" } as React.CSSProperties}
       >

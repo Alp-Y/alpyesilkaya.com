@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { sectionNumbers } from "@/lib/sections";
 import { getPage } from "@/lib/content";
 import { site } from "@/site.config";
 import PageHeader from "@/components/PageHeader";
@@ -21,7 +22,7 @@ export default function AboutPage() {
 
   return (
     <>
-      <PageHeader layer="04-ABOUT" crumbs={[{ label: "About" }]} title={["About"]} intro={intro} compact />
+      <PageHeader layer={`${sectionNumbers().about}-ABOUT`} crumbs={[{ label: "About" }]} title={["About"]} intro={intro} compact />
       <section className={styles.section}>
         <div className={`container ${styles.grid}`}>
           <aside className={styles.side}>

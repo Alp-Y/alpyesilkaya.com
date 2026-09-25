@@ -42,11 +42,10 @@ export default function HomePage() {
 
       {realCases.length === 0 ? (
         /* Nothing written yet: a slim note in the page's flow, not a whole section to scroll through */
-        <section className={`${styles.cases} ${styles.casesSoon}`} id="case-studies" data-section="case-studies" data-layer="03-CASE-STUDIES" aria-label="Case studies">
+        /* It takes a section number (and a place in the menu) once there is a real one — lib/sections.ts */
+        <section className={`${styles.cases} ${styles.casesSoon}`} id="case-studies" data-section="case-studies" data-layer="CASE-STUDIES" aria-label="Case studies">
           <div className={`container ${styles.soon}`} data-reveal="rise">
-            <span className="mono">
-              <span className="accent">03</span> / Case studies
-            </span>
+            <span className="mono">Case studies</span>
             <p>
               <b>Coming soon.</b> {upcoming?.summary}
             </p>

@@ -1,4 +1,5 @@
 import { site } from "@/site.config";
+import { sectionNumbers } from "@/lib/sections";
 import CommandLine from "./CommandLine";
 import UcsIcon from "./UcsIcon";
 import ViewportToolbar from "./ViewportToolbar";
@@ -16,6 +17,7 @@ import styles from "./Hero.module.css";
  */
 export default function Hero() {
   const [first, ...rest] = site.name.split(" ");
+  const num = sectionNumbers();
 
   return (
     <section
@@ -30,7 +32,7 @@ export default function Hero() {
       <div className={styles.light} aria-hidden="true" />
 
       {/* Navigation cube — interactive 3D (falls back to the static drawing) */}
-      <div className={styles.viewcubeWrap} data-reveal="fade" style={{ "--delay": "1040ms" } as React.CSSProperties}>
+      <div className={styles.viewcubeWrap} data-overlay data-reveal="fade" style={{ "--delay": "1040ms" } as React.CSSProperties}>
         <InteractiveViewCube className={styles.viewcube} />
       </div>
 
@@ -40,7 +42,7 @@ export default function Hero() {
           <ViewportToolbar />
         </div>
         <span className={`mono ${styles.sheet}`} data-overlay data-reveal="fade" style={{ "--delay": "700ms" } as React.CSSProperties}>
-          Sheet 01 / 05 <span className={styles.hudSep}>·</span> Rev {site.revision.code}
+          Sheet 01 / {num.total} <span className={styles.hudSep}>·</span> Rev {site.revision.code}
         </span>
       </div>
 
@@ -77,7 +79,7 @@ export default function Hero() {
             <a href="#tools" className={styles.primary} data-hud="GO TO|02 · TOOLS">
               View my work <span className="arrow arrow-down" aria-hidden="true">↓</span>
             </a>
-            <a href="#contact" className={`link-line ${styles.secondary}`} data-hud="GO TO|05 · CONTACT">
+            <a href="#contact" className={`link-line ${styles.secondary}`} data-hud={`GO TO|${num.contact} · CONTACT`}>
               Send me a brief <span className="arrow" aria-hidden="true">→</span>
             </a>
           </div>
@@ -88,7 +90,7 @@ export default function Hero() {
           controls, model tabs and the line on what the tool does there (top left),
           ViewCube (top right), UCS icon and scale bar (bottom corners) all sit
           inside it. The frame draws itself first, then its contents fade in. */}
-      <div className={styles.viewport} data-hero-exit data-reveal="frame" aria-hidden="true">
+      <div className={styles.viewport} data-hero-exit data-overlay data-reveal="frame" aria-hidden="true">
         <i className={styles.corner} data-c="tl" />
         <i className={styles.corner} data-c="tr" />
         <i className={styles.corner} data-c="bl" />

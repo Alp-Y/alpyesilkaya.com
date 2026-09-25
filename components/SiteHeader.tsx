@@ -56,7 +56,7 @@ export default function SiteHeader() {
           <ul data-stagger>
             <li>
               <Link href="/" className={styles.sheetLink} data-menu-link>
-                <span className="mono">01</span> Home
+                <span className="mono">00</span> Home
               </Link>
             </li>
             {nav.map((item) => (

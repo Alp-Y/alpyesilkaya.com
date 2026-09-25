@@ -496,6 +496,10 @@ html.reveal-all [data-reveal] {
 html.reveal-all [data-reveal] .line > span {
   transform: none !important;
 }
+/* …but a clean view still hides annotations */
+html.reveal-all[data-overlays="off"] [data-overlay] {
+  opacity: 0 !important;
+}
 
 /* Reduced motion: no movement, just a quick fade */
 @media (prefers-reduced-motion: reduce) {

@@ -175,26 +175,26 @@ export type CommandResult = { lines: string[]; clear?: boolean; quiet?: boolean 
 
 /** Sections you can go to by name (plus a few natural aliases). */
 const PLACES: Record<string, { to: Destination; label: string }> = {
-  APPROACH: { to: "approach", label: "01 · How I work" },
-  "HOW I WORK": { to: "approach", label: "01 · How I work" },
-  DISCIPLINES: { to: "approach", label: "01 · How I work" },
-  TOOLS: { to: "tools", label: "02 · Tools" },
-  WORK: { to: "tools", label: "02 · Tools" },
+  APPROACH: { to: "approach", label: "How I work" },
+  "HOW I WORK": { to: "approach", label: "How I work" },
+  DISCIPLINES: { to: "approach", label: "How I work" },
+  TOOLS: { to: "tools", label: "Tools" },
+  WORK: { to: "tools", label: "Tools" },
   DEMO: { to: "demo", label: "Quantity by Area Calculator" },
   QUANTITY: { to: "demo", label: "Quantity by Area Calculator" },
   QUANTITIES: { to: "demo", label: "Quantity by Area Calculator" },
   SQE: { to: "demo", label: "Quantity by Area Calculator" },
   EXCAVATION: { to: "excavation", label: "Excavation Volume Calculator" },
   VOLUME: { to: "excavation", label: "Excavation Volume Calculator" },
-  CASES: { to: "case-studies", label: "03 · Case studies" },
-  "CASE STUDIES": { to: "case-studies", label: "03 · Case studies" },
-  "CASE STUDY": { to: "case-studies", label: "03 · Case studies" },
-  PROJECTS: { to: "case-studies", label: "03 · Case studies" },
-  ABOUT: { to: "about", label: "04 · About" },
-  "ABOUT ME": { to: "about", label: "04 · About" },
-  CONTACT: { to: "contact", label: "05 · Contact" },
-  EMAIL: { to: "contact", label: "05 · Contact" },
-  HIRE: { to: "contact", label: "05 · Contact" },
+  CASES: { to: "case-studies", label: "Case studies" },
+  "CASE STUDIES": { to: "case-studies", label: "Case studies" },
+  "CASE STUDY": { to: "case-studies", label: "Case studies" },
+  PROJECTS: { to: "case-studies", label: "Case studies" },
+  ABOUT: { to: "about", label: "About" },
+  "ABOUT ME": { to: "about", label: "About" },
+  CONTACT: { to: "contact", label: "Contact" },
+  EMAIL: { to: "contact", label: "Contact" },
+  HIRE: { to: "contact", label: "Contact" },
 };
 
 const VIEWS: Record<string, Exclude<Orientation, "free">> = {
@@ -243,7 +243,10 @@ export function runCommand(input: string, opts: { origin?: { x: number; y: numbe
   const place = PLACES[cmd];
   if (place) {
     navigateTo(place.to);
-    return { lines: [`→ ${place.label}`] };
+    // numbered like the section on the page (its data-layer, e.g. "03-ABOUT"), when it has one
+    const layer = typeof document !== "undefined" ? document.getElementById(TARGETS[place.to])?.closest("[data-layer]")?.getAttribute("data-layer") : null;
+    const num = layer?.match(/^\d+/)?.[0];
+    return { lines: [`→ ${num ? `${num} · ` : ""}${place.label}`] };
   }
 
   switch (cmd) {

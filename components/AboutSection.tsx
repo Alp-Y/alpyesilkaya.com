@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPage } from "@/lib/content";
+import { sectionNumbers } from "@/lib/sections";
 import Portrait from "./Portrait";
 import PropertiesPalette, { parseExperience } from "./PropertiesPalette";
 import styles from "./AboutSection.module.css";
@@ -10,13 +11,14 @@ export default function AboutSection() {
   const intro = String(data.intro ?? "");
   const short = String(data.short ?? "");
   const properties = Array.isArray(data.properties) ? data.properties : [];
+  const num = sectionNumbers().about;
 
   return (
-    <section className={styles.section} id="about" data-section="about" data-layer="04-ABOUT" aria-labelledby="about-title">
+    <section className={styles.section} id="about" data-section="about" data-layer={`${num}-ABOUT`} aria-labelledby="about-title">
       <div className="container">
         <div className={styles.annotation}>
           <span className="mono" data-reveal="rise">
-            <span className="accent">04</span> / About
+            <span className="accent">{num}</span> / About
           </span>
           <span className={styles.rule} data-reveal="draw" />
         </div>

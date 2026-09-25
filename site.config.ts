@@ -64,13 +64,15 @@ export const site = {
 
 /**
  * Main navigation. `href` values starting with "/#" scroll to a homepage section.
- * `index` is the section's number on the page (it matches the "02 / Tools" labels).
- * Case Studies only appears once there is a real (non-placeholder) case study,
- * so the menu never sends a visitor to an empty "coming soon".
+ * The numbers shown beside them come from lib/sections.ts, so they always match
+ * the "02 / Tools" labels on the page and run in order. Case Studies only
+ * appears once there is a real (non-placeholder) case study, so the menu never
+ * sends a visitor to an empty "coming soon".
  */
 export const nav = [
-  { label: "Tools", href: "/#tools", section: "tools", index: "02" },
-  { label: "Case Studies", href: "/#case-studies", section: "case-studies", index: "03" },
-  { label: "About", href: "/#about", section: "about", index: "04" },
-  { label: "Contact", href: "/#contact", section: "contact", index: "05" },
+  { label: "How I work", href: "/#approach", section: "approach" },
+  { label: "Tools", href: "/#tools", section: "tools" },
+  { label: "Case Studies", href: "/#case-studies", section: "case-studies" },
+  { label: "About", href: "/#about", section: "about" },
+  { label: "Contact", href: "/#contact", section: "contact" },
 ] as const;
