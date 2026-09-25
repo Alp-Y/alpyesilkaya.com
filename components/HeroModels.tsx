@@ -6,10 +6,10 @@ import { HERO_MODELS, setHeroModel } from "@/lib/heroModels";
 import styles from "./Hero.module.css";
 
 /**
- * The hero viewport's model tabs, and the line under the model that says
- * what the matching tool does in that scene. Desktop: the tabs sit under the
- * viewport controls and the line along the bottom of the viewport. Phones and
- * tablets: both follow the model.
+ * The hero viewport's model tabs, and the line that says what the matching
+ * tool does in that scene. Desktop: both sit in the viewport's top-left
+ * corner, under its controls — read top to bottom. Phones and tablets: both
+ * follow the model.
  */
 export default function HeroModels() {
   const [active, setActive] = useState(0);
@@ -31,7 +31,7 @@ export default function HeroModels() {
 
   return (
     <>
-      <div className={styles.models} role="tablist" aria-label="Model" onKeyDown={onKey} data-hero-exit data-reveal="rise" style={{ "--delay": "750ms" } as React.CSSProperties}>
+      <div className={styles.models} role="tablist" aria-label="Model" onKeyDown={onKey} data-hero-exit data-reveal="fade" style={{ "--delay": "880ms" } as React.CSSProperties}>
         {HERO_MODELS.map((h, i) => (
           <button
             key={h.id}
@@ -56,8 +56,8 @@ export default function HeroModels() {
         aria-labelledby={`hero-model-${m.id}`}
         className={styles.story}
         data-hero-exit
-        data-reveal="rise"
-        style={{ "--delay": "850ms" } as React.CSSProperties}
+        data-reveal="fade"
+        style={{ "--delay": "960ms" } as React.CSSProperties}
       >
         <p key={m.id} className={styles.storyLine}>
           {m.line}

@@ -222,7 +222,8 @@ export default function EarthworksModel({ className = "" }: { className?: string
         ([entry]) => {
           if (!entry.isIntersecting) return;
           io.disconnect();
-          sweep(250, 1500);
+          // first load: start once the viewport frame has drawn itself (~1 s in)
+          sweep(Math.max(250, 1000 - performance.now()), 1500);
         },
         { threshold: 0.2 },
       );

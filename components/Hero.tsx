@@ -30,16 +30,16 @@ export default function Hero() {
       <div className={styles.light} aria-hidden="true" />
 
       {/* Navigation cube — interactive 3D (falls back to the static drawing) */}
-      <div className={styles.viewcubeWrap} data-reveal="rise" style={{ "--delay": "900ms" } as React.CSSProperties}>
+      <div className={styles.viewcubeWrap} data-reveal="fade" style={{ "--delay": "1040ms" } as React.CSSProperties}>
         <InteractiveViewCube className={styles.viewcube} />
       </div>
 
       {/* Viewport controls + sheet annotation */}
       <div className={`container ${styles.hud}`} data-hero-exit>
-        <div className={styles.toolbar} data-reveal="rise" style={{ "--delay": "700ms" } as React.CSSProperties}>
+        <div className={styles.toolbar} data-reveal="fade" style={{ "--delay": "800ms" } as React.CSSProperties}>
           <ViewportToolbar />
         </div>
-        <span className={`mono ${styles.sheet}`} data-overlay data-reveal="rise" style={{ "--delay": "800ms" } as React.CSSProperties}>
+        <span className={`mono ${styles.sheet}`} data-overlay data-reveal="fade" style={{ "--delay": "700ms" } as React.CSSProperties}>
           Sheet 01 / 05 <span className={styles.hudSep}>·</span> Rev {site.revision.code}
         </span>
       </div>
@@ -85,9 +85,10 @@ export default function Hero() {
       </div>
 
       {/* Desktop: the model sits in a drawn viewport, like model space in CAD. Its
-          controls and model tabs (top left), ViewCube (top right), UCS icon,
-          scenario line and scale bar (along the bottom) all sit inside it. */}
-      <div className={styles.viewport} data-hero-exit data-reveal="rise" style={{ "--delay": "600ms" } as React.CSSProperties} aria-hidden="true">
+          controls, model tabs and the line on what the tool does there (top left),
+          ViewCube (top right), UCS icon and scale bar (bottom corners) all sit
+          inside it. The frame draws itself first, then its contents fade in. */}
+      <div className={styles.viewport} data-hero-exit data-reveal="frame" aria-hidden="true">
         <i className={styles.corner} data-c="tl" />
         <i className={styles.corner} data-c="tr" />
         <i className={styles.corner} data-c="bl" />
@@ -95,7 +96,7 @@ export default function Hero() {
       </div>
 
       {/* Earthworks model — follows the ViewCube and the display mode */}
-      <div className={styles.modelWrap} data-hero-exit data-reveal="rise" style={{ "--delay": "650ms" } as React.CSSProperties}>
+      <div className={styles.modelWrap} data-hero-exit data-reveal="fade" style={{ "--delay": "700ms" } as React.CSSProperties}>
         <EarthworksModel className={styles.model} />
       </div>
 
@@ -105,7 +106,7 @@ export default function Hero() {
       {/* UCS icon (the origin of the hero's drawing coordinates) + command line */}
       <div className={`container ${styles.base}`} data-hero-exit>
         {/* Scale bar: bottom-right corner of the sheet, measured from the model (EarthworksModel sets it) */}
-        <div className={styles.scaleBar} data-scale-bar data-overlay aria-hidden="true">
+        <div className={styles.scaleBar} data-scale-bar data-overlay data-reveal="fade" style={{ "--delay": "1200ms" } as React.CSSProperties} aria-hidden="true">
           <span className={styles.sbBar}>
             <i />
             <i />
@@ -118,7 +119,7 @@ export default function Hero() {
         </div>
 
         {/* Builds itself with the rest of the interface: origin, then the X, Y, Z axes */}
-        <div className={styles.ucsWrap} data-overlay data-reveal="ucs" style={{ "--delay": "950ms" } as React.CSSProperties}>
+        <div className={styles.ucsWrap} data-overlay data-reveal="ucs" style={{ "--delay": "1120ms" } as React.CSSProperties}>
           <UcsIcon className={styles.ucs} />
           <span className={styles.origin} data-cad-origin aria-hidden="true" />
         </div>

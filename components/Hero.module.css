@@ -230,8 +230,8 @@
     position: absolute;
     right: max(var(--gutter), calc((100vw - var(--max-width)) / 2));
     /* close to the text column and nearly as tall as it, so the model fills the sheet */
-    top: calc(var(--header-h) + 110px);
-    bottom: 118px;
+    top: calc(var(--header-h) + 52px + 150px);
+    bottom: 40px;
     left: var(--split);
     height: auto;
     margin: 0;
@@ -257,6 +257,16 @@
     border-radius: 2px;
     background: rgba(255, 255, 255, 0.012);
     pointer-events: none;
+  }
+  /* Build-in: the frame draws itself from its top-left corner, like a viewport
+     being dragged out in CAD; its contents fade in once it is there */
+  :global(.js) .viewport[data-reveal] {
+    clip-path: inset(0 100% 100% 0);
+    transition: clip-path 800ms var(--ease-out) 300ms;
+  }
+  :global(.js) .viewport[data-reveal]:global(.is-in),
+  :global(html.reveal-all) .viewport[data-reveal] {
+    clip-path: inset(0 -1px -1px 0);
   }
   /* corner brackets, the same mark as the photo frame in About */
   .corner {
@@ -410,6 +420,10 @@
   .storyLine {
     animation: none;
   }
+  :global(.js) .viewport[data-reveal] {
+    transition-duration: 1ms;
+    transition-delay: 0ms;
+  }
 }
 
 /* Desktop: inside the viewport — tabs under its controls, the line along its bottom edge */
@@ -426,10 +440,10 @@
   .story {
     position: absolute;
     z-index: 3;
-    left: calc(var(--split) + 76px);
-    bottom: calc(clamp(20px, 3vh, 32px) - 6px);
-    /* stops short of the scale bar in the other corner */
-    width: min(440px, calc(100vw - var(--split) - max(var(--gutter), (100vw - var(--max-width)) / 2) - 330px));
+    top: calc(var(--header-h) + 52px + 88px);
+    left: calc(var(--split) + 4px);
+    /* stops short of the ViewCube in the other corner */
+    width: min(400px, calc(100vw - var(--split) - max(var(--gutter), (100vw - var(--max-width)) / 2) - 250px));
     padding: 0;
   }
   .storyLine {
@@ -526,15 +540,7 @@
   gap: 6px;
   width: var(--bar, 160px);
   pointer-events: none;
-  /* appears with the command line and the UCS icon (it sits below the scroll-reveal zone) */
-  animation: sb-in 600ms var(--ease) 1.1s both;
   transition: width var(--motion-medium) var(--ease-out);
-}
-@keyframes sb-in {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 8px, 0);
-  }
 }
 .sbBar {
   display: grid;
