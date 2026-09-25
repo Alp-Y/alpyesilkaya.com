@@ -61,7 +61,8 @@
   /* Space */
   --gutter: clamp(20px, 4vw, 56px);
   --max-width: 1360px;
-  --section-space: clamp(72px, 8vw, 112px);
+  /* follows the screen height too, so short laptop screens are not mostly gaps */
+  --section-space: clamp(64px, min(6.5vw, 11vh), 104px);
   --header-h: 60px;
   --status-h: 30px;
   --radius: 5px;

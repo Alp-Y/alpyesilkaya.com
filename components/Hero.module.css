@@ -1,4 +1,6 @@
 .hero {
+  /* Desktop: where the text column ends and the model's half of the sheet begins */
+  --split: 48vw;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -227,10 +229,10 @@
   .modelWrap {
     position: absolute;
     right: max(var(--gutter), calc((100vw - var(--max-width)) / 2));
-    /* centred on the whole left column, from the name down to the command line */
-    top: calc(var(--header-h) + 190px);
-    bottom: 80px;
-    left: 54%;
+    /* close to the text column and nearly as tall as it, so the model fills the sheet */
+    top: calc(var(--header-h) + 120px);
+    bottom: 64px;
+    left: var(--split);
     height: auto;
     margin: 0;
   }
@@ -247,7 +249,7 @@
   z-index: 2;
   flex: 1;
   /* the same column as the name and statement — it stops short of the model */
-  max-width: min(760px, calc(54vw - max(var(--gutter), (100vw - var(--max-width)) / 2) - 40px));
+  max-width: min(760px, calc(var(--split) - max(var(--gutter), (100vw - var(--max-width)) / 2) - 40px));
 }
 @media (max-width: 1099px) {
   .cmdWrap {
@@ -258,7 +260,7 @@
 .ucsWrap {
   position: absolute;
   z-index: 2;
-  left: 54%;
+  left: var(--split);
   bottom: calc(clamp(20px, 3vh, 32px) + 6px);
   width: 52px;
   height: 52px;
