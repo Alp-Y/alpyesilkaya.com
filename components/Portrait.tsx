@@ -15,8 +15,8 @@ type Photo = {
   width?: number;
   height?: number;
   /**
-   * A cut-out photo, shown as a selected object on the drawing grid: grips at its
-   * corners and midpoints, and this label beside the file name (e.g. "Engineer · 1 selected").
+   * A cut-out photo that fades into the page's drawing grid, with this label
+   * beside the file name (e.g. "Engineer · 1 selected").
    */
   selected?: string;
 };
@@ -24,7 +24,7 @@ type Photo = {
 /**
  * A photo inside a frame with crop marks. Uncovers with a wipe from the bottom.
  * Defaults to the portrait in site.config; pass `photo` for another one.
- * A cut-out with `selected` sits on the drawing grid as a selected CAD object.
+ * A cut-out with `selected` has no frame or marks: it fades into the drawing grid.
  */
 export default function Portrait({ priority = false, photo }: { priority?: boolean; photo?: Photo }) {
   const p: Photo = photo ?? site.portrait;
@@ -45,14 +45,7 @@ export default function Portrait({ priority = false, photo }: { priority?: boole
             style={p.focus ? { objectPosition: p.focus } : undefined}
           />
         </div>
-        {selected ? (
-          /* grips, like an object selected in CAD */
-          <span className={styles.grips} aria-hidden="true">
-            {["tl", "tm", "tr", "ml", "mr", "bl", "bm", "br"].map((g) => (
-              <i key={g} data-g={g} />
-            ))}
-          </span>
-        ) : (
+        {!selected && (
           <>
             <span className={`${styles.crop} ${styles.tl}`} aria-hidden="true" />
             <span className={`${styles.crop} ${styles.tr}`} aria-hidden="true" />
