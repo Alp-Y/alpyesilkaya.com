@@ -1,10 +1,11 @@
 import { site } from "@/site.config";
 import { sectionNumbers } from "@/lib/sections";
+import BriefForm from "./BriefForm";
 import styles from "./ContactSection.module.css";
 
 /**
- * Contact: one large line and the email address, with a brief.txt card beside
- * it that says what to put in the email.
+ * Contact: one large line and the email address, with a brief.txt form beside
+ * it: the three things a useful brief contains, sent straight to my inbox.
  * Desktop: clicking the email copies it. Phones: tapping opens the mail app,
  * and a small Copy button sits next to it.
  */
@@ -68,33 +69,10 @@ export default function ContactSection() {
             </ul>
           </div>
 
-          {/* What a useful brief contains — a note file, like the Properties panel in About */}
-          <aside className={styles.brief} aria-labelledby="brief-title" data-reveal="rise" style={{ "--delay": "300ms" } as React.CSSProperties}>
-            <div className={styles.briefHead}>
-              <span id="brief-title" className="mono">
-                brief.txt
-              </span>
-              <span className={`mono ${styles.briefMeta}`}>3 lines is enough</span>
-            </div>
-            <ol className={styles.briefList}>
-              {[
-                ["The task you repeat", "What you do by hand, step by step."],
-                ["The files it touches", "DWG, XYZ survey points, Excel sheets…"],
-                ["How often it comes round", "Every survey, every week, every progress update."],
-              ].map(([title, note], i) => (
-                <li key={title}>
-                  <span className={`mono ${styles.briefNum}`}>{String(i + 1).padStart(2, "0")}</span>
-                  <span>
-                    <b>{title}</b>
-                    <span className={styles.briefNote}>{note}</span>
-                  </span>
-                </li>
-              ))}
-            </ol>
-            <a href={`mailto:${site.email}?subject=${encodeURIComponent("Workflow brief")}`} className={styles.briefSend}>
-              Write the brief <span className="arrow" aria-hidden="true">→</span>
-            </a>
-          </aside>
+          {/* brief.txt: what a useful brief contains, as a form that emails it to me */}
+          <div className={styles.briefWrap} data-reveal="rise" style={{ "--delay": "300ms" } as React.CSSProperties}>
+            <BriefForm />
+          </div>
         </div>
       </div>
     </section>

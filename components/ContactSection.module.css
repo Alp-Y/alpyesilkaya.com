@@ -25,8 +25,9 @@
 }
 @media (min-width: 1000px) {
   .layout {
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
-    align-items: end;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+    /* the card's top lines up with the heading's */
+    align-items: start;
     gap: clamp(48px, 6vw, 96px);
   }
 }
@@ -205,31 +206,98 @@
   font-size: 10.5px;
   color: var(--accent);
 }
-.briefList b {
-  display: block;
+.briefField {
+  display: grid;
+  gap: 4px;
+  cursor: text;
+}
+.briefField b {
   font-weight: 500;
-  font-size: 15px;
+  font-size: 14.5px;
   color: var(--text-1);
 }
-.briefNote {
-  display: block;
-  margin-top: 2px;
-  font-size: 13.5px;
-  line-height: 1.5;
+.briefOptional {
+  font-weight: 400;
   color: var(--text-3);
 }
-.briefSend {
+.briefField textarea,
+.briefField input {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  resize: none;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-1);
+  caret-color: var(--accent);
+}
+.briefField textarea::placeholder,
+.briefField input::placeholder {
+  color: var(--text-3);
+}
+/* the line being written is marked, like the active row in the Properties panel */
+.briefList li:focus-within {
+  background: var(--surface);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.honey {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.briefFoot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
+  gap: 12px;
   border-top: 1px solid var(--line);
+}
+.briefStatus {
+  flex: 1;
+  min-width: 0;
+  padding-left: 14px;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.briefStatus[data-status="sent"] {
+  color: var(--accent);
+}
+.briefStatus[data-status="error"] {
+  color: #e2848c;
+}
+.briefStatus a {
+  color: var(--text-1);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.briefSend {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  border-left: 1px solid var(--line);
+  cursor: pointer;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
   transition: background-color var(--t-fast) var(--ease);
+}
+.briefSend:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+.briefSend:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -3px;
 }
 .briefSend:hover {
   background: rgba(62, 224, 143, 0.08);
@@ -238,7 +306,14 @@
   transform: translateX(3px);
 }
 @media (max-width: 999px) {
-  .brief {
-    max-width: 460px;
+  .briefWrap {
+    max-width: 520px;
+  }
+}
+/* phones: 16px fields, so iOS does not zoom in on focus */
+@media (max-width: 640px) {
+  .briefField textarea,
+  .briefField input {
+    font-size: 16px;
   }
 }
