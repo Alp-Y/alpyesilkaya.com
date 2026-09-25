@@ -51,9 +51,13 @@ export default function HeroModels() {
       el.addEventListener("pointerenter", readOn);
       el.addEventListener("pointerleave", readOff);
     });
+    const tabs = tabsRef.current;
     const tick = window.setInterval(() => {
-      if (reading || !inView || document.hidden) return;
-      if (performance.now() - lastTouch.current < ADVANCE_MS) return;
+      if (reading || !inView || document.hidden) return; // the line holds where it is
+      const waited = performance.now() - lastTouch.current;
+      // the active tab's line: how far it is to the next use case
+      tabs?.style.setProperty("--advance", String(Math.min(1, waited / ADVANCE_MS)));
+      if (waited < ADVANCE_MS) return;
       const next = (activeRef.current + 1) % HERO_MODELS.length;
       activeRef.current = next;
       setActive(next);
@@ -62,6 +66,7 @@ export default function HeroModels() {
     }, 250);
     return () => {
       window.clearInterval(tick);
+      tabs?.style.removeProperty("--advance");
       io.disconnect();
       hero.removeEventListener("pointerdown", touch);
       hero.removeEventListener("wheel", touch);
@@ -92,7 +97,7 @@ export default function HeroModels() {
   return (
     <>
       <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "860ms" } as React.CSSProperties}>
-        Use cases <span>· pick one to see it in 3D</span>
+        Use cases <span>· click one to switch</span>
       </p>
       <div ref={tabsRef} className={styles.models} role="tablist" aria-labelledby="hero-use-cases" onKeyDown={onKey} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "880ms" } as React.CSSProperties}>
         {HERO_MODELS.map((h, i) => (

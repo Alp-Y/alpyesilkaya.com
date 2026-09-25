@@ -329,13 +329,13 @@
 .useCases {
   padding: 0 var(--gutter);
   margin-top: 10px;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-2);
+  color: var(--text-1);
 }
 .useCases span {
-  color: var(--text-3);
+  color: var(--text-2);
   letter-spacing: 0.06em;
   text-transform: none;
 }
@@ -353,30 +353,51 @@
   display: none;
 }
 .modelTab {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   gap: 7px;
   flex: none;
   height: 28px;
   padding: 0 11px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.03);
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-3);
+  color: var(--text-2);
   white-space: nowrap;
   cursor: pointer;
   transition:
     color var(--t-fast) var(--ease),
     border-color var(--t-fast) var(--ease),
-    background-color var(--t-fast) var(--ease);
+    background-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
 }
+/* clearly a button: it lifts and picks up the accent edge under the pointer */
 .modelTab:hover {
   color: var(--text-1);
-  border-color: var(--line-strong);
+  border-color: rgba(62, 224, 143, 0.35);
+  background: rgba(62, 224, 143, 0.04);
+  transform: translateY(-1px);
+}
+.modelTab:active {
+  transform: none;
+}
+/* the active tab fills a thin line while it waits to move on to the next use case */
+.modelTab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: calc(var(--advance, 0) * 100%);
+  background: var(--accent);
+  opacity: 0.75;
+  transition: width 260ms linear;
 }
 .modelTab[aria-selected="true"] {
   color: var(--text-1);
