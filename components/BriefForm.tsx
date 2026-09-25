@@ -18,7 +18,7 @@ const FIELDS = [
   { name: "frequency", title: "How often it comes round", hint: "Every survey, every week, every progress update.", required: false },
 ] as const;
 
-type Status = "idle" | "sending" | "sent" | "error";
+type Status = "idle" | "sending" | "sent" | "activate" | "error";
 
 export default function BriefForm() {
   const [status, setStatus] = useState<Status>("idle");
@@ -26,20 +26,32 @@ export default function BriefForm() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const data = new FormData(form);
-    if (data.get("_honey")) return; // a bot filled the hidden field
+    const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
+    if (data._honey) return; // a bot filled the hidden field
+    delete data._honey;
     setStatus("sending");
     try {
+      // FormSubmit's AJAX endpoint takes JSON
       const res = await fetch(ENDPOINT, {
         method: "POST",
-        headers: { Accept: "application/json" },
-        body: data,
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(data),
       });
-      const json = (await res.json().catch(() => ({}))) as { success?: string | boolean };
-      if (!res.ok || String(json.success) === "false") throw new Error("not sent");
-      setStatus("sent");
-      form.reset();
-    } catch {
+      const json = (await res.json().catch(() => ({}))) as { success?: string | boolean; message?: string };
+      if (res.ok && String(json.success) !== "false") {
+        setStatus("sent");
+        form.reset();
+        return;
+      }
+      // The very first submission is held until the inbox owner clicks FormSubmit's activation link
+      if (/activat/i.test(json.message ?? "")) {
+        setStatus("activate");
+        return;
+      }
+      console.warn("brief.txt: not sent", res.status, json);
+      setStatus("error");
+    } catch (err) {
+      console.warn("brief.txt: not sent", err);
       setStatus("error");
     }
   };
@@ -88,6 +100,7 @@ export default function BriefForm() {
         <p className={`mono ${styles.briefStatus}`} role="status" data-status={status}>
           {status === "sending" && "Sending…"}
           {status === "sent" && "Sent. Thank you."}
+          {status === "activate" && "Received. The inbox needs a one-time activation first."}
           {status === "error" && (
             <>
               Couldn’t send. Email <a href={`mailto:${site.email}`}>{site.email}</a>
