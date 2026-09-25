@@ -24,8 +24,8 @@ type Photo = {
 /**
  * A photo inside a frame with crop marks. Uncovers with a wipe from the bottom.
  * Defaults to the portrait in site.config; pass `photo` for another one.
- * A cut-out with `selected` sits in a CAD viewport frame (hairline border, corner
- * brackets) and fades into it: the soft edges are baked into the image itself.
+ * A cut-out with `selected` sits straight on the drawing grid, marked only by small
+ * corner ticks; its soft edges are baked into the image itself.
  */
 export default function Portrait({ priority = false, photo }: { priority?: boolean; photo?: Photo }) {
   const p: Photo = photo ?? site.portrait;

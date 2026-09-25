@@ -39,15 +39,15 @@ export const site = {
    *   atWork     the full About page ("More about me")
    */
   portrait: {
-    // cut out (transparent background), graded for the dark sheet, fading into the grid
+    // cut out (transparent background), cropped above the open shirt, edges fading into the grid
     src: "/images/alp.png",
     alt: "Portrait of Alp Yesilkaya",
     caption: "alp.png",
     selected: "Engineer · 1 selected",
     // the frame takes the photo's own shape: nothing is cropped
-    aspect: "741 / 761",
+    aspect: "741 / 801",
     width: 741,
-    height: 761,
+    height: 801,
     isPlaceholder: false,
   },
   atWork: {

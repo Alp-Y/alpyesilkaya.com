@@ -75,16 +75,11 @@
   border-right-width: 1px;
 }
 
-/* ---------- Cut-out in a CAD viewport frame ----------
-   The same frame as the hero viewport: a hairline border, a barely tinted
-   sheet and corner brackets. The photo's soft edges are in the image. */
+/* ---------- Cut-out on the drawing grid ----------
+   No box: the photo sits straight on the page's grid (its soft edges are in
+   the image), marked only by small, faint corner ticks. */
 .selected .plate {
-  padding: 18px 18px 0;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 2px;
-  background:
-    radial-gradient(ellipse 70% 60% at 50% 38%, rgba(150, 175, 205, 0.05), transparent 72%),
-    rgba(255, 255, 255, 0.012);
+  padding: 12px 12px 0;
 }
 .selected .frame {
   background: none;
@@ -94,31 +89,15 @@
   object-position: bottom center;
   filter: none;
 }
-/* brackets sit on the frame's corners, over the border */
 .selected .crop {
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border-color: var(--line-strong);
-}
-.selected .tl {
-  top: -1px;
-  left: -1px;
-}
-.selected .tr {
-  top: -1px;
-  right: -1px;
-}
-.selected .bl {
-  bottom: -1px;
-  left: -1px;
-}
-.selected .br {
-  bottom: -1px;
-  right: -1px;
+  opacity: 0.7;
 }
 .selected .caption {
-  margin-top: 10px;
-  padding: 0 2px;
+  margin-top: 8px;
+  padding: 0 12px;
 }
 
 .selectedLabel {
