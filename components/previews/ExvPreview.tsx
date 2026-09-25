@@ -39,25 +39,23 @@ export default function ExvPreview({ title }: { title: string }) {
   const sceneRef = useRef<SurfaceScene | null>(null);
   const results = useRef<EngineResult[]>([]);
   const cycle = useRef(0);
-  const lastPhase = useRef(-1);
   const dotsOn = useRef(true);
   const [ready, setReady] = useState(false);
   const [shown, setShown] = useState<EngineResult | null>(null);
 
-  const { phase } = usePreviewLoop(
+  const { phase, seek } = usePreviewLoop(
     ref,
     PHASES.map((p) => p.ms),
-    (p, t, dt) => {
+    (p, t, dt, wrapped) => {
       const s = sceneRef.current;
       if (!s || !results.current.length) return;
       // a new loop: next sample site
-      if (p === 0 && lastPhase.current === PHASES.length - 1) {
+      if (wrapped) {
         cycle.current = (cycle.current + 1) % results.current.length;
         const r = results.current[cycle.current];
         s.setData(r);
         setShown(r);
       }
-      lastPhase.current = p;
       // once the surfaces are built, the survey dots step back so the cut reads clearly
       const dots = !(p === PHASES.length - 1 && t > 0.25);
       if (dots !== dotsOn.current) {
@@ -142,7 +140,7 @@ export default function ExvPreview({ title }: { title: string }) {
         )}
         {ready && <ViewControls onIn={() => sceneRef.current?.zoom(0.8)} onOut={() => sceneRef.current?.zoom(1.25)} onReset={() => sceneRef.current?.resetView()} label={title} />}
       </div>
-      <PreviewBar labels={PHASES.map((p) => p.label)} durations={PHASES.map((p) => p.ms)} phase={phase} held={held} hint="Drag to spin" />
+      <PreviewBar labels={PHASES.map((p) => p.label)} durations={PHASES.map((p) => p.ms)} phase={phase} held={held} hint="Drag to spin" onSeek={seek} name={title} />
     </div>
   );
 }

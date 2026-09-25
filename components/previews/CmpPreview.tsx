@@ -1,15 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import CompareDrawing from "@/components/compare/CompareDrawing";
-import { signed } from "@/lib/compare/format";
+import { fmt, signed } from "@/lib/compare/format";
 import { getUpdates, ITEMS } from "@/lib/compare/model";
-import { compare } from "@/lib/compare/diff";
+import { compare, type Diffed } from "@/lib/compare/diff";
 import { PreviewBar } from "./SqePreview";
 import { usePreviewLoop } from "./usePreviewLoop";
 import { useHold } from "./useHold";
-import { usePlanOrbit } from "./usePlanOrbit";
-import ViewControls from "./ViewControls";
 import styles from "./preview.module.css";
 
 /** previous drawing → current drawing → overlay → compare → net quantities, on repeat */
@@ -31,29 +29,37 @@ const ease = (t: number) => 1 - Math.pow(1 - t, 3);
  * DRAWING COMPARISON — homepage preview. Two progress drawings plot in,
  * slide onto each other, the comparison sweeps across, and the net
  * quantities come out; each loop moves to another reporting period.
- * Drag to spin and tilt the drawings, zoom with +/−; holding it pauses the
- * story. The tool itself opens from the button beside it.
+ * The steps underneath are buttons (jump to one and the story carries on
+ * from there). Once the comparison has run, point at a coloured object to
+ * see what it is and how much it adds or takes away; pointing at the
+ * drawing holds the story still. The tool itself opens from the button
+ * beside it.
  */
 export default function CmpPreview({ title }: { title: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const area = useRef<HTMLDivElement>(null);
-  const plan = useRef<HTMLDivElement>(null);
   const { held, heldRef } = useHold(area);
-  const view = usePlanOrbit(area, plan);
+  const [tip, setTip] = useState<{ e: Diffed; x: number; y: number } | null>(null);
+  const onHover = useCallback((e: Diffed | null, ev?: React.PointerEvent) => {
+    const box = area.current?.getBoundingClientRect();
+    if (!e || !ev || !box) return setTip(null);
+    setTip({ e, x: Math.min(ev.clientX - box.left + 12, box.width - 190), y: Math.max(8, ev.clientY - box.top - 70) });
+  }, []);
   const pairs = useMemo(() => {
     const u = getUpdates();
     return u.slice(1).map((b, i) => compare(u[i], b));
   }, []);
   const [cycle, setCycle] = useState(0);
   const [f, setF] = useState<Frame>(FINAL);
-  const last = useRef(-1);
 
-  const { phase } = usePreviewLoop(
+  const { phase, seek } = usePreviewLoop(
     ref,
     PHASES.map((p) => p.ms),
-    (p, t) => {
-      if (p === 0 && last.current === PHASES.length - 1) setCycle((c) => c + 1);
-      last.current = p;
+    (p, t, _dt, wrapped) => {
+      if (wrapped) {
+        setCycle((c) => c + 1);
+        setTip(null);
+      }
       if (p === 0) setF({ a: ease(t), b: 0, merge: 0, scan: 0, res: 0, fade: Math.min(1, t * 4) });
       else if (p === 1) setF({ a: 1, b: ease(t), merge: 0, scan: 0, res: 0, fade: 1 });
       else if (p === 2) setF({ a: 1, b: 1, merge: t, scan: 0, res: 0, fade: 1 });
@@ -64,15 +70,14 @@ export default function CmpPreview({ title }: { title: string }) {
   );
 
   const cmp = pairs[ORDER[cycle % ORDER.length]];
-  const res = ease(f.res);
+  // while the drawing is held the net quantities show in full, never frozen half-counted
+  const res = held && f.scan >= 1 ? 1 : ease(f.res);
 
   return (
     <div ref={ref} className={styles.card} data-held={held}>
-      <div ref={area} className={`${styles.stage} ${styles.cmp} ${styles.handle}`} role="img" aria-label={`${title}: two example progress drawings being compared. Drag to spin, use the buttons to zoom.`}>
+      <div ref={area} className={`${styles.stage} ${styles.cmp} ${styles.pointable}`} onPointerLeave={() => setTip(null)}>
         <div className={styles.cmpInner} style={{ opacity: f.fade }}>
-          <div ref={plan} className={`${styles.turn} ${styles.cmpTurn}`}>
-            <CompareDrawing cmp={cmp} merge={f.merge} scan={f.scan} reveal={[f.a, f.b]} className={styles.cmpSvg} />
-          </div>
+          <CompareDrawing cmp={cmp} merge={f.merge} scan={f.scan} reveal={[f.a, f.b]} className={styles.cmpSvg} onHover={f.scan >= 1 ? onHover : undefined} />
 
           <div className={styles.cmpTop} data-show={f.merge >= 1}>
             <span className={styles.site}>
@@ -99,9 +104,29 @@ export default function CmpPreview({ title }: { title: string }) {
             })}
           </dl>
         </div>
-        <ViewControls onIn={view.zoomIn} onOut={view.zoomOut} onReset={view.reset} label={title} />
+        {tip && f.scan >= 1 && (
+          <div className={styles.cmpTip} style={{ left: tip.x, top: tip.y }} role="status">
+            <span data-s={tip.e.status}>{tip.e.status === "added" ? `Added in ${cmp.b.id}` : tip.e.status === "removed" ? `Taken out since ${cmp.a.id}` : "Unchanged"}</span>
+            <b>{ITEMS[tip.e.kind].label}</b>
+            <em className="num">
+              {tip.e.status === "added" ? "+" : tip.e.status === "removed" ? "−" : ""}
+              {fmt(tip.e.qty, ITEMS[tip.e.kind].unit)}
+            </em>
+          </div>
+        )}
       </div>
-      <PreviewBar labels={PHASES.map((p) => p.label)} durations={PHASES.map((p) => p.ms)} phase={phase} held={held} hint="Drag to spin" />
+      <PreviewBar
+        labels={PHASES.map((p) => p.label)}
+        durations={PHASES.map((p) => p.ms)}
+        phase={phase}
+        held={held}
+        hint={f.scan >= 1 ? "Point at a change" : undefined}
+        onSeek={(i) => {
+          setTip(null);
+          seek(i);
+        }}
+        name={title}
+      />
     </div>
   );
 }
