@@ -241,6 +241,31 @@
   color: var(--text-1);
   white-space: nowrap;
 }
+/* The plain coordinate readout: one dim line beside the cursor, no box */
+.hud[data-quiet="true"] .inner {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  font-size: 10px;
+  color: var(--text-3);
+  text-shadow: 0 0 6px var(--ground-0, #0b0e12);
+}
+.hud[data-quiet="true"][data-visible="true"] {
+  opacity: 0.75;
+  transition-duration: var(--motion-medium);
+}
+.hud[data-quiet="true"] .inner :global(.hud-row) {
+  gap: 6px;
+}
+.hud[data-quiet="true"] .inner :global(.hud-label) {
+  color: var(--text-3);
+  opacity: 0.7;
+}
 .hud:global(.hud-swap) .inner {
   animation: hud-swap var(--motion-fast) var(--ease-out);
 }

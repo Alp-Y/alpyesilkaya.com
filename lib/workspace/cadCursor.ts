@@ -42,12 +42,16 @@ export type HudContent = {
   lines?: string[];
   /** Label / value rows, e.g. [["AREA", "1,842.32 m²"], ["DEPTH", "1.25 m"]] */
   rows?: [string, string][];
+  /** A quiet readout: one dim line, no box, shown only once the pointer rests */
+  quiet?: boolean;
 };
 
 type SpaceTransform = (clientX: number, clientY: number) => { x: number; y: number };
 
 const PRIORITY: HudSlot[] = ["operation", "drag", "selected", "hover", "control", "point"];
 const OFFSET = 18;
+/** The plain coordinate readout waits until the pointer has rested this long (ms). */
+const REST = 650;
 
 /** Keyed by "slot@space" ("slot@*" = any space), so different spaces never overwrite each other. */
 const contexts = new Map<string, HudContent>();
@@ -125,6 +129,8 @@ export function initCadCursor(): () => void {
   let hudKey = "";
   let hudVisible = false;
   let hudPos = { x: -9999, y: -9999 };
+  let lastMove = 0;
+  let restTimer = 0;
   let lastRect = { l: 0, t: 0, w: 0, h: 0 };
   // selection drag state
   let pressSeq = 0;
@@ -228,7 +234,17 @@ export function initCadCursor(): () => void {
 
     // ----- HUD content (priority) -----
     const content = resolveHud(target, space, mode);
-    const showHud = !!content && (mode !== "hidden" && mode !== "text" ? true : hasSlot("drag") || hasSlot("operation"));
+    // The coordinate readout is a quiet extra: it keeps out of the way while you explore,
+    // and appears once the pointer rests (one more frame is asked for when it has)
+    const now = performance.now();
+    if (p.moved || p.scrolled) lastMove = now;
+    let resting = true;
+    if (content?.quiet && now - lastMove < REST) {
+      resting = false;
+      clearTimeout(restTimer);
+      restTimer = window.setTimeout(requestFrame, REST - (now - lastMove) + 16);
+    }
+    const showHud = !!content && resting && (mode !== "hidden" && mode !== "text" ? true : hasSlot("drag") || hasSlot("operation"));
     if (showHud !== hudVisible) {
       hudVisible = showHud;
       els.hud.dataset.visible = String(showHud);
@@ -265,12 +281,13 @@ export function initCadCursor(): () => void {
   });
 
   function renderHud(e: Els, c: HudContent) {
-    const structure = [c.title, ...(c.rows?.map((r) => r[0]) ?? []), (c.lines ?? []).length].join("|");
+    const structure = [c.quiet ? "quiet" : "", c.title, ...(c.rows?.map((r) => r[0]) ?? []), (c.lines ?? []).length].join("|");
     const values = [...(c.lines ?? []), ...(c.rows?.map((r) => r[1]) ?? [])];
     if (structure !== hudKey) {
       hudKey = structure;
+      e.hud.dataset.quiet = String(!!c.quiet);
       e.inner.innerHTML =
-        `<span class="hud-title">${esc(c.title)}</span>` +
+        (c.title ? `<span class="hud-title">${esc(c.title)}</span>` : "") +
         (c.lines ?? []).map((l) => `<span class="hud-line num" data-v>${esc(l)}</span>`).join("") +
         (c.rows ?? [])
           .map((r) => `<span class="hud-row"><span class="hud-label">${esc(r[0])}</span><span class="num" data-v>${esc(r[1])}</span></span>`)
@@ -295,6 +312,7 @@ export function initCadCursor(): () => void {
     delete document.documentElement.dataset.cadCursor;
     root.dataset.mode = "hidden";
     els.hud.dataset.visible = "false";
+    clearTimeout(restTimer);
   };
 }
 
@@ -323,7 +341,7 @@ function resolveHud(target: Element | null, space: string | undefined, mode: Cur
     }
     if (slot === "point") {
       if (!space || !currentCoords || mode === "text" || mode === "hidden") return null;
-      return { title: "SPECIFY POINT", rows: [["X", coord(currentCoords.x)], ["Y", coord(currentCoords.y)]] };
+      return { title: "", quiet: true, rows: [["X", coord(currentCoords.x)], ["Y", coord(currentCoords.y)]] };
     }
     // A drag / operation is shown wherever the pointer is; other context only in its own space
     const own = space ? contexts.get(`${slot}@${space}`) : undefined;
