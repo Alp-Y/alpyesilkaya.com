@@ -16,6 +16,13 @@ import styles from "./Hero.module.css";
  * Off with reduced motion, while the hero is off screen or the tab is hidden.
  */
 const ADVANCE_MS = 5000;
+
+/** The countdown line goes straight back to empty (no shrinking) — before a switch or on interaction. */
+function resetLine(tabs: HTMLElement | null) {
+  if (!tabs) return;
+  tabs.dataset.snap = "";
+  tabs.style.setProperty("--advance", "0");
+}
 export default function HeroModels() {
   const [active, setActive] = useState(0);
   const m = HERO_MODELS[active];
@@ -31,7 +38,11 @@ export default function HeroModels() {
     lastTouch.current = performance.now();
     let reading = false;
     let inView = true;
-    const touch = () => (lastTouch.current = performance.now());
+    const tabs = tabsRef.current;
+    const touch = () => {
+      lastTouch.current = performance.now();
+      resetLine(tabs);
+    };
     const readOn = () => (reading = true);
     const readOff = () => {
       reading = false;
@@ -51,14 +62,15 @@ export default function HeroModels() {
       el.addEventListener("pointerenter", readOn);
       el.addEventListener("pointerleave", readOff);
     });
-    const tabs = tabsRef.current;
     const tick = window.setInterval(() => {
       if (reading || !inView || document.hidden) return; // the line holds where it is
+      if (tabs && "snap" in tabs.dataset) delete tabs.dataset.snap; // from here it fills smoothly again
       const waited = performance.now() - lastTouch.current;
       // the active tab's line: how far it is to the next use case
       tabs?.style.setProperty("--advance", String(Math.min(1, waited / ADVANCE_MS)));
       if (waited < ADVANCE_MS) return;
       const next = (activeRef.current + 1) % HERO_MODELS.length;
+      resetLine(tabs); // the next tab starts empty
       activeRef.current = next;
       setActive(next);
       setHeroModel(HERO_MODELS[next].id);
@@ -81,6 +93,7 @@ export default function HeroModels() {
   // (a click or key press on a tab also restarts the auto-advance wait: the hero hears it)
   const pick = (i: number) => {
     if (i === active) return;
+    resetLine(tabsRef.current);
     activeRef.current = i;
     setActive(i);
     setHeroModel(HERO_MODELS[i].id);
