@@ -303,10 +303,14 @@
   /* the viewport controls move into the frame's top-left corner */
   .hud {
     position: static;
+    /* a flex item keeps its z-index even when static: it must sit above the
+       use-case label and tabs (4), or the menus open under them */
+    z-index: 6;
   }
+  /* above the use-case tabs and description, so its View / Display menus open over them */
   .toolbar {
     position: absolute;
-    z-index: 4;
+    z-index: 6;
     top: calc(var(--header-h) + 52px + 12px);
     left: calc(var(--split) + 4px);
   }
