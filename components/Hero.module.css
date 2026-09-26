@@ -310,6 +310,13 @@
   .sheet {
     margin-left: auto;
   }
+  /* the viewport controls: over the text column, level with the frame's "Use cases" row */
+  .toolbar {
+    position: absolute;
+    top: calc(var(--header-h) + 52px + 12px);
+    left: max(var(--gutter), calc((100vw - var(--max-width)) / 2));
+    margin-left: -4px; /* the buttons' own padding: their brackets line up with the name */
+  }
   /* and the ViewCube into its top-right corner */
   .viewcubeWrap {
     top: calc(var(--header-h) + 52px + 10px);
