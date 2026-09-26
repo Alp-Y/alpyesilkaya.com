@@ -1,0 +1,285 @@
+/* ==================================================================
+   TOOLS FILM — the canvas stage, its title-frame fallback, and the
+   chapter bar under it. The stage keeps a fixed proportion per screen
+   size, so nothing moves when the film loads:
+     ≥ 900px   16 : 9   (the drawing spreads horizontally)
+     640–899   1 : 1    (the portrait composition, with more room)
+     < 640     4 : 5    (portrait: one workflow at a time)
+   ================================================================== */
+
+.film {
+  margin: 0 0 clamp(40px, 5vw, 72px);
+}
+
+.stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: #07090b;
+  font-family: var(--font-sans);
+  /* the film never takes the pointer: scrolling and the page stay yours */
+  pointer-events: none;
+}
+@media (max-width: 899px) {
+  .stage {
+    aspect-ratio: 1 / 1;
+  }
+}
+@media (max-width: 639px) {
+  .stage {
+    aspect-ratio: 4 / 5;
+    /* the film uses the whole phone width */
+    margin-inline: calc(var(--gutter) * -1 + 8px);
+    border-radius: 4px;
+  }
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity var(--motion-section) var(--ease-out);
+}
+.film[data-ready="true"] .canvas {
+  opacity: 1;
+}
+
+/* the title frame: shown until the canvas draws, and without JavaScript */
+.poster {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  background:
+    linear-gradient(var(--grid-major) 1px, transparent 1px) 0 0 / 120px 120px,
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px) 0 0 / 120px 120px,
+    linear-gradient(var(--grid-minor) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px) 0 0 / 24px 24px,
+    radial-gradient(ellipse 60% 55% at 50% 45%, rgba(150, 175, 205, 0.05), transparent 70%),
+    #07090b;
+  transition: opacity var(--motion-section) var(--ease-out);
+}
+.poster strong {
+  max-width: 22ch;
+  font-size: clamp(1.5rem, 3.4vw, 2.9rem);
+  font-weight: 560;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  color: var(--text-1);
+  text-wrap: balance;
+}
+.poster :global(.mono):last-child {
+  color: var(--accent);
+}
+.film[data-ready="true"] .poster {
+  opacity: 0;
+}
+
+/* marks the numbers as an example, not a project */
+.example {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  opacity: 0.7;
+}
+
+/* the one link inside the film, at its end */
+.cta {
+  position: absolute;
+  left: 50%;
+  top: 68%;
+  transform: translate(-50%, 6px);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(62, 224, 143, 0.5);
+  border-radius: var(--radius);
+  background: rgba(62, 224, 143, 0.1);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-1);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity var(--motion-medium) var(--ease-out),
+    transform var(--motion-medium) var(--ease-out),
+    background-color var(--motion-medium) var(--ease-out),
+    border-color var(--motion-medium) var(--ease-out),
+    visibility 0s linear var(--motion-medium);
+}
+.cta[data-show="true"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+  transition-delay: 0s;
+}
+.cta :global(.arrow) {
+  color: var(--accent);
+  transition: transform var(--motion-medium) var(--ease-out);
+}
+.cta:hover {
+  border-color: var(--accent);
+  background: rgba(62, 224, 143, 0.18);
+}
+.cta:hover :global(.arrow) {
+  transform: translateX(4px);
+}
+@media (max-width: 639px) {
+  .cta {
+    top: 72%;
+  }
+}
+
+/* ---------- chapter bar ---------- */
+.bar {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 10px;
+}
+.play {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: rgba(11, 14, 18, 0.6);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
+.play:hover:not(:disabled) {
+  color: var(--text-1);
+  border-color: rgba(62, 224, 143, 0.5);
+}
+.play:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.play svg {
+  width: 14px;
+  height: 14px;
+  color: var(--accent);
+}
+
+.chapters {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chapters li {
+  --p: 0;
+  position: relative;
+  flex-basis: 0;
+  min-width: 0;
+}
+.chapters button {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
+  min-height: 36px;
+  padding: 0 0 9px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  text-align: left;
+  transition: color var(--motion-fast) var(--ease-out);
+}
+.chapters button:disabled {
+  cursor: default;
+}
+/* the track and how far this chapter has played */
+.chapters button::before,
+.chapters button::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 1px;
+}
+.chapters button::before {
+  background: var(--line-strong);
+}
+.chapters button::after {
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(var(--p));
+}
+.chapters li[data-on="true"] button,
+.chapters button:hover:not(:disabled) {
+  color: var(--text-1);
+}
+.chapterLabel {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* the current chapter's name, used on phones where the labels would be illegibly short */
+.now {
+  display: none;
+}
+@media (max-width: 639px) {
+  .bar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    row-gap: 0;
+  }
+  .play {
+    grid-row: 1 / span 2;
+  }
+  .now {
+    display: block;
+    align-self: end;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-1);
+  }
+  .chapters button {
+    min-height: 14px;
+    padding-bottom: 4px;
+  }
+  .chapterLabel {
+    display: none;
+  }
+}
