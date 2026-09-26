@@ -34,10 +34,6 @@ components/               ← each piece of the UI + its own .module.css
   excavation/             ← Excavation Volume Engine demo: input, 3D surfaces (Three.js),
                             results, section profile, report preview + Excel export
   previews/               ← the homepage tool previews: looping visuals that link to each tool page
-  film/                   ← the tools film at the top of section 02 (canvas, no library):
-                            ToolsFilm.tsx (lazy loading, chapters, CTA) · chapters.ts (running order + text)
-                            player.ts (clock, resize, quality) · draw.ts (drawing kit) · plan.ts (the project plan)
-                            scenesPlan / scenesSurface / scenesWork.ts (the eight scenes)
   sqe/                    ← the Quantity by Area Calculator demo (UI)
 lib/
   content.ts              ← reads the Markdown files
@@ -48,8 +44,6 @@ lib/
   sqe/                    ← the Quantity by Area Calculator: geometry, DXF reader,
                             work types, quantity engine, example site (site.json)
   earthworks/model.ts     ← the cut / fill maths (grid method)
-  film/                   ← the film's example project (project.ts: alignment, areas A01–A06,
-                            work geometry, drainage, progress) and basin survey (terrain.ts)
   excavation/             ← the Excavation Volume Engine (no UI code):
                             xyz.ts (read + check XYZ files) · samples.ts (synthetic datasets)
                             tin.ts (Delaunay TIN) · volume.ts (surface comparison, sections)
@@ -93,7 +87,6 @@ The homepage, `/tools`, the tool's own page and the sitemap all update automatic
 - **Excel report:** `lib/excavation/report.ts` writes the .xlsx (Summary · Input Points · Volume Results · Area Breakdown · Sections, with formulas and native charts). The page's "Download Example Report / Export Results" button generates it in the browser; `app/downloads/example-excavation-report.xlsx/route.ts` writes the same file at build time. Also at build: `/downloads/xyz-template.csv` and `/downloads/sample-xyz-points.csv`.
 - **Quantity by Area Calculator demo:** tells its story once when it scrolls into view — site → survey → areas → quantities — then you explore. It runs entirely in the browser; imported DXF files are never uploaded. Excavation volumes are demonstration values (area × a representative depth), and the page says so.
 - **The SQE aerial image is an original render**, generated from the same geometry as the CAD overlay (`scripts/sqe-site.py`), so it lines up exactly and needs no licence. To use a real aerial photo instead you would also need to redraw the areas to match it.
-- **Tools film** (top of section 02): a ~74 s demonstration drawn live on a canvas: overview → quantities by area → XYZ to TIN, sections and cut volume → drainage network → weekly comparison → BOQ / WIR / IPC traceability → report → summary. Every number in it is computed from the example geometry at load time (areas clipped per project area, the basin through the real Excavation Volume Engine), nothing is typed in. It loads only when it comes near the screen, plays only while on screen, and never plays by itself with *Reduce motion* (a still of the report is shown; the chapter buttons show stills). Three compositions: 16:9 (≥ 900 px), square (640–899) and 4:5 portrait (phones). Change the running order or a chapter's length in `components/film/chapters.ts`; `<ToolsFilm chapters={["surfaces"]} />` plays one chapter on a loop anywhere. In development, `__at(seconds)` in the browser console holds the film at that time.
 - **Fonts:** Geist and Geist Mono (open licence) are self-hosted from `app/fonts/`.
 
 ## Deploy

@@ -5,7 +5,6 @@ import Disciplines from "@/components/Disciplines";
 import SectionHeader from "@/components/SectionHeader";
 import ToolFeature from "@/components/ToolFeature";
 import CaseRegister from "@/components/CaseRegister";
-import ToolsFilm from "@/components/film/ToolsFilm";
 import AboutSection from "@/components/AboutSection";
 import ContactSection from "@/components/ContactSection";
 import styles from "./page.module.css";
@@ -33,8 +32,7 @@ export default function HomePage() {
             label="Tools"
             title={["Tools I’ve built."]}
           />
-          <ToolsFilm />
-          <div className={styles.toolList} id="tools-list">
+          <div className={styles.toolList}>
             {tools.map((tool, i) => (
               <ToolFeature key={tool.slug} tool={tool} index={i} />
             ))}
