@@ -1,4 +1,5 @@
 import ExperienceDrawer, { type ExperienceItem } from "./ExperienceDrawer";
+import PaletteClose from "./PaletteClose";
 import styles from "./PropertiesPalette.module.css";
 
 /**
@@ -52,12 +53,10 @@ export default function PropertiesPalette({
   }
 
   return (
-    <div className={styles.palette} data-reveal="rise">
+    <div className={styles.palette} data-palette data-closed="false" data-reveal="rise">
       <div className={styles.head}>
         <span className="mono">{title}</span>
-        <span className={styles.close} aria-hidden="true">
-          ×
-        </span>
+        <PaletteClose title={title} />
       </div>
       {selection && <div className={styles.selection}>{selection}</div>}
       {groups

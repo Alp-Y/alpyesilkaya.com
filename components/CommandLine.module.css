@@ -2,6 +2,12 @@
 .dock {
   position: relative;
 }
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
 .toggle {
   display: inline-flex;
   align-items: center;

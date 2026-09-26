@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { HERO_MODELS, setHeroModel } from "@/lib/heroModels";
+import { HERO_MODELS, HERO_TABS, setHeroModel } from "@/lib/heroModels";
 import styles from "./Hero.module.css";
 
 /**
@@ -90,6 +90,8 @@ export default function HeroModels() {
     };
   }, []);
 
+  const activeTab = HERO_TABS.findIndex((t) => t.models.includes(active));
+
   // (a click or key press on a tab also restarts the auto-advance wait: the hero hears it)
   const pick = (i: number) => {
     if (i === active) return;
@@ -99,34 +101,48 @@ export default function HeroModels() {
     setHeroModel(HERO_MODELS[i].id);
   };
 
+  // A tab shows its first scene; clicking it again while open steps through its other scenes
+  const pickTab = (t: number) => {
+    const scenes = HERO_TABS[t].models;
+    pick(t === activeTab ? scenes[(scenes.indexOf(active) + 1) % scenes.length] : scenes[0]);
+  };
+
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
     e.preventDefault();
-    const next = (active + (e.key === "ArrowRight" ? 1 : -1) + HERO_MODELS.length) % HERO_MODELS.length;
-    pick(next);
+    const next = (activeTab + (e.key === "ArrowRight" ? 1 : -1) + HERO_TABS.length) % HERO_TABS.length;
+    pickTab(next);
     (e.currentTarget.children[next] as HTMLElement | undefined)?.focus();
   };
 
   return (
     <>
       <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "860ms" } as React.CSSProperties}>
-        Use cases <span>· click one to switch</span>
+        Use cases
       </p>
       <div ref={tabsRef} className={styles.models} role="tablist" aria-labelledby="hero-use-cases" onKeyDown={onKey} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "880ms" } as React.CSSProperties}>
-        {HERO_MODELS.map((h, i) => (
+        {HERO_TABS.map((t, i) => (
           <button
-            key={h.id}
+            key={t.name}
             type="button"
             role="tab"
-            id={`hero-model-${h.id}`}
-            aria-selected={i === active}
+            id={`hero-tab-${i}`}
+            aria-selected={i === activeTab}
             aria-controls="hero-model-story"
-            tabIndex={i === active ? 0 : -1}
+            tabIndex={i === activeTab ? 0 : -1}
             className={styles.modelTab}
-            onClick={() => pick(i)}
+            onClick={() => pickTab(i)}
           >
             <span className="num">{String(i + 1).padStart(2, "0")}</span>
-            {h.tab}
+            {t.name}
+            {t.models.length > 1 && (
+              /* one mark per scene in this tab, the one on screen lit */
+              <span className={styles.scenes} aria-hidden="true">
+                {t.models.map((mi) => (
+                  <i key={mi} data-on={mi === active} />
+                ))}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -135,7 +151,7 @@ export default function HeroModels() {
         ref={storyRef}
         id="hero-model-story"
         role="tabpanel"
-        aria-labelledby={`hero-model-${m.id}`}
+        aria-labelledby={`hero-tab-${activeTab}`}
         className={styles.story}
         data-hero-exit
         data-overlay
@@ -143,19 +159,11 @@ export default function HeroModels() {
         style={{ "--delay": "960ms" } as React.CSSProperties}
       >
         <p key={m.id} className={styles.storyLine}>
-          <strong>{m.title}</strong> {m.line}
-        </p>
-        <div className={`mono ${styles.storyMeta}`}>
-          {m.keys.map((k) => (
-            <span key={k.label} className={styles.storyKey}>
-              <i style={{ background: k.color }} aria-hidden="true" />
-              {k.label}
-            </span>
-          ))}
+          <strong>{m.title}</strong> {m.line}{" "}
           <Link href={m.tool.href} className={styles.storyTool}>
             {m.tool.name} <span aria-hidden="true">→</span>
           </Link>
-        </div>
+        </p>
       </div>
     </>
   );

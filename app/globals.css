@@ -99,6 +99,30 @@
   color-scheme: dark;
 }
 
+/*
+  Display mode (the viewport toolbar / command line: 2D WIREFRAME, SHADED,
+  ANALYSIS) also tints the whole sheet a little — the same tokens, shifted.
+  Wireframe is the default above.
+*/
+html[data-display-mode="shaded"] {
+  /* filled surfaces: grounds and panels a touch more solid, the grid recedes */
+  --ground-0: rgba(9, 12, 15, 0.78);
+  --ground-1: rgba(12, 15, 20, 0.92);
+  --surface: rgba(150, 175, 205, 0.06);
+  --surface-strong: rgba(150, 175, 205, 0.1);
+  --grid-minor: rgba(160, 185, 215, 0.022);
+  --grid-major: rgba(160, 185, 215, 0.05);
+}
+html[data-display-mode="analysis"] {
+  /* an analysis overlay: lines and grid pick up a faint layer-green */
+  --line: rgba(62, 224, 143, 0.12);
+  --line-strong: rgba(62, 224, 143, 0.24);
+  --grid-minor: rgba(62, 224, 143, 0.035);
+  --grid-major: rgba(62, 224, 143, 0.07);
+  --surface: rgba(62, 224, 143, 0.035);
+  --surface-strong: rgba(62, 224, 143, 0.06);
+}
+
 /* 2. BASE ---------------------------------------------------------- */
 *,
 *::before,

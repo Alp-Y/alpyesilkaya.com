@@ -96,3 +96,9 @@
   border-color: var(--accent);
   background: var(--accent);
 }
+
+/* at the bottom of a sheet: the menus open upwards */
+.dropUp .menu {
+  top: auto;
+  bottom: calc(100% + 4px);
+}

@@ -5,18 +5,13 @@ import { site } from "@/site.config";
 import styles from "./ContactSection.module.css";
 
 /**
- * brief.txt — the three things a useful brief contains, as a form that emails
- * them straight to Alp. The site is static (GitHub Pages), so the message goes
+ * message.txt — a plain message form (name, email, message) that emails
+ * straight to Alp. The site is static (GitHub Pages), so the message goes
  * through FormSubmit (formsubmit.co), which forwards it to site.email. The very
  * first submission sends a one-time activation email to that address.
  */
 const ENDPOINT = `https://formsubmit.co/ajax/${site.email}`;
 
-const FIELDS = [
-  { name: "task", title: "The task you repeat", hint: "What you do by hand, step by step.", required: true },
-  { name: "files", title: "The files it touches", hint: "DWG, XYZ survey points, Excel sheets…", required: false },
-  { name: "frequency", title: "How often it comes round", hint: "Every survey, every week, every progress update.", required: false },
-] as const;
 
 type Status = "idle" | "sending" | "sent" | "activate" | "error";
 
@@ -60,39 +55,34 @@ export default function BriefForm() {
     <form className={styles.brief} onSubmit={onSubmit} aria-labelledby="brief-title" data-cursor="text">
       <div className={styles.briefHead}>
         <span id="brief-title" className="mono">
-          brief.txt
+          message.txt
         </span>
-        <span className={`mono ${styles.briefMeta}`}>3 lines is enough</span>
+        <span className={`mono ${styles.briefMeta}`}>To: Alp</span>
       </div>
 
-      <ol className={styles.briefList}>
-        {FIELDS.map((f, i) => (
-          <li key={f.name}>
-            <span className={`mono ${styles.briefNum}`} aria-hidden="true">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <label className={styles.briefField}>
-              <b>
-                {f.title}
-                {!f.required && <span className={styles.briefOptional}> · optional</span>}
-              </b>
-              <textarea name={f.name} rows={2} placeholder={f.hint} required={f.required} maxLength={2000} />
-            </label>
-          </li>
-        ))}
-        <li>
-          <span className={`mono ${styles.briefNum}`} aria-hidden="true">
-            @
-          </span>
-          <label className={styles.briefField}>
-            <b>Your email</b>
-            <input type="email" name="email" placeholder="So I can reply" required autoComplete="email" />
-          </label>
-        </li>
-      </ol>
+      <div className={styles.msgPair}>
+        <label className={styles.msgField}>
+          <span className="mono">Name · optional</span>
+          <input type="text" name="name" autoComplete="name" maxLength={120} />
+        </label>
+        <label className={styles.msgField}>
+          <span className="mono">Your email</span>
+          <input type="email" name="email" placeholder="So I can reply" required autoComplete="email" />
+        </label>
+      </div>
+      <label className={styles.msgField}>
+        <span className="mono">Message</span>
+        <textarea
+          name="message"
+          rows={6}
+          required
+          maxLength={4000}
+          placeholder="What do you do by hand? Which files does it touch (DWG, XYZ, Excel…), and how often does it come round?"
+        />
+      </label>
 
       {/* FormSubmit settings, and a trap only bots fill in */}
-      <input type="hidden" name="_subject" value="Workflow brief — alpyesilkaya.com" />
+      <input type="hidden" name="_subject" value="New message — alpyesilkaya.com" />
       <input type="hidden" name="_template" value="table" />
       <input type="text" name="_honey" tabIndex={-1} autoComplete="off" className={styles.honey} aria-hidden="true" />
 
@@ -108,7 +98,7 @@ export default function BriefForm() {
           )}
         </p>
         <button type="submit" className={styles.briefSend} disabled={status === "sending"}>
-          Send brief <span className="arrow" aria-hidden="true">→</span>
+          Send message <span className="arrow" aria-hidden="true">→</span>
         </button>
       </div>
     </form>

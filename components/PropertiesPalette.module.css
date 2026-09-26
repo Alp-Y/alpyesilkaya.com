@@ -15,9 +15,34 @@
   background: var(--surface);
 }
 .close {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: -3px -6px -3px 0;
+  border-radius: 3px;
   color: var(--text-3);
   font-size: 14px;
   line-height: 1;
+  cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
+}
+.close:hover {
+  color: var(--text-1);
+  background: var(--surface-strong);
+}
+.close:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+/* closed: only the title bar stays, like a collapsed palette */
+.palette[data-closed="true"] > :not(.head) {
+  display: none;
+}
+.palette[data-closed="true"] .head {
+  border-bottom: 0;
 }
 
 .selection {

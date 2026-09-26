@@ -24,7 +24,7 @@ import styles from "./ViewportToolbar.module.css";
  * toolbar, the Quantity by Area Calculator toolbar, the ViewCube and the
  * command line always agree.
  */
-export default function ViewportToolbar({ className = "" }: { className?: string }) {
+export default function ViewportToolbar({ className = "", dropUp = false }: { className?: string; dropUp?: boolean }) {
   const orientation = useWorkspace((s) => s.viewport.orientation);
   const displayMode = useWorkspace((s) => s.viewport.displayMode);
   const overlays = useWorkspace((s) => s.viewport.overlaysVisible);
@@ -53,7 +53,7 @@ export default function ViewportToolbar({ className = "" }: { className?: string
   const modeText = displayModeLabel(displayMode);
 
   return (
-    <div ref={rootRef} className={`${styles.toolbar} ${className}`} role="toolbar" aria-label="Viewport controls">
+    <div ref={rootRef} className={`${styles.toolbar} ${dropUp ? styles.dropUp : ""} ${className}`} role="toolbar" aria-label="Viewport controls">
       <button
         type="button"
         className={styles.control}

@@ -38,9 +38,6 @@ export default function Hero() {
 
       {/* Viewport controls + sheet annotation */}
       <div className={`container ${styles.hud}`} data-hero-exit>
-        <div className={styles.toolbar} data-reveal="fade" style={{ "--delay": "800ms" } as React.CSSProperties}>
-          <ViewportToolbar />
-        </div>
         <span className={`mono ${styles.sheet}`} data-overlay data-reveal="fade" style={{ "--delay": "700ms" } as React.CSSProperties}>
           Sheet 01 / {num.total} <span className={styles.hudSep}>·</span> Rev {site.revision.code}
         </span>
@@ -126,7 +123,7 @@ export default function Hero() {
           <span className={styles.origin} data-cad-origin aria-hidden="true" />
         </div>
         <div className={styles.cmdWrap} data-reveal="rise" style={{ "--delay": "1150ms" } as React.CSSProperties}>
-          <CommandLine />
+          <CommandLine tools={<ViewportToolbar dropUp />} />
         </div>
       </div>
     </section>

@@ -4,8 +4,8 @@ import BriefForm from "./BriefForm";
 import styles from "./ContactSection.module.css";
 
 /**
- * Contact: one large line and the email address, with a brief.txt form beside
- * it: the three things a useful brief contains, sent straight to my inbox.
+ * Contact: one large line and the email address, with a message form beside
+ * it that sends straight to my inbox.
  * Desktop: clicking the email copies it. Phones: tapping opens the mail app,
  * and a small Copy button sits next to it.
  */
@@ -69,7 +69,7 @@ export default function ContactSection() {
             </ul>
           </div>
 
-          {/* brief.txt: what a useful brief contains, as a form that emails it to me */}
+          {/* message.txt: a plain message form that emails me */}
           <div className={styles.briefWrap} data-reveal="rise" style={{ "--delay": "300ms" } as React.CSSProperties}>
             <BriefForm />
           </div>

@@ -9,19 +9,23 @@
  */
 import styles from "./CommandLine.module.css";
 
-export default function CommandLine({ className = "" }: { className?: string }) {
+export default function CommandLine({ className = "", tools }: { className?: string; tools?: React.ReactNode }) {
   return (
     <div className={`${styles.dock} ${className}`} data-cmd-dock data-open="false">
-      <button type="button" className={styles.toggle} data-cmd-toggle aria-expanded="false" aria-controls="cmd-panel" data-hud="OPEN|COMMAND LINE">
-        <span className={styles.toggleCaret} aria-hidden="true" />
-        <span>Command line</span>
-        <kbd className={styles.toggleKey} aria-hidden="true">
-          /
-        </kbd>
-        <svg className={styles.chevron} viewBox="0 0 10 10" fill="none" aria-hidden="true">
-          <path d="M2 3.5 5 6.5 8 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
+      {/* one row of controls: other tools (e.g. the viewport toolbar), then the toggle */}
+      <div className={styles.bar}>
+        {tools}
+        <button type="button" className={styles.toggle} data-cmd-toggle aria-expanded="false" aria-controls="cmd-panel" data-hud="OPEN|COMMAND LINE">
+          <span className={styles.toggleCaret} aria-hidden="true" />
+          <span>Command line</span>
+          <kbd className={styles.toggleKey} aria-hidden="true">
+            /
+          </kbd>
+          <svg className={styles.chevron} viewBox="0 0 10 10" fill="none" aria-hidden="true">
+            <path d="M2 3.5 5 6.5 8 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
 
       <div className={styles.panel} id="cmd-panel">
         <div className={styles.panelInner}>

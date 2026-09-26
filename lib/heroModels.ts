@@ -7,19 +7,15 @@
 
 export type HeroModelId = "road" | "basement" | "progress" | "areas";
 
-export type HeroKey = { color: string; label: string };
-
 export type HeroModel = {
   id: HeroModelId;
-  /** Tab label */
+  /** Tab it belongs to (a tab can hold more than one scene, e.g. Earthworks: a road and a basement) */
   tab: string;
   /** What the model shows, leading the sentence */
   title: string;
   /** One specific scenario, in one sentence */
   line: string;
   tool: { name: string; href: string };
-  /** Colour key shown under the sentence */
-  keys: HeroKey[];
   /** Where the model is shown from, and turns from (degrees) */
   view: { azimuth: number; elevation: number };
 };
@@ -36,22 +32,14 @@ export const HERO_MODELS: HeroModel[] = [
     title: "Road earthworks.",
     line: "Turn XYZ survey points into cut and fill volumes and an Excel report, in seconds.",
     tool: { name: "Excavation Volume Calculator", href: "/tools/excavation-volume-calculator" },
-    keys: [
-      { color: CUT, label: "Cut" },
-      { color: FILL, label: "Fill" },
-    ],
     view: { azimuth: 0, elevation: 0 },
   },
   {
     id: "basement",
-    tab: "Basement",
+    tab: "Earthworks",
     title: "Basement excavation.",
     line: "Measure a basement excavation from the ground survey and the dug surface, with sections to check it.",
     tool: { name: "Excavation Volume Calculator", href: "/tools/excavation-volume-calculator" },
-    keys: [
-      { color: CUT, label: "Excavation" },
-      { color: LINE, label: "Survey points" },
-    ],
     view: { azimuth: -35, elevation: 28 },
   },
   {
@@ -60,11 +48,6 @@ export const HERO_MODELS: HeroModel[] = [
     title: "Weekly progress.",
     line: "Overlay last week’s and this week’s drawings and get the net quantities for the progress report.",
     tool: { name: "DWG Comparison Tool", href: "/tools/drawing-comparison-tool" },
-    keys: [
-      { color: FILL, label: "Added" },
-      { color: CUT, label: "Taken out" },
-      { color: LINE, label: "Unchanged" },
-    ],
     view: { azimuth: -30, elevation: 32 },
   },
   {
@@ -73,11 +56,6 @@ export const HERO_MODELS: HeroModel[] = [
     title: "Project areas.",
     line: "Split one asphalt layer and a pipe trench that cross three project areas into a quantity for each area.",
     tool: { name: "Quantity by Area Calculator", href: "/tools/quantity-by-area-calculator" },
-    keys: [
-      { color: AREA_COLORS[0], label: "Area A" },
-      { color: AREA_COLORS[1], label: "Area B" },
-      { color: AREA_COLORS[2], label: "Area C" },
-    ],
     view: { azimuth: -40, elevation: 40 },
   },
 ];
@@ -91,6 +69,14 @@ export function setHeroModel(id: HeroModelId) {
   current = id;
   document.dispatchEvent(new CustomEvent("hero:model", { detail: { id } }));
 }
+/** The tabs, in order, each with the scenes (indexes into HERO_MODELS) it holds. */
+export const HERO_TABS: { name: string; models: number[] }[] = HERO_MODELS.reduce<{ name: string; models: number[] }[]>((tabs, m, i) => {
+  const tab = tabs.find((t) => t.name === m.tab);
+  if (tab) tab.models.push(i);
+  else tabs.push({ name: m.tab, models: [i] });
+  return tabs;
+}, []);
+
 export function heroModel(id: HeroModelId): HeroModel {
   return HERO_MODELS.find((m) => m.id === id) ?? HERO_MODELS[0];
 }

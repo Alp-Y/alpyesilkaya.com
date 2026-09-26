@@ -182,66 +182,65 @@
   font-size: 10px;
   text-transform: uppercase;
 }
-.briefList {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.briefList li {
+/* message.txt: plain labelled fields */
+.msgPair {
   display: grid;
-  grid-template-columns: 34px 1fr;
-  gap: 4px;
-  padding: 14px 14px 14px 12px;
+  grid-template-columns: 1fr 1fr;
+}
+.msgPair .msgField + .msgField {
+  border-left: 1px solid var(--line);
+}
+.msgField {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px 14px;
   border-top: 1px solid var(--line);
+  cursor: text;
   transition: background-color var(--t-fast) var(--ease);
 }
-.briefList li:first-child {
+.msgPair .msgField {
   border-top: 0;
 }
-.briefList li:hover {
-  background: var(--surface);
-}
-.briefNum {
-  padding-top: 3px;
-  font-size: 10.5px;
-  color: var(--accent);
-}
-.briefField {
-  display: grid;
-  gap: 4px;
-  cursor: text;
-}
-.briefField b {
-  font-weight: 500;
-  font-size: 14.5px;
-  color: var(--text-1);
-}
-.briefOptional {
-  font-weight: 400;
+.msgField > span {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--text-3);
 }
-.briefField textarea,
-.briefField input {
+.msgField input,
+.msgField textarea {
   width: 100%;
   padding: 0;
   border: 0;
   outline: 0;
   background: none;
-  resize: none;
+  resize: vertical;
   font: inherit;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 14.5px;
+  line-height: 1.55;
   color: var(--text-1);
   caret-color: var(--accent);
 }
-.briefField textarea::placeholder,
-.briefField input::placeholder {
+.msgField textarea {
+  min-height: 7.5em;
+}
+.msgField input::placeholder,
+.msgField textarea::placeholder {
   color: var(--text-3);
 }
-/* the line being written is marked, like the active row in the Properties panel */
-.briefList li:focus-within {
+/* the field being written is marked, like the active row in the Properties panel */
+.msgField:focus-within {
   background: var(--surface);
   box-shadow: inset 2px 0 0 var(--accent);
+}
+@media (max-width: 480px) {
+  .msgPair {
+    grid-template-columns: 1fr;
+  }
+  .msgPair .msgField + .msgField {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
 }
 .honey {
   position: absolute;
@@ -312,8 +311,8 @@
 }
 /* phones: 16px fields, so iOS does not zoom in on focus */
 @media (max-width: 640px) {
-  .briefField textarea,
-  .briefField input {
+  .msgField textarea,
+  .msgField input {
     font-size: 16px;
   }
 }

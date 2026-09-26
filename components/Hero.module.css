@@ -230,7 +230,7 @@
     position: absolute;
     right: max(var(--gutter), calc((100vw - var(--max-width)) / 2));
     /* close to the text column and nearly as tall as it, so the model fills the sheet */
-    top: calc(var(--header-h) + 52px + 172px);
+    top: calc(var(--header-h) + 52px + 150px);
     bottom: 36px;
     left: var(--split);
     height: auto;
@@ -307,13 +307,6 @@
        use-case label and tabs (4), or the menus open under them */
     z-index: 6;
   }
-  /* above the use-case tabs and description, so its View / Display menus open over them */
-  .toolbar {
-    position: absolute;
-    z-index: 6;
-    top: calc(var(--header-h) + 52px + 12px);
-    left: calc(var(--split) + 4px);
-  }
   .sheet {
     margin-left: auto;
   }
@@ -387,6 +380,24 @@
 .modelTab:active {
   transform: none;
 }
+/* a tab holding more than one scene (Earthworks: road, basement) shows one dot per scene */
+.scenes {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 2px;
+}
+.scenes i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-3);
+  opacity: 0.6;
+  transition: background-color var(--t-fast) var(--ease), opacity var(--t-fast) var(--ease);
+}
+.modelTab[aria-selected="true"] .scenes i[data-on="true"] {
+  background: var(--accent);
+  opacity: 1;
+}
 /* the active tab fills a thin line while it waits to move on to the next use case */
 .modelTab[aria-selected="true"]::after {
   content: "";
@@ -436,28 +447,9 @@
     transform: translate3d(0, 4px, 0);
   }
 }
-.storyMeta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 14px;
-  margin-top: 10px;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-.storyKey {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.storyKey i {
-  width: 8px;
-  height: 8px;
-  border-radius: 1px;
-}
+/* the tool that does it: a quiet link closing the sentence */
 .storyTool {
+  white-space: nowrap;
   color: var(--accent);
   transition: opacity var(--t-fast) var(--ease);
 }
@@ -479,7 +471,7 @@
   .useCases {
     position: absolute;
     z-index: 4;
-    top: calc(var(--header-h) + 52px + 44px);
+    top: calc(var(--header-h) + 52px + 18px);
     left: calc(var(--split) + 4px);
     padding: 0;
     margin: 0;
@@ -487,7 +479,7 @@
   .models {
     position: absolute;
     z-index: 4;
-    top: calc(var(--header-h) + 52px + 64px);
+    top: calc(var(--header-h) + 52px + 40px);
     left: calc(var(--split) + 4px);
     padding: 0;
     margin: 0;
@@ -496,7 +488,7 @@
   .story {
     position: absolute;
     z-index: 3;
-    top: calc(var(--header-h) + 52px + 108px);
+    top: calc(var(--header-h) + 52px + 86px);
     left: calc(var(--split) + 4px);
     /* stops short of the ViewCube in the other corner */
     width: min(400px, calc(100vw - var(--split) - max(var(--gutter), (100vw - var(--max-width)) / 2) - 250px));
