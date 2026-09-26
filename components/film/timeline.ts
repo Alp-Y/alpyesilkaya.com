@@ -5,20 +5,17 @@
  */
 
 import type { Frame } from "./draw";
-import { areasScene, openScene } from "./scenesPlan";
-import { surfaceScene } from "./scenesSurface";
-import { drainageScene, finaleScene, progressScene, reportScene, traceScene } from "./scenesWork";
+import { drainageScene, endScene, introScene, progressScene, reportScene, volumeScene, zonesScene } from "./scenes";
 import { CHAPTERS, type ChapterId } from "./chapters";
 
 const DRAW: Record<ChapterId, (f: Frame) => void> = {
-  overview: openScene,
-  quantities: areasScene,
-  surfaces: surfaceScene,
+  intro: introScene,
+  zones: zonesScene,
+  volume: volumeScene,
   drainage: drainageScene,
   progress: progressScene,
-  traceability: traceScene,
   report: reportScene,
-  summary: finaleScene,
+  end: endScene,
 };
 
 export type Scene = { id: ChapterId; dur: number; start: number; draw: (f: Frame) => void };

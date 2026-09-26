@@ -3,55 +3,14 @@
  * the chapter bar and its text description before the film itself loads.
  */
 
-export type ChapterId = "overview" | "quantities" | "surfaces" | "drainage" | "progress" | "traceability" | "report" | "summary";
+export type ChapterId = "intro" | "zones" | "volume" | "drainage" | "progress" | "report" | "end";
 
 export const CHAPTERS: { id: ChapterId; label: string; dur: number; text: string }[] = [
-  {
-    id: "overview",
-    label: "Overview",
-    dur: 7.5,
-    text: "The YTQTY command runs on an example road drawing. An alignment is drawn, then project areas, a survey, a triangulated surface and a storm drain build up into one project.",
-  },
-  {
-    id: "quantities",
-    label: "Quantities",
-    dur: 10,
-    text: "Quantity by Area: areas A01 to A06, north and south. Asphalt, kerbs, pipes, manholes and a demolition polygon are measured inside each area. Objects that cross a boundary are split, and the quantities are grouped by section, area, sub-area and work type.",
-  },
-  {
-    id: "surfaces",
-    label: "Surfaces",
-    dur: 16.5,
-    text: "Excavation volume: X,Y,Z survey rows become points, then a TIN, contours and a terrain surface. The excavated surface is compared with existing ground, a section is cut, cross sections and the cut volume are calculated, and an Excel-style report is built.",
-  },
-  {
-    id: "drainage",
-    label: "Drainage",
-    dur: 9,
-    text: "Stormwater: manholes MHL1-12 to MHL1-18 and the pipes between them are read from the drawing with diameter, material, length, slope, ground and invert levels, and collected into a network table.",
-  },
-  {
-    id: "progress",
-    label: "Progress",
-    dur: 8.5,
-    text: "Weekly comparison with YTCOMPARE: the previous and current progress drawings are overlaid. A lay-by grows from 100 to 150 square metres, so only the new 50 square metres counts as added work. A removed kerb and a new manhole are classified too, then grouped by section, area and work type.",
-  },
-  {
-    id: "traceability",
-    label: "Traceability",
-    dur: 6.5,
-    text: "A selected asphalt polygon is classified from the project's work-type configuration, then linked through its area, work item and BOQ code to a WIR and an interim payment certificate.",
-  },
-  {
-    id: "report",
-    label: "Report",
-    dur: 7.5,
-    text: "Everything measured comes together in a structured quantity report: project, section, area, work type, description, unit, quantity, previous, current and change, with percent complete by item.",
-  },
-  {
-    id: "summary",
-    label: "Summary",
-    dur: 8,
-    text: "Draw, measure, classify, compare, report, automatically. Civil engineering workflows, automated. Alp Yesilkaya, civil engineer, engineering tools and AI.",
-  },
+  { id: "intro", label: "Intro", dur: 7.5, text: "Every drawing holds the answers. These tools find them, measure them and put them in a report, automatically." },
+  { id: "zones", label: "Zones", dur: 12, text: "Measure by zone. The project zones are drawn once, and every quantity is sorted into the zone it belongs to, even where the work crosses a boundary." },
+  { id: "volume", label: "Volume", dur: 14.5, text: "From survey points to volume. Survey points become a 3D surface, the ground is compared with the excavation, and the volume is worked out." },
+  { id: "drainage", label: "Drainage", dur: 11, text: "Read the drainage network. Pipes and manholes are picked up straight from the drawing, with sizes and lengths, without retyping." },
+  { id: "progress", label: "Progress", dur: 10.5, text: "See what changed this week. Last week's and this week's drawings are compared, and only the new work is counted as progress." },
+  { id: "report", label: "Report", dur: 8.5, text: "Everything, in one report, organised the same way every week and ready to share." },
+  { id: "end", label: "End", dur: 7, text: "Civil engineering workflows, automated. Alp Yesilkaya, civil engineer, engineering tools and AI." },
 ];

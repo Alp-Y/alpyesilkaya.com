@@ -7,8 +7,10 @@
      < 640     4 : 5    (portrait: one workflow at a time)
    ================================================================== */
 
+/* a little narrower than the page, centred: a screen to watch, not a wall */
 .film {
-  margin: 0 0 clamp(40px, 5vw, 72px);
+  max-width: 980px;
+  margin: 0 auto clamp(40px, 5vw, 72px);
 }
 
 .stage {
@@ -16,7 +18,7 @@
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: 12px;
   background: #07090b;
   font-family: var(--font-sans);
   /* the film never takes the pointer: scrolling and the page stay yours */

@@ -6,7 +6,7 @@ import type { FilmPlayer } from "./player";
 import styles from "./ToolsFilm.module.css";
 
 /**
- * THE TOOLS FILM — a ~75 s demonstration of the engineering tools, drawn
+ * THE TOOLS FILM — a ~70 s demonstration of the engineering tools, drawn
  * live on a canvas from real geometry (see components/film/ and lib/film/).
  *
  *   · nothing loads until the film is about to scroll into view
@@ -115,7 +115,7 @@ export default function ToolsFilm({ chapters, ctaHref = "#tools-list" }: { chapt
           },
         });
       // Reduce motion: a still of the report, the film's payoff
-      if (reduced.current) player.seek(loop ? 0 : player.scenes[player.scenes.length - 2]?.start + 6.4 || 0);
+      if (reduced.current) player.seek(loop ? 0 : (player.scenes.find((s) => s.id === "report")?.start ?? 0) + 6.5);
       ro = new ResizeObserver(([e]) => player.resize(e.contentRect.width, e.contentRect.height));
       ro.observe(stage);
       setReady(true);

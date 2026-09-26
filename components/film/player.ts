@@ -151,6 +151,16 @@ export class FilmPlayer {
     ctx.save();
     scene.draw(f);
     ctx.restore();
+    // chapters fade through the background into each other (the last one holds)
+    const FADE = 0.7;
+    const last = i === this.scenes.length - 1 && !this.opts.loop;
+    const lift = Math.min(1, f.lt / FADE, last ? 1 : (scene.dur - f.lt) / FADE);
+    if (lift < 1) {
+      ctx.globalAlpha = 1 - Math.max(0, lift) ** 1.5;
+      ctx.fillStyle = "#07090b";
+      ctx.fillRect(0, 0, this.w, this.h);
+      ctx.globalAlpha = 1;
+    }
     this.opts.onTime?.(this.t, i);
   }
 
