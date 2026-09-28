@@ -5,7 +5,7 @@ title: DWG Comparison Tool
 order: 3
 demo: cmp
 summary: Two progress drawings, overlaid. Removals and additions are found and coloured automatically, and the net quantity for the period is calculated.
-platform:
+platform: Civil 3D
 stack:
 status:
 version:

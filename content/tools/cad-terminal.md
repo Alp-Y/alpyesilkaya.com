@@ -4,7 +4,7 @@ title: CAD Terminal
 order: 4
 demo: ctm
 summary: Customise design and survey DWG elements according to your needs, and see their properties as a summary directly in the drawing. Identify a structure once and CAD Terminal remembers it, ready to track, search and export.
-platform:
+platform: Civil 3D
 stack:
 status:
 version:

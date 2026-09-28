@@ -124,3 +124,8 @@
   grid-area: demo;
   min-width: 0;
 }
+
+/* which platform the tool is for, beside its number */
+.platform {
+  color: var(--text-3);
+}

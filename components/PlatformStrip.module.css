@@ -1,0 +1,59 @@
+/* Under the Tools heading: the platform the tools are for, and what is still to come */
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  margin: 28px 0 24px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(62, 224, 143, 0.5);
+  border-radius: var(--radius);
+  background: rgba(62, 224, 143, 0.08);
+  color: var(--text-1);
+}
+.ready i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.ready b {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(62, 224, 143, 0.16);
+  font-weight: 500;
+  color: var(--accent);
+}
+.later {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 3px 5px 3px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  color: var(--text-3);
+}
+.later em {
+  font-style: normal;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  margin-right: 4px;
+}
+.later span {
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-2);
+}

@@ -28,7 +28,10 @@ export default function ToolFeature({ tool, index }: { tool: Tool; index: number
         {tool.demo === "cmp" && <CmpGlyph className={styles.glyph} />}
         {tool.demo === "ctm" && <CtmGlyph className={styles.glyph} />}
         <span className={styles.headingText}>
-          <span className="mono accent">T-{pad(index + 1)}</span>
+          <span className="mono">
+            <span className="accent">T-{pad(index + 1)}</span>
+            {tool.platform && <span className={styles.platform}> / {tool.platform}</span>}
+          </span>
           <h3 className={styles.title} id={`tool-${tool.slug}`}>
             {tool.title}
           </h3>

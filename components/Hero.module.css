@@ -401,12 +401,12 @@
   opacity: 0.6;
   transition: background-color var(--t-fast) var(--ease), opacity var(--t-fast) var(--ease);
 }
-.modelTab[aria-selected="true"] .scenes i[data-on="true"] {
+.modelTab:is([aria-selected="true"], [data-active="true"]) .scenes i[data-on="true"] {
   background: var(--accent);
   opacity: 1;
 }
 /* the active tab fills a thin line while it waits to move on to the next use case */
-.modelTab[aria-selected="true"]::after {
+.modelTab:is([aria-selected="true"], [data-active="true"])::after {
   content: "";
   position: absolute;
   left: 0;
@@ -421,17 +421,114 @@
 .models[data-snap] .modelTab::after {
   transition: none;
 }
-.modelTab[aria-selected="true"] {
+.modelTab:is([aria-selected="true"], [data-active="true"]) {
   color: var(--text-1);
   border-color: rgba(62, 224, 143, 0.5);
   background: rgba(62, 224, 143, 0.08);
 }
-.modelTab[aria-selected="true"] :global(.num) {
+.modelTab:is([aria-selected="true"], [data-active="true"]) :global(.num) {
   color: var(--accent);
 }
 .modelTab:focus-visible {
   outline: 1px solid var(--accent);
   outline-offset: 2px;
+}
+/* the platform chip opens the use cases underneath it */
+.chev {
+  width: 10px;
+  height: 10px;
+  margin-left: 1px;
+  color: var(--text-3);
+  transition: transform var(--motion-medium) var(--ease-out);
+}
+.modelTab[aria-expanded="true"] .chev {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+/* platforms still to come: one dashed group, labelled, not clickable */
+.upcoming {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 28px;
+  padding: 0 4px 0 9px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+.upcoming em {
+  font-style: normal;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  margin-right: 3px;
+  color: var(--text-3);
+  opacity: 0.8;
+}
+.soon {
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-2);
+}
+/* the use cases, one by one: a second, smaller row under Civil 3D Tools */
+.subModels {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px var(--gutter);
+  margin-top: 2px;
+}
+/* the use cases belong to Civil 3D: a short branch line from the chip above */
+.subModels .modelTab:first-child {
+  margin-left: 14px;
+}
+.subModels {
+  position: relative;
+}
+.subModels::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--gutter) + 6px);
+  top: -4px;
+  width: 9px;
+  height: 18px;
+  border-left: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+}
+.upcomingRow {
+  display: flex;
+  padding: 4px var(--gutter);
+  margin-top: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subModels::-webkit-scrollbar {
+  display: none;
+}
+.subModels[hidden] {
+  display: none;
+}
+.subModels .modelTab {
+  height: 24px;
+  padding: 0 9px;
+  font-size: 9.5px;
+  animation: sub-in 260ms var(--ease) both;
+}
+@keyframes sub-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -3px, 0);
+  }
+}
+.subModels[data-snap] .modelTab::after {
+  transition: none;
 }
 
 .story {
@@ -475,31 +572,46 @@
 
 /* Desktop: inside the viewport — tabs under its controls, the line along its bottom edge */
 @media (min-width: 1100px) {
-  .useCases {
+  /* one column in the viewport's top-left corner: label, platforms, use cases, sentence */
+  .panel {
     position: absolute;
     z-index: 4;
     top: calc(var(--header-h) + 52px + 18px);
     left: calc(var(--split) + 4px);
+    /* stops short of the ViewCube in the other corner */
+    width: calc(100vw - var(--split) - max(var(--gutter), (100vw - var(--max-width)) / 2) - 230px);
+    pointer-events: none;
+  }
+  .panel > * {
+    pointer-events: auto;
+  }
+  .useCases,
+  .models,
+  .subModels,
+  .upcomingRow {
     padding: 0;
     margin: 0;
   }
+  .subModels::before {
+    left: 6px;
+  }
+  .upcomingRow {
+    margin-top: 6px;
+    overflow: visible;
+  }
   .models {
-    position: absolute;
-    z-index: 4;
-    top: calc(var(--header-h) + 52px + 40px);
-    left: calc(var(--split) + 4px);
-    padding: 0;
-    margin: 0;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    overflow: visible;
+  }
+  .subModels {
+    margin-top: 6px;
     overflow: visible;
   }
   .story {
-    position: absolute;
-    z-index: 3;
-    top: calc(var(--header-h) + 52px + 86px);
-    left: calc(var(--split) + 4px);
-    /* stops short of the ViewCube in the other corner */
-    width: min(400px, calc(100vw - var(--split) - max(var(--gutter), (100vw - var(--max-width)) / 2) - 250px));
+    width: min(400px, 100%);
     padding: 0;
+    margin-top: 12px;
   }
   .storyLine {
     font-size: 13.5px;

@@ -4,7 +4,7 @@ title: Excavation Volume Calculator
 order: 2
 demo: exv
 summary: From coordinate and elevation data to presentation-ready reports in seconds.
-platform:
+platform: Civil 3D
 stack:
 status:
 version:

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTools } from "@/lib/content";
 import PageHeader from "@/components/PageHeader";
 import ToolFeature from "@/components/ToolFeature";
+import PlatformStrip from "@/components/PlatformStrip";
 import styles from "../inner.module.css";
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function ToolsPage() {
       />
       <section className={styles.section}>
         <div className="container">
+          <PlatformStrip count={tools.length} />
           <div style={{ display: "grid" }}>
             {tools.map((tool, i) => (
               <ToolFeature key={tool.slug} tool={tool} index={i} />

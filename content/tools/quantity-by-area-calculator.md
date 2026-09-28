@@ -4,7 +4,7 @@ title: Quantity by Area Calculator
 order: 1
 demo: sqe
 summary: Quantities, organised by where the work happened. Define the project areas once; the calculator measures the work inside each one and splits anything that crosses a boundary.
-platform:
+platform: Civil 3D
 stack:
 status:
 version:

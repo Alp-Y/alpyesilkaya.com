@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { HERO_MODELS, HERO_TABS, setHeroModel } from "@/lib/heroModels";
+import { PLATFORMS } from "@/lib/platforms";
 import styles from "./Hero.module.css";
 
 /**
@@ -18,15 +19,20 @@ import styles from "./Hero.module.css";
 const ADVANCE_MS = 5000;
 
 /** The countdown line goes straight back to empty (no shrinking) — before a switch or on interaction. */
-function resetLine(tabs: HTMLElement | null) {
-  if (!tabs) return;
-  tabs.dataset.snap = "";
-  tabs.style.setProperty("--advance", "0");
+function resetLine(...rows: (HTMLElement | null)[]) {
+  for (const tabs of rows) {
+    if (!tabs) continue;
+    tabs.dataset.snap = "";
+    tabs.style.setProperty("--advance", "0");
+  }
 }
+
 export default function HeroModels() {
   const [active, setActive] = useState(0);
   const m = HERO_MODELS[active];
   const tabsRef = useRef<HTMLDivElement>(null);
+  const subRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
   const storyRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef(0);
   const lastTouch = useRef(0);
@@ -39,9 +45,10 @@ export default function HeroModels() {
     let reading = false;
     let inView = true;
     const tabs = tabsRef.current;
+    const sub = subRef.current;
     const touch = () => {
       lastTouch.current = performance.now();
-      resetLine(tabs);
+      resetLine(tabs, sub);
     };
     const readOn = () => (reading = true);
     const readOff = () => {
@@ -57,20 +64,23 @@ export default function HeroModels() {
     hero.addEventListener("pointerdown", touch, opts);
     hero.addEventListener("wheel", touch, opts);
     hero.addEventListener("keydown", touch);
-    const reads = [tabsRef.current, storyRef.current].filter(Boolean) as HTMLElement[];
+    const reads = [tabsRef.current, subRef.current, storyRef.current].filter(Boolean) as HTMLElement[];
     reads.forEach((el) => {
       el.addEventListener("pointerenter", readOn);
       el.addEventListener("pointerleave", readOff);
     });
     const tick = window.setInterval(() => {
       if (reading || !inView || document.hidden) return; // the line holds where it is
-      if (tabs && "snap" in tabs.dataset) delete tabs.dataset.snap; // from here it fills smoothly again
       const waited = performance.now() - lastTouch.current;
-      // the active tab's line: how far it is to the next use case
-      tabs?.style.setProperty("--advance", String(Math.min(1, waited / ADVANCE_MS)));
+      for (const row of [tabs, sub]) {
+        if (!row) continue;
+        if ("snap" in row.dataset) delete row.dataset.snap; // from here it fills smoothly again
+        // the active tab's line: how far it is to the next use case
+        row.style.setProperty("--advance", String(Math.min(1, waited / ADVANCE_MS)));
+      }
       if (waited < ADVANCE_MS) return;
       const next = (activeRef.current + 1) % HERO_MODELS.length;
-      resetLine(tabs); // the next tab starts empty
+      resetLine(tabs, sub); // the next tab starts empty
       activeRef.current = next;
       setActive(next);
       setHeroModel(HERO_MODELS[next].id);
@@ -79,6 +89,7 @@ export default function HeroModels() {
     return () => {
       window.clearInterval(tick);
       tabs?.style.removeProperty("--advance");
+      sub?.style.removeProperty("--advance");
       io.disconnect();
       hero.removeEventListener("pointerdown", touch);
       hero.removeEventListener("wheel", touch);
@@ -95,7 +106,7 @@ export default function HeroModels() {
   // (a click or key press on a tab also restarts the auto-advance wait: the hero hears it)
   const pick = (i: number) => {
     if (i === active) return;
-    resetLine(tabsRef.current);
+    resetLine(tabsRef.current, subRef.current);
     activeRef.current = i;
     setActive(i);
     setHeroModel(HERO_MODELS[i].id);
@@ -115,12 +126,52 @@ export default function HeroModels() {
     (e.currentTarget.children[next] as HTMLElement | undefined)?.focus();
   };
 
+  const ready = PLATFORMS.filter((p) => p.ready);
+  const later = PLATFORMS.filter((p) => !p.ready);
+
   return (
-    <>
+    <div className={styles.panel}>
       <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "860ms" } as React.CSSProperties}>
         Use cases
       </p>
-      <div ref={tabsRef} className={styles.models} role="tablist" aria-labelledby="hero-use-cases" onKeyDown={onKey} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "880ms" } as React.CSSProperties}>
+      {/* the platforms: Civil 3D holds the use cases (click it to see them one by one); the rest are on the way */}
+      <div ref={tabsRef} className={styles.models} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "880ms" } as React.CSSProperties}>
+        {ready.map((p, i) => (
+          <button
+            key={p.name}
+            type="button"
+            className={styles.modelTab}
+            data-active="true"
+            aria-expanded={open}
+            aria-controls="hero-use-case-tabs"
+            onClick={() => setOpen((o) => !o)}
+            title={open ? "Hide the use cases" : "Show the use cases one by one"}
+          >
+            <span className="num">{String(i + 1).padStart(2, "0")}</span>
+            {p.name}
+            {/* one mark per scene, the one on screen lit */}
+            <span className={styles.scenes} aria-hidden="true">
+              {HERO_MODELS.map((hm, mi) => (
+                <i key={hm.id} data-on={mi === active} />
+              ))}
+            </span>
+            <svg className={styles.chev} viewBox="0 0 10 10" fill="none" aria-hidden="true">
+              <path d="M2 3.5 5 6.5 8 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        ))}
+      </div>
+
+      <div
+        ref={subRef}
+        id="hero-use-case-tabs"
+        className={styles.subModels}
+        role="tablist"
+        aria-labelledby="hero-use-cases"
+        data-open={open}
+        hidden={!open}
+        onKeyDown={onKey}
+      >
         {HERO_TABS.map((t, i) => (
           <button
             key={t.name}
@@ -147,11 +198,23 @@ export default function HeroModels() {
         ))}
       </div>
 
+      {/* on the way: one quiet group, clearly labelled */}
+      <div className={styles.upcomingRow} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "920ms" } as React.CSSProperties}>
+        <span className={styles.upcoming} aria-label={`Coming soon: ${later.map((p) => p.name).join(", ")}`}>
+          <em>Coming soon</em>
+          {later.map((p) => (
+            <span key={p.name} className={styles.soon}>
+              {p.name}
+            </span>
+          ))}
+        </span>
+      </div>
+
       <div
         ref={storyRef}
         id="hero-model-story"
-        role="tabpanel"
-        aria-labelledby={`hero-tab-${activeTab}`}
+        role={open ? "tabpanel" : undefined}
+        aria-labelledby={open ? `hero-tab-${activeTab}` : undefined}
         className={styles.story}
         data-hero-exit
         data-overlay
@@ -165,6 +228,6 @@ export default function HeroModels() {
           </Link>
         </p>
       </div>
-    </>
+    </div>
   );
 }

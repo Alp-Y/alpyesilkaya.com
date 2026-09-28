@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import Disciplines from "@/components/Disciplines";
 import SectionHeader from "@/components/SectionHeader";
 import ToolFeature from "@/components/ToolFeature";
+import PlatformStrip from "@/components/PlatformStrip";
 import CaseRegister from "@/components/CaseRegister";
 import AboutSection from "@/components/AboutSection";
 import ContactSection from "@/components/ContactSection";
@@ -32,6 +33,7 @@ export default function HomePage() {
             label="Tools"
             title={["Tools I’ve built."]}
           />
+          <PlatformStrip count={tools.length} />
           <div className={styles.toolList}>
             {tools.map((tool, i) => (
               <ToolFeature key={tool.slug} tool={tool} index={i} />
