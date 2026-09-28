@@ -13,6 +13,7 @@ export default function CadCursor() {
         <span className={styles.v} data-cc-v />
       </div>
       <span className={styles.marker} data-cc-marker>
+        <span className={styles.plus} />
         <span className={styles.box} />
         <span className={`${styles.corner} ${styles.tl}`} />
         <span className={`${styles.corner} ${styles.tr}`} />

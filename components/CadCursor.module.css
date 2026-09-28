@@ -67,6 +67,43 @@
   opacity: 0;
   transition: opacity var(--motion-fast) var(--ease-out);
 }
+/* the cursor itself: a crisp CAD "+" with a small gap at the pick point */
+.plus {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  transition:
+    opacity var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out);
+}
+.plus::before,
+.plus::after {
+  content: "";
+  position: absolute;
+  --arm: rgba(232, 240, 250, 0.92);
+}
+.plus::before {
+  left: -11px;
+  top: 0;
+  width: 23px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--arm) 0 9px, transparent 9px 14px, var(--arm) 14px);
+}
+.plus::after {
+  left: 0;
+  top: -11px;
+  width: 1px;
+  height: 23px;
+  background: linear-gradient(180deg, var(--arm) 0 9px, transparent 9px 14px, var(--arm) 14px);
+}
+.root[data-mode="cad"] .plus {
+  opacity: 1;
+}
+.root[data-mode="cad"] .box {
+  transform: scale(0.45);
+  opacity: 0.55;
+}
 .box {
   position: absolute;
   left: -5px;
