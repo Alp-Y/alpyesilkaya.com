@@ -3,7 +3,7 @@
 title: CAD Terminal
 order: 4
 demo: ctm
-summary: Turn lines, dots and surfaces into real project structures, once. CAD Terminal remembers them, so design and survey drawings become easy to track, search and export.
+summary: Customise design and survey DWG elements according to your needs. Identify a structure once and CAD Terminal remembers it, ready to track, search and export.
 platform:
 stack:
 status:
