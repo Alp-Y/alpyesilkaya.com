@@ -445,36 +445,40 @@
   transform: rotate(180deg);
   color: var(--accent);
 }
-/* platforms still to come: one dashed group, labelled, not clickable */
-.upcoming {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex: none;
-  height: 28px;
-  padding: 0 4px 0 9px;
-  border: 1px dashed var(--line-strong);
-  border-radius: var(--radius);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
+/* platforms still to come: grey, not clickable; pointing at one says "Coming soon" */
+.soon,
+.soon:hover {
+  overflow: visible;
+  cursor: default;
   color: var(--text-3);
+  border-style: dashed;
+  border-color: var(--line-strong);
+  background: none;
+  transform: none;
 }
-.upcoming em {
-  font-style: normal;
-  font-size: 8.5px;
-  letter-spacing: 0.12em;
-  margin-right: 3px;
-  color: var(--text-3);
-  opacity: 0.8;
-}
-.soon {
-  padding: 2px 6px;
+.soon::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  padding: 4px 8px;
+  border: 1px solid var(--line-strong);
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.025);
-  color: var(--text-2);
+  background: rgba(13, 17, 22, 0.95);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  color: var(--text-1);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 3px);
+  transition:
+    opacity var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out);
+}
+.soon:hover::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 /* the use cases, one by one: a second, smaller row under Civil 3D Tools */
 .subModels {
@@ -502,13 +506,7 @@
   border-left: 1px solid var(--line-strong);
   border-bottom: 1px solid var(--line-strong);
 }
-.upcomingRow {
-  display: flex;
-  padding: 4px var(--gutter);
-  margin-top: 2px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
+
 .subModels::-webkit-scrollbar {
   display: none;
 }
@@ -579,7 +577,7 @@
     top: calc(var(--header-h) + 52px + 18px);
     left: calc(var(--split) + 4px);
     /* stops short of the ViewCube in the other corner */
-    width: calc(100vw - var(--split) - max(var(--gutter), (100vw - var(--max-width)) / 2) - 230px);
+    width: calc(100vw - var(--split) - max(var(--gutter), (100vw - var(--max-width)) / 2) - 200px);
     pointer-events: none;
   }
   .panel > * {
@@ -587,17 +585,12 @@
   }
   .useCases,
   .models,
-  .subModels,
-  .upcomingRow {
+  .subModels {
     padding: 0;
     margin: 0;
   }
   .subModels::before {
     left: 6px;
-  }
-  .upcomingRow {
-    margin-top: 6px;
-    overflow: visible;
   }
   .models {
     flex-wrap: wrap;

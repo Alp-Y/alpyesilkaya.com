@@ -132,11 +132,11 @@ export default function HeroModels() {
   return (
     <div className={styles.panel}>
       <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "860ms" } as React.CSSProperties}>
-        Use cases
+        Tools in development
       </p>
       {/* the platforms: Civil 3D holds the use cases (click it to see them one by one); the rest are on the way */}
       <div ref={tabsRef} className={styles.models} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "880ms" } as React.CSSProperties}>
-        {ready.map((p, i) => (
+        {ready.map((p) => (
           <button
             key={p.name}
             type="button"
@@ -147,8 +147,7 @@ export default function HeroModels() {
             onClick={() => setOpen((o) => !o)}
             title={open ? "Hide the use cases" : "Show the use cases one by one"}
           >
-            <span className="num">{String(i + 1).padStart(2, "0")}</span>
-            {p.name}
+            {p.short}
             {/* one mark per scene, the one on screen lit */}
             <span className={styles.scenes} aria-hidden="true">
               {HERO_MODELS.map((hm, mi) => (
@@ -159,6 +158,13 @@ export default function HeroModels() {
               <path d="M2 3.5 5 6.5 8 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+        ))}
+        {/* on the way: greyed out, not clickable; pointing at one says so */}
+        {later.map((p) => (
+          <span key={p.name} className={`${styles.modelTab} ${styles.soon}`} aria-disabled="true" data-tip="Coming soon" data-cursor="cad">
+            {p.short}
+            <span className="sr-only"> (coming soon)</span>
+          </span>
         ))}
       </div>
 
@@ -196,18 +202,6 @@ export default function HeroModels() {
             )}
           </button>
         ))}
-      </div>
-
-      {/* on the way: one quiet group, clearly labelled */}
-      <div className={styles.upcomingRow} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "920ms" } as React.CSSProperties}>
-        <span className={styles.upcoming} aria-label={`Coming soon: ${later.map((p) => p.name).join(", ")}`}>
-          <em>Coming soon</em>
-          {later.map((p) => (
-            <span key={p.name} className={styles.soon}>
-              {p.name}
-            </span>
-          ))}
-        </span>
       </div>
 
       <div
