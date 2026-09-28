@@ -3,7 +3,7 @@
 title: CAD Terminal
 order: 4
 demo: ctm
-summary: Customise design and survey DWG elements according to your needs. Identify a structure once and CAD Terminal remembers it, ready to track, search and export.
+summary: Customise design and survey DWG elements according to your needs, and see their properties as a summary directly in the drawing. Identify a structure once and CAD Terminal remembers it, ready to track, search and export.
 platform:
 stack:
 status:
@@ -13,6 +13,7 @@ features:
   - TIN surfaces identified as asphalt or demolition surfaces; coordinates and levels as an excavation surface
   - Project information on every structure, a built-in browser to find it, and exports filtered by any of it
   - Design and survey drawings customised to your project, the way you need them
+  - Each structure's properties shown as a summary directly in the drawing
 image:
 download:
 docs:
@@ -35,9 +36,10 @@ You do it **once**. CAD Terminal keeps it with the drawing, so next week the ker
 1. Pick any drawing element: a line, a dot, a TIN surface, a set of points with levels
 2. Identify it as a project structure: kerb, pipe, manhole, street light, asphalt, demolition or excavation surface
 3. Assign its project information: zone, chainage, status and anything else the project tracks
-4. Find it again with the built-in browser, grouped by type, zone or status
-5. Export only what you need, with its project information attached
-6. Customise all of it for your own design and survey drawings
+4. See its properties as a summary directly in the drawing, right where it is
+5. Find it again with the built-in browser, grouped by type, zone or status
+6. Export only what you need, with its project information attached
+7. Customise all of it for your own design and survey drawings
 
 ## Why it helps
 
@@ -45,6 +47,7 @@ You do it **once**. CAD Terminal keeps it with the drawing, so next week the ker
 - **Surfaces that mean something.** A TIN is no longer just a TIN: it is the asphalt you are laying or the pavement you are breaking out, and it is counted that way.
 - **Exports that answer the question.** Instead of a list of handles and layers, you get "storm drainage in Zone A that is still in progress", with IDs, chainages and quantities.
 - **Your drawings, your way.** Design or survey, every project tracks different things. CAD Terminal is customised around what yours needs, not the other way round.
+- **The answer is on the drawing.** Point at a structure and its summary is right there: ID, type, zone, status and quantity, without opening a table.
 - **Easy to find your way around.** The browser takes you straight to MH-02 on a large drawing, instead of you hunting for it.
 
 ## About the demonstration
