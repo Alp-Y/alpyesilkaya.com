@@ -35,6 +35,7 @@ components/               ← each piece of the UI + its own .module.css
                             results, section profile, report preview + Excel export
   previews/               ← the homepage tool previews: looping visuals that link to each tool page
   sqe/                    ← the Quantity by Area Calculator demo (UI)
+  terminal/               ← the CAD Terminal demo: drawing, command line, browser, export
 lib/
   content.ts              ← reads the Markdown files
   effects.ts              ← page behaviour: reveals, header, command line…
@@ -44,6 +45,7 @@ lib/
   sqe/                    ← the Quantity by Area Calculator: geometry, DXF reader,
                             work types, quantity engine, example site (site.json)
   earthworks/model.ts     ← the cut / fill maths (grid method)
+  terminal/model.ts       ← CAD Terminal's example drawing, structure types and exports
   excavation/             ← the Excavation Volume Engine (no UI code):
                             xyz.ts (read + check XYZ files) · samples.ts (synthetic datasets)
                             tin.ts (Delaunay TIN) · volume.ts (surface comparison, sections)
@@ -87,6 +89,7 @@ The homepage, `/tools`, the tool's own page and the sitemap all update automatic
 - **Excel report:** `lib/excavation/report.ts` writes the .xlsx (Summary · Input Points · Volume Results · Area Breakdown · Sections, with formulas and native charts). The page's "Download Example Report / Export Results" button generates it in the browser; `app/downloads/example-excavation-report.xlsx/route.ts` writes the same file at build time. Also at build: `/downloads/xyz-template.csv` and `/downloads/sample-xyz-points.csv`.
 - **Quantity by Area Calculator demo:** tells its story once when it scrolls into view — site → survey → areas → quantities — then you explore. It runs entirely in the browser; imported DXF files are never uploaded. Excavation volumes are demonstration values (area × a representative depth), and the page says so.
 - **The SQE aerial image is an original render**, generated from the same geometry as the CAD overlay (`scripts/sqe-site.py`), so it lines up exactly and needs no licence. To use a real aerial photo instead you would also need to redraw the areas to match it.
+- **CAD Terminal demo:** an example road drawing (synthetic) of plain lines, points, two TIN surfaces and survey points with level text. Pick an object and identify it (kerb, storm pipe, manhole, street light, asphalt / demolition / excavation surface); edit its zone and status in Properties; find it in the Project browser or with the command line (`HELP`, `IDENTIFY ALL`, `FIND MH-02`, `SHOW KERBS`, `REOPEN`); export a filtered CSV. Structure colours live in `lib/terminal/model.ts` (and are repeated for the hero scene in `lib/heroModels.ts`).
 - **Fonts:** Geist and Geist Mono (open licence) are self-hosted from `app/fonts/`.
 
 ## Deploy

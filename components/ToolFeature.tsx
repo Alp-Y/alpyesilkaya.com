@@ -4,9 +4,11 @@ import { pad } from "@/lib/content";
 import SqeGlyph from "./sqe/SqeGlyph";
 import ExvGlyph from "./excavation/ExvGlyph";
 import CmpGlyph from "./compare/CmpGlyph";
+import CtmGlyph from "./terminal/CtmGlyph";
 import SqePreview from "./previews/SqePreview";
 import ExvPreview from "./previews/ExvPreview";
 import CmpPreview from "./previews/CmpPreview";
+import CtmPreview from "./previews/CtmPreview";
 import styles from "./ToolFeature.module.css";
 
 /**
@@ -24,6 +26,7 @@ export default function ToolFeature({ tool, index }: { tool: Tool; index: number
         {tool.demo === "sqe" && <SqeGlyph className={styles.glyph} />}
         {tool.demo === "exv" && <ExvGlyph className={styles.glyph} />}
         {tool.demo === "cmp" && <CmpGlyph className={styles.glyph} />}
+        {tool.demo === "ctm" && <CtmGlyph className={styles.glyph} />}
         <span className={styles.headingText}>
           <span className="mono accent">T-{pad(index + 1)}</span>
           <h3 className={styles.title} id={`tool-${tool.slug}`}>
@@ -47,6 +50,7 @@ export default function ToolFeature({ tool, index }: { tool: Tool; index: number
           {tool.demo === "sqe" && <SqePreview title={tool.title} />}
           {tool.demo === "exv" && <ExvPreview title={tool.title} />}
           {tool.demo === "cmp" && <CmpPreview title={tool.title} />}
+          {tool.demo === "ctm" && <CtmPreview title={tool.title} />}
         </div>
       )}
     </article>

@@ -6,6 +6,7 @@
  *   basement   a basement excavation under a ghosted building (Excavation Volume Calculator)
  *   progress   a road built in stages: unchanged, added, taken out (DWG Comparison Tool)
  *   areas      one asphalt layer and a pipe trench split by project area (Quantity by Area Calculator)
+ *   structures a road whose lines, dots and surfaces are identified as structures, each with a tag (CAD Terminal)
  *
  * Every model fits the same 120 × 64 m footprint as the earthworks model,
  * so the scale bar and the fit stay the same when you switch.
@@ -16,6 +17,7 @@ import {
   BufferAttribute,
   BufferGeometry,
   Color,
+  CylinderGeometry,
   DoubleSide,
   EdgesGeometry,
   Group,
@@ -27,7 +29,7 @@ import {
   Points,
   PointsMaterial,
 } from "three";
-import { AREA_COLORS, CUT, FILL, LINE } from "@/lib/heroModels";
+import { AREA_COLORS, CUT, FILL, LINE, STRUCTURE_COLORS as SC } from "@/lib/heroModels";
 import type { DisplayMode } from "./scene";
 
 const HALF_L = 60;
@@ -343,8 +345,88 @@ function areas(): ShowcaseModel {
   return finish(kit, g);
 }
 
-export const SHOWCASE: Record<"basement" | "progress" | "areas", () => ShowcaseModel> = {
+/** A road drawing, part identified: structures in their colours with their tags, the rest still grey. */
+function structures(): ShowcaseModel {
+  const kit = newKit();
+  const g = new Group();
+  g.add(groundGrid(kit, () => 0, 4));
+  const H = 1.2; // pavement, drawn thicker than it is so it reads
+  const W = 7; // half-width of the carriageway
+  const K = 1.2; // kerb height above the pavement
+
+  // two TIN surfaces over the carriageway: the old pavement to break out, the new wearing course
+  g.add(box(kit, -56, 0, -W, -14, H, W, SC.demolition, 0.16));
+  g.add(box(kit, -14, 0, -W, 56, H, W, SC.asphalt, 0.2));
+  // their triangulation, as the TIN it came from
+  const tin: number[] = [];
+  for (let x = -56; x < 56; x += 7)
+    for (const [z0, z1] of [
+      [-W, 0],
+      [0, W],
+    ])
+      tin.push(x, H + 0.02, z0, x + 7, H + 0.02, z1);
+  const tg = new BufferGeometry();
+  tg.setAttribute("position", new BufferAttribute(new Float32Array(tin), 3));
+  g.add(new LineSegments(tg, ghostMat(kit, 0.22)));
+
+  // kerbs both sides
+  g.add(strip(kit, -56, -W - 0.3, 56, -W - 0.3, 0.6, 0, H + K, SC.kerb, 0.24));
+  g.add(strip(kit, -56, W + 0.3, 56, W + 0.3, 0.6, 0, H + K, SC.kerb, 0.24));
+
+  // storm pipe in the south verge, between three manholes (below ground)
+  const PZ = -16;
+  const mh = [-44, -2, 40];
+  g.add(strip(kit, mh[0], PZ, mh[2], PZ, 1.1, -3.6, 1.1, SC.pipe, 0.26));
+  for (const x of mh) {
+    const geo = new CylinderGeometry(1.7, 1.7, 5, 20, 1, true);
+    geo.translate(x, -1.5, PZ);
+    g.add(solid(kit, geo, SC.manhole, 0.2));
+  }
+
+  // street lights in the north verge: two identified, two still plain points
+  const LZ = 13;
+  const lights = [-40, -12, 16, 44];
+  lights.forEach((x, i) => {
+    if (i < 2) {
+      g.add(box(kit, x - 0.25, 0, LZ - 0.25, x + 0.25, 9, LZ + 0.25, SC.light, 0.35));
+      g.add(strip(kit, x, LZ, x, LZ - 2.6, 0.3, 8.7, 0.3, SC.light, 0.35));
+    }
+  });
+  const raw = new BufferGeometry();
+  raw.setAttribute("position", new BufferAttribute(new Float32Array(lights.slice(2).flatMap((x) => [x, 0.3, LZ])), 3));
+  g.add(new Points(raw, new PointsMaterial({ color: LINE, size: 5, sizeAttenuation: false, transparent: true, opacity: 0.8 })));
+
+  // survey points with levels north of the road: not identified yet
+  const sp: number[] = [];
+  for (let x = 4; x <= 48; x += 8) for (let z = 20; z <= 28; z += 4) sp.push(x, 0.2, z);
+  const spg = new BufferGeometry();
+  spg.setAttribute("position", new BufferAttribute(new Float32Array(sp), 3));
+  g.add(new Points(spg, new PointsMaterial({ color: LINE, size: 2.5, sizeAttenuation: false, transparent: true, opacity: 0.6 })));
+
+  // tags: a leader up from each identified structure to a small flag
+  const tags: [number, number, number, string][] = [
+    [-35, H, -3, SC.demolition],
+    [24, H, 3, SC.asphalt],
+    [-26, H + K, -W - 0.3, SC.kerb],
+    [30, H + K, W + 0.3, SC.kerb],
+    [-2, 1, PZ, SC.manhole],
+    [-40, 9, LZ, SC.light],
+  ];
+  for (const [x, y, z, c] of tags) {
+    const top = y + 7;
+    const lg = new BufferGeometry();
+    lg.setAttribute("position", new BufferAttribute(new Float32Array([x, y, z, x, top, z]), 3));
+    g.add(new LineSegments(lg, ghostMat(kit, 0.55, c)));
+    g.add(box(kit, x, top - 1.2, z - 0.05, x + 5, top + 1.2, z + 0.05, c, 0.4));
+  }
+
+  g.add(pickPlate(kit, 0.5));
+  return finish(kit, g);
+}
+
+export const SHOWCASE: Record<"basement" | "progress" | "areas" | "structures", () => ShowcaseModel> = {
   basement,
   progress,
   areas,
+  structures,
 };

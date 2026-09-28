@@ -5,7 +5,7 @@
  * (see content/tools/*.md).
  */
 
-export type HeroModelId = "road" | "basement" | "progress" | "areas";
+export type HeroModelId = "road" | "basement" | "progress" | "areas" | "structures";
 
 export type HeroModel = {
   id: HeroModelId;
@@ -24,6 +24,8 @@ export const CUT = "#e2848c";
 export const FILL = "#7fd3ae";
 export const LINE = "#c9d1da";
 export const AREA_COLORS = ["#7aa7e0", "#b59ce6", "#6fc9c9"] as const;
+/** CAD Terminal's structure colours (the same as lib/terminal/model.ts) */
+export const STRUCTURE_COLORS = { kerb: "#7aa8e6", pipe: "#6fc9c9", manhole: "#9fd07a", light: "#e8dd8a", asphalt: "#b59ce6", demolition: "#ff5a5f" } as const;
 
 export const HERO_MODELS: HeroModel[] = [
   {
@@ -57,6 +59,14 @@ export const HERO_MODELS: HeroModel[] = [
     line: "Split one asphalt layer and a pipe trench that cross three project areas into a quantity for each area.",
     tool: { name: "Quantity by Area Calculator", href: "/tools/quantity-by-area-calculator" },
     view: { azimuth: -40, elevation: 40 },
+  },
+  {
+    id: "structures",
+    tab: "Structures",
+    title: "Drawing structures.",
+    line: "Identify lines, dots and TIN surfaces once as kerbs, manholes, asphalt or demolition, and the drawing keeps track of them.",
+    tool: { name: "CAD Terminal", href: "/tools/cad-terminal" },
+    view: { azimuth: -32, elevation: 36 },
   },
 ];
 

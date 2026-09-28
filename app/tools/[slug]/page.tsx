@@ -9,6 +9,7 @@ import { ArticleBody, NextItem } from "@/components/ArticleBody";
 import SpatialQuantityEngine from "@/components/sqe/SpatialQuantityEngine";
 import ExcavationDemo from "@/components/excavation/ExcavationDemo";
 import CompareDemo from "@/components/compare/CompareDemo";
+import TerminalDemo from "@/components/terminal/TerminalDemo";
 import styles from "../../inner.module.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -79,10 +80,10 @@ export default async function ToolPage({ params }: Props) {
         </div>
       </PageHeader>
 
-      {tool.demo === "sqe" || tool.demo === "exv" || tool.demo === "cmp" ? (
+      {["sqe", "exv", "cmp", "ctm"].includes(tool.demo) ? (
         <div className={styles.hero}>
           <div className="container">
-            {tool.demo === "sqe" ? <SpatialQuantityEngine /> : tool.demo === "exv" ? <ExcavationDemo /> : <CompareDemo />}
+            {tool.demo === "sqe" ? <SpatialQuantityEngine /> : tool.demo === "exv" ? <ExcavationDemo /> : tool.demo === "ctm" ? <TerminalDemo /> : <CompareDemo />}
           </div>
         </div>
       ) : (
