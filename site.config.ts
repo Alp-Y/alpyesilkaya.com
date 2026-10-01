@@ -18,7 +18,7 @@ export const site = {
   process: ["Civil Engineering", "Automation", "PMP®"],
 
   /** One-sentence positioning statement shown in the hero. */
-  statement: "I’m a civil engineer building engineering software tools with AI.",
+  statement: "I’m a civil engineer building engineering software tools.",
 
   /** Used for search engines and link previews. */
   description:

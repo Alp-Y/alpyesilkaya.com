@@ -77,7 +77,7 @@ export default function BriefForm() {
           rows={6}
           required
           maxLength={4000}
-          placeholder="What do you do by hand? Which files does it touch (DWG, XYZ, Excel…), and how often does it come round?"
+          placeholder="Your message"
         />
       </label>
 

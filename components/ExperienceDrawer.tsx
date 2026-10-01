@@ -85,7 +85,10 @@ export default function ExperienceDrawer({ items }: { items: ExperienceItem[] })
           setActive(null);
         }}
       >
-        <span>{open ? "Collapse experience" : "Expand experience"}</span>
+        <span className={styles.toggleLabel}>
+          {open ? "Collapse experience" : "Expand experience"}
+          {!open && <span className={styles.toggleCount}>{items.length} roles</span>}
+        </span>
         <span className={styles.toggleArrow} aria-hidden="true">
           ↓
         </span>
