@@ -18,7 +18,7 @@ site.config.ts            ← your name, email, links, location, portrait. START
 content/
   tools/*.md              ← one file per tool  → /tools/<file-name>
   case-studies/*.md       ← one file per case study → /case-studies/<file-name>
-  about.md                ← About text and the "Properties" list
+  about.md                ← homepage About section: "Properties" list + experience
 public/
   images/                 ← screenshots, portrait, case-study images
   demo/example-project.dxf← the downloadable example drawing for the SQE demo
@@ -27,7 +27,7 @@ app/
   globals.css             ← design tokens (colours, spacing, motion timing) + shared styles
   page.tsx                ← the homepage, section by section
   sitemap.ts, robots.ts   ← /sitemap.xml and /robots.txt, generated automatically
-  tools/, case-studies/, about/   ← the other pages
+  tools/, case-studies/    ← the other pages
 components/               ← each piece of the UI + its own .module.css
   viewcube/               ← the interactive 3D ViewCube (Three.js)
   earthworks/             ← the hero's cut / fill model (Three.js, follows the ViewCube)

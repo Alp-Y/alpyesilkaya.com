@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getPage } from "@/lib/content";
 import { sectionNumbers } from "@/lib/sections";
 import Portrait from "./Portrait";
@@ -54,12 +53,6 @@ export default function AboutSection() {
               selection="Engineer (1 selected)"
               experience={parseExperience(data.experience)}
             />
-
-            <div data-reveal="rise" className={styles.more}>
-              <Link href="/about" className="link-line">
-                More about me <span className="arrow" aria-hidden="true">→</span>
-              </Link>
-            </div>
           </div>
         </div>
       </div>

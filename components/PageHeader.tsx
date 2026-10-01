@@ -1,7 +1,7 @@
 import Link from "next/link";
 import styles from "./PageHeader.module.css";
 
-/** Opening block for inner pages (/tools, /case-studies, /about, …). */
+/** Opening block for inner pages (/tools, /case-studies, …). */
 export default function PageHeader({
   layer,
   crumbs,

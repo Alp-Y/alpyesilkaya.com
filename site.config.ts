@@ -32,12 +32,7 @@ export const site = {
     linkedin: "https://www.linkedin.com/in/alpyesilkaya/",
   },
 
-  /**
-   * Photos (in /public/images/). `focus` keeps that part of the photo in
-   * the frame when it is cropped (CSS object-position).
-   *   portrait   the homepage About section
-   *   atWork     the full About page ("More about me")
-   */
+  /** The portrait in the homepage About section (in /public/images/). */
   portrait: {
     // cut out (transparent background), cropped above the open shirt, edges fading into the grid
     src: "/images/alp.png",
@@ -48,15 +43,6 @@ export const site = {
     aspect: "741 / 801",
     width: 741,
     height: 801,
-    isPlaceholder: false,
-  },
-  atWork: {
-    src: "/images/about-at-work.jpg",
-    alt: "Alp Yesilkaya explaining a project on a laptop to a visitor",
-    caption: "Fig. 02 / At work",
-    focus: "88% 40%",
-    width: 1280,
-    height: 1010,
     isPlaceholder: false,
   },
 

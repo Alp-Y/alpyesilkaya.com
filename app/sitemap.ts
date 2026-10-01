@@ -14,7 +14,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("", 1),
     page("/tools", 0.8),
     page("/case-studies", 0.8),
-    page("/about", 0.6),
     ...getTools().map((t) => page(`/tools/${t.slug}`, 0.7)),
     // Placeholder case studies stay out of search results until they are real
     ...getCaseStudies()
