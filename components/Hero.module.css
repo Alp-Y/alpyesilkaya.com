@@ -841,15 +841,12 @@
     font-size: 9.5px;
     letter-spacing: 0.1em;
   }
-  /* The main action full width, then the two smaller ones side by side */
+  /* Two full-width buttons, stacked like an app's primary and secondary action */
   .actions {
     width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    flex-direction: column;
+    align-items: stretch;
     gap: 10px;
-  }
-  .primary {
-    grid-column: 1 / -1;
   }
   .primary,
   .secondary {
@@ -860,12 +857,10 @@
   }
   .secondary {
     display: flex;
-    height: 48px;
-    padding: 0 14px;
     border: 1px solid var(--line-strong);
     border-radius: var(--radius);
     background: rgba(255, 255, 255, 0.02);
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
   }
   .secondary::after {

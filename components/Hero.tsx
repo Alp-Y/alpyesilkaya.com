@@ -84,9 +84,6 @@ export default function Hero() {
             <a href="#contact" className={`link-line ${styles.secondary}`} data-hud={`GO TO|${num.contact} · CONTACT`}>
               Send me a brief <span className="arrow" aria-hidden="true">→</span>
             </a>
-            <a href="#about" className={`link-line ${styles.secondary}`} data-hud={`GO TO|${num.about} · ABOUT`}>
-              About me <span className="arrow" aria-hidden="true">→</span>
-            </a>
           </div>
         </div>
       </div>
