@@ -1,4 +1,5 @@
 import { getPage } from "@/lib/content";
+import { site } from "@/site.config";
 import { sectionNumbers } from "@/lib/sections";
 import Portrait from "./Portrait";
 import PropertiesPalette, { parseExperience } from "./PropertiesPalette";
@@ -53,6 +54,12 @@ export default function AboutSection() {
               selection="Engineer (1 selected)"
               experience={parseExperience(data.experience)}
             />
+
+            <div data-reveal="rise" className={styles.more}>
+              <a href={site.links.linkedin} className="link-line" target="_blank" rel="noopener noreferrer">
+                More about me <span className="arrow" aria-hidden="true">↗</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
