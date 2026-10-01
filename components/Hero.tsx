@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { site } from "@/site.config";
 import { sectionNumbers } from "@/lib/sections";
 import CommandLine from "./CommandLine";
@@ -61,7 +62,7 @@ export default function Hero() {
         <ul className={styles.disciplines} aria-label="Disciplines" data-cursor="text">
           {site.process.map((d, i) => (
             <li key={d} data-reveal="rise" style={{ "--delay": `${650 + i * 90}ms` } as React.CSSProperties}>
-              {d}
+              {withMarks(d)}
             </li>
           ))}
         </ul>
@@ -82,6 +83,9 @@ export default function Hero() {
             </a>
             <a href="#contact" className={`link-line ${styles.secondary}`} data-hud={`GO TO|${num.contact} · CONTACT`}>
               Send me a brief <span className="arrow" aria-hidden="true">→</span>
+            </a>
+            <a href="#about" className={`link-line ${styles.secondary}`} data-hud={`GO TO|${num.about} · ABOUT`}>
+              About me <span className="arrow" aria-hidden="true">→</span>
             </a>
           </div>
         </div>
@@ -131,5 +135,24 @@ export default function Hero() {
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * Sets a registered mark (®) small and raised at the top right of the word
+ * before it. One wrapper, so the list item's gap never splits the text.
+ */
+function withMarks(text: string) {
+  const parts = text.split("®");
+  if (parts.length === 1) return text;
+  return (
+    <span>
+      {parts.map((part, i) => (
+        <Fragment key={i}>
+          {part}
+          {i < parts.length - 1 && <sup className={styles.mark}>®</sup>}
+        </Fragment>
+      ))}
+    </span>
   );
 }

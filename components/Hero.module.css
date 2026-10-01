@@ -136,6 +136,16 @@
   gap: 10px;
   white-space: nowrap;
 }
+/* The ® after PMP: small, raised to the top right, no extra tracking after it */
+.mark {
+  position: relative;
+  top: -0.55em;
+  margin-left: 0.08em;
+  font-size: 0.72em;
+  line-height: 0;
+  letter-spacing: 0;
+  vertical-align: baseline;
+}
 .disciplines li::before {
   content: "";
   width: 9px;
@@ -825,27 +835,21 @@
   .lower {
     gap: 28px;
   }
-  /* One line: a single leading tick, then dots between the disciplines */
+  /* Phones: a little smaller and tighter, still a green tick before each */
   .disciplines {
     gap: 6px 10px;
     font-size: 9.5px;
     letter-spacing: 0.1em;
   }
-  .disciplines li + li::before {
-    content: "·";
-    width: auto;
-    height: auto;
-    background: none;
-    transform: none;
-    color: var(--line-strong);
-    letter-spacing: 0;
-  }
-  /* Two full-width buttons, stacked like an app's primary and secondary action */
+  /* The main action full width, then the two smaller ones side by side */
   .actions {
     width: 100%;
-    flex-direction: column;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
+  }
+  .primary {
+    grid-column: 1 / -1;
   }
   .primary,
   .secondary {
@@ -856,10 +860,12 @@
   }
   .secondary {
     display: flex;
+    height: 48px;
+    padding: 0 14px;
     border: 1px solid var(--line-strong);
     border-radius: var(--radius);
     background: rgba(255, 255, 255, 0.02);
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 500;
   }
   .secondary::after {

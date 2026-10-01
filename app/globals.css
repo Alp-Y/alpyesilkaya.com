@@ -136,8 +136,27 @@ html {
   overscroll-behavior-y: none;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  scroll-padding-top: calc(var(--header-h) + 12px);
+  /* a section link lands with the section's top edge right under the header,
+     so no strip of the section above it shows */
+  scroll-padding-top: var(--header-h);
   background: var(--bg-0);
+}
+
+/* The homepage sections the menu and buttons link to are at least one screen
+   tall, content centred, so arriving at one never shows half of the next. */
+:where(#approach, #tools, #about, #contact) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100svh - var(--header-h));
+}
+@media (min-width: 900px) {
+  html {
+    scroll-padding-bottom: var(--status-h);
+  }
+  :where(#approach, #tools, #about, #contact) {
+    min-height: calc(100svh - var(--header-h) - var(--status-h));
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
