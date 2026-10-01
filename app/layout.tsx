@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { site } from "@/site.config";
+import { jsonLd, rootMeta } from "@/lib/seo";
 import SiteHeader from "@/components/SiteHeader";
 import StatusBar from "@/components/StatusBar";
 import SiteFooter from "@/components/SiteFooter";
@@ -26,25 +26,7 @@ const geistMono = localFont({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  title: {
-    default: `${site.name} | Civil engineer, engineering tools`,
-    template: `%s | ${site.name}`,
-  },
-  description: site.description,
-  alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    url: site.url,
-    siteName: site.name,
-    title: `${site.name} | Civil engineer, engineering tools`,
-    description: site.description,
-    // Link-preview image (1200×630) in /public — regenerate it if the name or tagline changes
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: `${site.name} | Civil engineer, engineering tools` }],
-  },
-  twitter: { card: "summary_large_image" },
-};
+export const metadata: Metadata = rootMeta;
 
 export const viewport: Viewport = {
   themeColor: "#07090b",
@@ -64,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: bootScript }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd()) }} />
       </head>
       <body>
         {/* The persistent engineering workspace grid behind every section */}

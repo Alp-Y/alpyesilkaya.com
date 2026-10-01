@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { getTools } from "@/lib/content";
 import PageHeader from "@/components/PageHeader";
 import ToolList from "@/components/ToolList";
 import styles from "../inner.module.css";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Tools",
-  alternates: { canonical: "/tools" },
-  description: "Engineering tools that automate everyday engineering workflows, each with a live demonstration.",
-};
+  path: "/tools",
+  description: "Engineering software tools for Civil 3D and the desktop, each with a live demonstration you can try in the browser.",
+});
 
 export default function ToolsPage() {
   const tools = getTools();

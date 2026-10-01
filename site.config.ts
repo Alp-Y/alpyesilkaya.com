@@ -22,7 +22,7 @@ export const site = {
 
   /** Used for search engines and link previews. */
   description:
-    "Civil engineer building engineering tools with AI to automate workflows: CAD geometry, survey data and quantities.",
+    "Civil engineer and PMP building engineering software tools for Civil 3D and the desktop: quantities, survey data, CAD drawings and claim documents.",
 
   email: "alpyesilkaya.dev@gmail.com",
   location: "Riyadh, KSA",

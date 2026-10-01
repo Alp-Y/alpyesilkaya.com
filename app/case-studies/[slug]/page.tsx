@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import { getCaseStudies, getCaseStudy, pad } from "@/lib/content";
 import PageHeader from "@/components/PageHeader";
@@ -19,9 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const study = getCaseStudy(slug);
   if (!study) return {};
   return {
-    title: study.title,
-    description: study.summary,
-    alternates: { canonical: `/case-studies/${slug}` },
+    ...pageMeta({ title: study.title, description: study.summary, path: `/case-studies/${slug}` }),
     // Placeholder pages are not indexed until they hold a real case study
     ...(study.placeholder ? { robots: { index: false, follow: true } } : {}),
   };

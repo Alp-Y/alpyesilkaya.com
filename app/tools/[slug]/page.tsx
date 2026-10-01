@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import { getTool, getTools, pad } from "@/lib/content";
 import PageHeader from "@/components/PageHeader";
@@ -24,7 +25,7 @@ export const dynamicParams = false;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const tool = getTool(slug);
-  return tool ? { title: tool.title, description: tool.summary, alternates: { canonical: `/tools/${slug}` } } : {};
+  return tool ? pageMeta({ title: tool.title, description: tool.summary, path: `/tools/${slug}` }) : {};
 }
 
 export default async function ToolPage({ params }: Props) {

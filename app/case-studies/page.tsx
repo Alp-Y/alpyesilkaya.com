@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { getCaseStudies } from "@/lib/content";
 import PageHeader from "@/components/PageHeader";
 import CaseRegister from "@/components/CaseRegister";
 import styles from "../inner.module.css";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Case Studies",
-  alternates: { canonical: "/case-studies" },
+  path: "/case-studies",
   description: "Engineering and automation case studies: the problem, the approach, and the result.",
-};
+});
 
 export default function CaseStudiesPage() {
   const cases = getCaseStudies();
