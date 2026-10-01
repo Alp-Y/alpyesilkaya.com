@@ -20,10 +20,6 @@
   margin-top: clamp(56px, 7vw, 96px);
 }
 
-.toolList {
-  display: grid;
-}
-
 /* Case studies, before the first one is written: one quiet line between Tools and About */
 .casesSoon {
   padding-block: clamp(36px, 4.5vw, 56px);

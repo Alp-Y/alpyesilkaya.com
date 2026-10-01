@@ -1,0 +1,495 @@
+/* ==================================================================
+   CLAIM MANAGEMENT — Tools preview: a claim package as sheets in three
+   formats; one date edited, swept through, then the package checked.
+   ================================================================== */
+
+.stage {
+  aspect-ratio: 1200 / 660;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 50%, rgba(150, 175, 205, 0.05), transparent 70%),
+    #07090b;
+}
+@media (max-width: 640px) {
+  .stage {
+    aspect-ratio: 4 / 3.3;
+  }
+}
+.inner {
+  position: absolute;
+  inset: 0;
+}
+
+/* format colours, one variable per tile / badge */
+.stage [data-fmt="DOCX"] {
+  --f: #7aa8e6;
+}
+.stage [data-fmt="XLSX"] {
+  --f: #6fc9c9;
+}
+.stage [data-fmt="PDF"] {
+  --f: #b59ce6;
+}
+.ok {
+  color: var(--accent);
+}
+.bad {
+  color: #ff5a5f;
+}
+
+/* ---------- the one edit + the counters ---------- */
+.top {
+  pointer-events: none;
+  z-index: 2;
+  position: absolute;
+  inset: 12px 14px auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  white-space: nowrap;
+  transition:
+    border-color var(--motion-medium) var(--ease-out),
+    background-color var(--motion-medium) var(--ease-out);
+}
+.field[data-on="true"] {
+  border-color: rgba(62, 224, 143, 0.5);
+  background: rgba(62, 224, 143, 0.07);
+}
+.fieldLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 9.5px;
+}
+.old {
+  color: var(--text-2);
+  transition: color var(--motion-medium) var(--ease-out);
+}
+.old[data-struck="true"] {
+  color: var(--text-3);
+  text-decoration: line-through;
+  text-decoration-color: #ff5a5f;
+}
+.new {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+}
+.caret {
+  width: 1px;
+  height: 12px;
+  margin-left: 1px;
+  background: var(--accent);
+}
+.counts {
+  display: inline-flex;
+  gap: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.counts > span {
+  opacity: 0;
+  transition: opacity var(--motion-medium) var(--ease-out);
+}
+.counts > span[data-show="true"] {
+  opacity: 1;
+}
+.counts b {
+  font-weight: 500;
+}
+
+/* ---------- the package ---------- */
+.docs {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 50px;
+  bottom: 72px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid color-mix(in srgb, var(--f) 38%, transparent);
+  border-radius: 3px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--f) 7%, transparent), rgba(255, 255, 255, 0.01));
+  cursor: crosshair;
+  opacity: 0;
+  transform: translate3d(0, 6px, 0);
+  transition:
+    opacity var(--motion-medium) var(--ease-out),
+    transform var(--motion-medium) var(--ease-out),
+    border-color var(--motion-medium) var(--ease-out),
+    box-shadow var(--motion-medium) var(--ease-out);
+}
+/* the folded corner of a sheet */
+.tile::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(225deg, #07090b 50%, color-mix(in srgb, var(--f) 45%, transparent) 50%);
+}
+.tile[data-show="true"] {
+  opacity: 1;
+  transform: none;
+}
+.tile[data-dim="true"] {
+  opacity: 0.35;
+}
+.tile[data-updated="true"] {
+  border-color: rgba(62, 224, 143, 0.55);
+}
+.tile[data-flag="true"] {
+  border-color: rgba(255, 90, 95, 0.7);
+  box-shadow: 0 0 0 1px rgba(255, 90, 95, 0.18);
+}
+.tile:hover {
+  border-color: var(--f);
+}
+.tileHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+}
+.badge {
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--f) 16%, transparent);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--f);
+}
+.id {
+  margin-right: 8px;
+}
+.name {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--text-1);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+/* a few lines of text, or the rows of a table */
+.lines {
+  display: grid;
+  gap: 4px;
+  margin-top: 2px;
+}
+.lines i {
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(160, 185, 215, 0.14);
+}
+.lines i:nth-child(2) {
+  width: 80%;
+}
+.lines i:nth-child(3) {
+  width: 60%;
+}
+.lines[data-table="true"] i {
+  width: 100%;
+  height: 1px;
+  background: rgba(160, 185, 215, 0.2);
+}
+.date {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 2px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out);
+}
+.tile[data-updated="true"] .date {
+  color: var(--accent);
+  border-color: rgba(62, 224, 143, 0.55);
+  background: rgba(62, 224, 143, 0.1);
+  animation: clm-flash 700ms var(--ease-out);
+}
+@keyframes clm-flash {
+  from {
+    background: rgba(62, 224, 143, 0.4);
+  }
+}
+.flag {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ff5a5f;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: #07090b;
+  animation: clm-pop 360ms var(--ease-out) both;
+}
+@keyframes clm-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+/* the check, a line running down the package */
+.scan {
+  pointer-events: none;
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: calc(var(--scan) * 100%);
+  height: 1.5px;
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(62, 224, 143, 0.6);
+}
+
+/* ---------- the result ---------- */
+.result {
+  pointer-events: none;
+  z-index: 2;
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.result div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.result dt {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.result dd {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.8vw, 1.45rem);
+  font-weight: 560;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+.result dd em {
+  margin-left: 4px;
+  font-style: normal;
+  font-size: 0.55em;
+  font-weight: 400;
+  color: var(--text-2);
+}
+.result .sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: #ff5a5f;
+  opacity: 0.8;
+}
+
+/* the package's make-up, in the result's place until the result arrives */
+.legend {
+  pointer-events: none;
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend i {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--f);
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--f) 20%, transparent);
+}
+.legend b {
+  font-weight: 500;
+  color: var(--text-2);
+}
+@media (max-width: 640px) {
+  .legend {
+    left: 10px;
+    right: 10px;
+    bottom: 8px;
+    font-size: 8.5px;
+    gap: 4px 10px;
+  }
+}
+
+/* ---------- what a document carries ---------- */
+.tip {
+  position: absolute;
+  z-index: 4;
+  display: grid;
+  gap: 3px;
+  min-width: 190px;
+  max-width: 260px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: rgba(11, 14, 18, 0.96);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  font-size: 0.8125rem;
+  color: var(--text-2);
+}
+.tipHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+}
+.tip b {
+  font-weight: 500;
+  color: var(--text-1);
+}
+.tipLine {
+  font-size: 12px;
+}
+.tipLine em {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-1);
+}
+.tipLine em.ok {
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .top {
+    inset: 8px 10px auto;
+    font-size: 9px;
+  }
+  .fieldLabel {
+    display: none;
+  }
+  .counts {
+    gap: 8px;
+  }
+  .docs {
+    left: 10px;
+    right: 10px;
+    top: 42px;
+    bottom: 58px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .tile {
+    padding: 6px 7px;
+    gap: 3px;
+  }
+  .name,
+  .lines,
+  .id {
+    display: none;
+  }
+  .date {
+    font-size: 8.5px;
+    padding: 1px 4px;
+  }
+  .flag {
+    right: 5px;
+    bottom: 5px;
+    width: 13px;
+    height: 13px;
+    font-size: 9px;
+  }
+  .result {
+    left: 10px;
+    right: 10px;
+    bottom: 8px;
+    gap: 6px;
+    padding-top: 6px;
+  }
+  .result dt {
+    font-size: 8px;
+  }
+  .result dd {
+    font-size: 0.85rem;
+  }
+  .result dd em,
+  .result .sub {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .tile[data-updated="true"] .date,
+  .flag {
+    animation: none;
+    transition: none;
+  }
+}

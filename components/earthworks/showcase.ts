@@ -7,6 +7,7 @@
  *   progress   a road built in stages: unchanged, added, taken out (DWG Comparison Tool)
  *   areas      one asphalt layer and a pipe trench split by project area (Quantity by Area Calculator)
  *   structures a road whose lines, dots and surfaces are identified as structures, each with a tag (CAD Terminal)
+ *   claims     a claim package standing as sheets, one shared date threaded through them, two flagged (Claim Management Software)
  *
  * Every model fits the same 120 × 64 m footprint as the earthworks model,
  * so the scale bar and the fit stay the same when you switch.
@@ -30,6 +31,7 @@ import {
   PointsMaterial,
 } from "three";
 import { AREA_COLORS, CUT, FILL, LINE, STRUCTURE_COLORS as SC } from "@/lib/heroModels";
+import { DOCS, FORMAT_COLORS, ISSUE_COLOR } from "@/lib/claims/model";
 import type { DisplayMode } from "./scene";
 
 const HALF_L = 60;
@@ -424,9 +426,103 @@ function structures(): ShowcaseModel {
   return finish(kit, g);
 }
 
-export const SHOWCASE: Record<"basement" | "progress" | "areas" | "structures", () => ShowcaseModel> = {
+/**
+ * A claim package: its documents standing in a row like sheets in a file,
+ * coloured by format. One shared field (the submission date) runs through
+ * every sheet that carries it as a single green thread; the two documents
+ * whose numbers disagree carry a red flag.
+ */
+function claims(): ShowcaseModel {
+  const kit = newKit();
+  const g = new Group();
+  g.add(groundGrid(kit, () => 0, 4));
+  const sheets = ["CL-01", "CL-02", "CL-03", "CL-04", "CL-06", "CL-09", "CL-10", "CL-12"].map((id) => DOCS.find((d) => d.id === id)!);
+  const H = 26; // sheet height
+  const W = 9.2; // half its width (A4 proportions)
+  const T = 0.5; // thickness, so it reads as a sheet and not a line
+  const step = 15;
+  const x0 = -((sheets.length - 1) * step) / 2;
+  const DATE_Y = H - 5;
+  const AMOUNT_Y = 8;
+  const DATE_Z = 3.5; // where the date sits across the sheet
+  const front = ghostMat(kit, 0.34);
+  const faint = ghostMat(kit, 0.16);
+  const text: number[] = [];
+  const faintText: number[] = [];
+  const dateXs: number[] = [];
+
+  // the tray the package stands in
+  g.add(
+    outline(
+      [
+        [x0 - 8, 0.05, -W - 3],
+        [-x0 + 8, 0.05, -W - 3],
+        [-x0 + 8, 0.05, W + 3],
+        [x0 - 8, 0.05, W + 3],
+      ],
+      ghostMat(kit, 0.3),
+    ),
+  );
+
+  sheets.forEach((d, i) => {
+    const x = x0 + i * step;
+    const c = FORMAT_COLORS[d.format];
+    g.add(box(kit, x - T / 2, 0, -W, x + T / 2, H, W, c, 0.1));
+    // its text, as lines on the face that looks at the viewer: a title, then paragraphs or table rows
+    const fx = x + T / 2 + 0.06;
+    text.push(fx, H - 2.2, -W + 1.6, fx, H - 2.2, -W + 1.6 + (i % 2 ? 9 : 12));
+    const table = d.format === "XLSX";
+    for (let y = H - 8.5, k = 0; y > 3; y -= table ? 2.2 : 2, k++) {
+      const end = table ? W - 1.6 : W - 1.6 - ((k * 5 + i * 3) % 7);
+      faintText.push(fx, y, -W + 1.6, fx, y, end);
+    }
+    if (table) for (const z of [-2.5, 3, 6.5]) faintText.push(fx, 3.4, z, fx, H - 7.8, z);
+    // the shared date, where this document carries it
+    if (d.fields.includes("submitted")) {
+      dateXs.push(x);
+      g.add(box(kit, x + T / 2, DATE_Y - 0.55, DATE_Z - 3, x + T / 2 + 0.25, DATE_Y + 0.55, DATE_Z + 3, FILL, 0.55));
+    }
+  });
+  const tg = new BufferGeometry();
+  tg.setAttribute("position", new BufferAttribute(new Float32Array(text), 3));
+  g.add(new LineSegments(tg, front));
+  const fg = new BufferGeometry();
+  fg.setAttribute("position", new BufferAttribute(new Float32Array(faintText), 3));
+  g.add(new LineSegments(fg, faint));
+
+  // the single source: one value, edited once, threaded through every sheet that uses it
+  const SRC_X = x0 - 14;
+  g.add(box(kit, SRC_X - 2.6, DATE_Y - 1.1, DATE_Z - 3.4, SRC_X + 2.6, DATE_Y + 1.1, DATE_Z + 3.4, FILL, 0.4));
+  const thread = new BufferGeometry();
+  thread.setAttribute("position", new BufferAttribute(new Float32Array([SRC_X + 2.6, DATE_Y, DATE_Z, dateXs[dateXs.length - 1] + 0.6, DATE_Y, DATE_Z]), 3));
+  g.add(new LineSegments(thread, ghostMat(kit, 0.9, FILL)));
+  // a drop line from each date down to the thread's level marks where it lands
+  const nodes: number[] = [];
+  for (const x of dateXs) nodes.push(x + 0.4, DATE_Y + 1.6, DATE_Z, x + 0.4, DATE_Y - 1.6, DATE_Z);
+  const ng = new BufferGeometry();
+  ng.setAttribute("position", new BufferAttribute(new Float32Array(nodes), 3));
+  g.add(new LineSegments(ng, ghostMat(kit, 0.9, FILL)));
+
+  // the two that disagree: a red row where the number is wrong, and a flag above the sheet
+  for (const id of ["CL-04", "CL-09"]) {
+    const i = sheets.findIndex((d) => d.id === id);
+    const x = x0 + i * step;
+    g.add(box(kit, x + T / 2, AMOUNT_Y - 0.5, -W + 1.4, x + T / 2 + 0.25, AMOUNT_Y + 0.5, W - 1.4, ISSUE_COLOR, 0.5));
+    const top = H + 6;
+    const lg = new BufferGeometry();
+    lg.setAttribute("position", new BufferAttribute(new Float32Array([x, H, 0, x, top, 0]), 3));
+    g.add(new LineSegments(lg, ghostMat(kit, 0.6, ISSUE_COLOR)));
+    g.add(box(kit, x, top - 1.2, -0.05, x + 5, top + 1.2, 0.05, ISSUE_COLOR, 0.42));
+  }
+
+  g.add(pickPlate(kit, 0.5));
+  return finish(kit, g);
+}
+
+export const SHOWCASE: Record<"basement" | "progress" | "areas" | "structures" | "claims", () => ShowcaseModel> = {
   basement,
   progress,
   areas,
   structures,
+  claims,
 };

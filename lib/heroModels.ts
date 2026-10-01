@@ -5,10 +5,12 @@
  * (see content/tools/*.md).
  */
 
-export type HeroModelId = "road" | "basement" | "progress" | "areas" | "structures";
+export type HeroModelId = "road" | "basement" | "progress" | "areas" | "structures" | "claims";
 
 export type HeroModel = {
   id: HeroModelId;
+  /** The platform it belongs to (its `short` name in lib/platforms.ts) */
+  platform: string;
   /** Tab it belongs to (a tab can hold more than one scene, e.g. Earthworks: a road and a basement) */
   tab: string;
   /** What the model shows, leading the sentence */
@@ -30,6 +32,7 @@ export const STRUCTURE_COLORS = { kerb: "#7aa8e6", pipe: "#6fc9c9", manhole: "#9
 export const HERO_MODELS: HeroModel[] = [
   {
     id: "road",
+    platform: "Civil 3D",
     tab: "Earthworks",
     title: "Road earthworks.",
     line: "Turn XYZ survey points into cut and fill volumes and an Excel report, in seconds.",
@@ -38,6 +41,7 @@ export const HERO_MODELS: HeroModel[] = [
   },
   {
     id: "basement",
+    platform: "Civil 3D",
     tab: "Earthworks",
     title: "Basement excavation.",
     line: "Measure a basement excavation from the ground survey and the dug surface, with sections to check it.",
@@ -46,6 +50,7 @@ export const HERO_MODELS: HeroModel[] = [
   },
   {
     id: "progress",
+    platform: "Civil 3D",
     tab: "Progress",
     title: "Weekly progress.",
     line: "Overlay last week’s and this week’s drawings and get the net quantities for the progress report.",
@@ -54,6 +59,7 @@ export const HERO_MODELS: HeroModel[] = [
   },
   {
     id: "areas",
+    platform: "Civil 3D",
     tab: "Areas",
     title: "Project areas.",
     line: "Split one asphalt layer and a pipe trench that cross three project areas into a quantity for each area.",
@@ -62,11 +68,21 @@ export const HERO_MODELS: HeroModel[] = [
   },
   {
     id: "structures",
+    platform: "Civil 3D",
     tab: "Structures",
     title: "Drawing structures.",
     line: "Identify lines, dots and TIN surfaces once as kerbs, manholes, asphalt or demolition, and the drawing keeps track of them.",
     tool: { name: "CAD Terminal", href: "/tools/cad-terminal" },
     view: { azimuth: -32, elevation: 36 },
+  },
+  {
+    id: "claims",
+    platform: "Desktop App",
+    tab: "Claims",
+    title: "Claim documents.",
+    line: "Move the submission date once and every claim document follows, with unit prices and totals checked against each other.",
+    tool: { name: "Claim Management Software", href: "/tools/claim-management-software" },
+    view: { azimuth: -38, elevation: 22 },
   },
 ];
 
@@ -79,11 +95,11 @@ export function setHeroModel(id: HeroModelId) {
   current = id;
   document.dispatchEvent(new CustomEvent("hero:model", { detail: { id } }));
 }
-/** The tabs, in order, each with the scenes (indexes into HERO_MODELS) it holds. */
-export const HERO_TABS: { name: string; models: number[] }[] = HERO_MODELS.reduce<{ name: string; models: number[] }[]>((tabs, m, i) => {
-  const tab = tabs.find((t) => t.name === m.tab);
+/** The tabs, in order, each with its platform and the scenes (indexes into HERO_MODELS) it holds. */
+export const HERO_TABS: { name: string; platform: string; models: number[] }[] = HERO_MODELS.reduce<{ name: string; platform: string; models: number[] }[]>((tabs, m, i) => {
+  const tab = tabs.find((t) => t.name === m.tab && t.platform === m.platform);
   if (tab) tab.models.push(i);
-  else tabs.push({ name: m.tab, models: [i] });
+  else tabs.push({ name: m.tab, platform: m.platform, models: [i] });
   return tabs;
 }, []);
 

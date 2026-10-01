@@ -102,6 +102,12 @@ export default function HeroModels() {
   }, []);
 
   const activeTab = HERO_TABS.findIndex((t) => t.models.includes(active));
+  const platform = HERO_MODELS[active].platform;
+  /** the scenes and the tabs of one platform */
+  const scenesOf = (short: string) => HERO_MODELS.flatMap((hm, i) => (hm.platform === short ? [i] : []));
+  const tabsOf = (short: string) => HERO_TABS.flatMap((t, i) => (t.platform === short ? [i] : []));
+  const platformTabs = tabsOf(platform);
+  const showTabs = open && platformTabs.length > 1;
 
   // (a click or key press on a tab also restarts the auto-advance wait: the hero hears it)
   const pick = (i: number) => {
@@ -118,15 +124,22 @@ export default function HeroModels() {
     pick(t === activeTab ? scenes[(scenes.indexOf(active) + 1) % scenes.length] : scenes[0]);
   };
 
+  // A platform chip shows that platform's first scene; on the one showing, it opens its use cases (if it has more than one)
+  const pickPlatform = (short: string) => {
+    if (short !== platform) pick(scenesOf(short)[0]);
+    else if (tabsOf(short).length > 1) setOpen((o) => !o);
+  };
+
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
     e.preventDefault();
-    const next = (activeTab + (e.key === "ArrowRight" ? 1 : -1) + HERO_TABS.length) % HERO_TABS.length;
-    pickTab(next);
+    const at = platformTabs.indexOf(activeTab);
+    const next = (at + (e.key === "ArrowRight" ? 1 : -1) + platformTabs.length) % platformTabs.length;
+    pickTab(platformTabs[next]);
     (e.currentTarget.children[next] as HTMLElement | undefined)?.focus();
   };
 
-  const ready = PLATFORMS.filter((p) => p.ready);
+  const ready = PLATFORMS.filter((p) => p.ready && scenesOf(p.short).length > 0);
   const later = PLATFORMS.filter((p) => !p.ready);
 
   return (
@@ -134,31 +147,40 @@ export default function HeroModels() {
       <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "860ms" } as React.CSSProperties}>
         Tools in development
       </p>
-      {/* the platforms: Civil 3D holds the use cases (click it to see them one by one); the rest are on the way */}
+      {/* the platforms with tools: each shows its scenes (Civil 3D's open one by one); the rest are on the way */}
       <div ref={tabsRef} className={styles.models} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "880ms" } as React.CSSProperties}>
-        {ready.map((p) => (
-          <button
-            key={p.name}
-            type="button"
-            className={styles.modelTab}
-            data-active="true"
-            aria-expanded={open}
-            aria-controls="hero-use-case-tabs"
-            onClick={() => setOpen((o) => !o)}
-            title={open ? "Hide the use cases" : "Show the use cases one by one"}
-          >
-            {p.short}
-            {/* one mark per scene, the one on screen lit */}
-            <span className={styles.scenes} aria-hidden="true">
-              {HERO_MODELS.map((hm, mi) => (
-                <i key={hm.id} data-on={mi === active} />
-              ))}
-            </span>
-            <svg className={styles.chev} viewBox="0 0 10 10" fill="none" aria-hidden="true">
-              <path d="M2 3.5 5 6.5 8 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        ))}
+        {ready.map((p) => {
+          const on = p.short === platform;
+          const scenes = scenesOf(p.short);
+          const many = tabsOf(p.short).length > 1;
+          return (
+            <button
+              key={p.name}
+              type="button"
+              className={styles.modelTab}
+              data-active={on}
+              aria-pressed={on}
+              {...(many ? { "aria-expanded": on && open, "aria-controls": "hero-use-case-tabs" } : {})}
+              onClick={() => pickPlatform(p.short)}
+              title={!on ? `Show ${p.name}` : many ? (open ? "Hide the use cases" : "Show the use cases one by one") : p.name}
+            >
+              {p.short}
+              {/* one mark per scene, the one on screen lit */}
+              {scenes.length > 1 && (
+                <span className={styles.scenes} aria-hidden="true">
+                  {scenes.map((mi) => (
+                    <i key={mi} data-on={mi === active} />
+                  ))}
+                </span>
+              )}
+              {many && (
+                <svg className={styles.chev} viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                  <path d="M2 3.5 5 6.5 8 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </button>
+          );
+        })}
         {/* on the way: greyed out, not clickable; pointing at one says so */}
         {later.map((p) => (
           <span key={p.name} className={`${styles.modelTab} ${styles.soon}`} aria-disabled="true" data-tip="Coming soon" data-cursor="cad">
@@ -174,11 +196,13 @@ export default function HeroModels() {
         className={styles.subModels}
         role="tablist"
         aria-labelledby="hero-use-cases"
-        data-open={open}
-        hidden={!open}
+        data-open={showTabs}
+        hidden={!showTabs}
         onKeyDown={onKey}
       >
-        {HERO_TABS.map((t, i) => (
+        {platformTabs.map((i, n) => {
+          const t = HERO_TABS[i];
+          return (
           <button
             key={t.name}
             type="button"
@@ -190,7 +214,7 @@ export default function HeroModels() {
             className={styles.modelTab}
             onClick={() => pickTab(i)}
           >
-            <span className="num">{String(i + 1).padStart(2, "0")}</span>
+            <span className="num">{String(n + 1).padStart(2, "0")}</span>
             {t.name}
             {t.models.length > 1 && (
               /* one mark per scene in this tab, the one on screen lit */
@@ -201,14 +225,15 @@ export default function HeroModels() {
               </span>
             )}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       <div
         ref={storyRef}
         id="hero-model-story"
-        role={open ? "tabpanel" : undefined}
-        aria-labelledby={open ? `hero-tab-${activeTab}` : undefined}
+        role={showTabs ? "tabpanel" : undefined}
+        aria-labelledby={showTabs ? `hero-tab-${activeTab}` : undefined}
         className={styles.story}
         data-hero-exit
         data-overlay

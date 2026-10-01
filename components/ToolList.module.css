@@ -1,0 +1,36 @@
+/* One group per platform: a quiet ruled label, then that platform's tools */
+.group + .group {
+  margin-top: clamp(40px, 5vw, 72px);
+}
+/* a section link lands with the label just under the header */
+.group {
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 4px;
+  font-size: var(--fs-mono);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-1);
+}
+.head i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.rule {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.count {
+  color: var(--accent);
+}
+.list {
+  display: grid;
+}
