@@ -11,7 +11,7 @@ import styles from "./excavation.module.css";
  * The workbook (5 sheets, formulas, charts) is generated in the browser
  * from the same result, so the file always matches what is on screen.
  */
-export default function ReportPanel({ result }: { result: EngineResult }) {
+export default function ReportPanel({ result, compact = false }: { result: EngineResult; compact?: boolean }) {
   const model = useMemo(() => reportModel(result), [result]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +42,8 @@ export default function ReportPanel({ result }: { result: EngineResult }) {
   const maxZone = Math.max(...model.zones.map((z) => z.cut), 1);
 
   return (
-    <div className={styles.report}>
+    <div className={styles.report} data-compact={compact || undefined}>
+      {!compact && (
       <div className={styles.sheet}>
         <div className={styles.sheetHead}>
           <p className={styles.sheetTitle}>
@@ -75,11 +76,12 @@ export default function ReportPanel({ result }: { result: EngineResult }) {
           </figure>
         </div>
       </div>
+      )}
 
       <button type="button" className={styles.download} onClick={download} disabled={busy}>
         <span>
           <b>{busy ? "Preparing…" : isSample ? "Download example report" : "Export results"}</b>
-          <span>Excel · summary, points, volumes, areas, sections</span>
+          <span>Excel</span>
         </span>
         <span className="arrow" aria-hidden="true">
           ↓

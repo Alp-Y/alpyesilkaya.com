@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useRef, useState } from "react";
-import { SAMPLE_IDS, SAMPLE_NAMES, getSample } from "@/lib/excavation/samples";
+import { SAMPLE_IDS, SAMPLE_NAMES } from "@/lib/excavation/samples";
 import { MAX_POINTS, describeIssues, ISSUE_LABEL, parseXyz, type XyzResult } from "@/lib/excavation/xyz";
 import type { Dataset } from "@/lib/excavation/samples";
 import type { GroundChoice, Source } from "./useEngine";
@@ -29,10 +29,8 @@ export default function InputPanel({
 }) {
   const [tab, setTab] = useState<"sample" | "upload">(source.kind);
   const [upload, setUpload] = useState<{ name: string; parsed: XyzResult } | null>(source.kind === "upload" ? { name: source.name, parsed: source.parsed } : null);
-  const [groundUpload, setGroundUpload] = useState<{ name: string; parsed: XyzResult } | null>(ground.kind === "points" ? { name: ground.name, parsed: ground.parsed } : null);
   const [levelText, setLevelText] = useState("");
   const [editing, setEditing] = useState(false);
-  const [advanced, setAdvanced] = useState(ground.kind === "points");
   const id = useId();
 
   // while typing, show the text; otherwise the level in use (or the dataset's suggestion)
@@ -55,15 +53,6 @@ export default function InputPanel({
     setUpload(u);
     if (!u.parsed.error) onSource({ kind: "upload", name: u.name, parsed: u.parsed });
   };
-  const onGroundFile = async (file: File | undefined) => {
-    if (!file) return;
-    const u = await readFile(file);
-    setGroundUpload(u);
-    if (!u.parsed.error) onGround({ kind: "points", name: u.name, parsed: u.parsed });
-  };
-
-  const preview = dataset.excavated.slice(0, 3);
-  const more = dataset.excavated.length - preview.length;
 
   return (
     <div className={styles.input}>
@@ -87,40 +76,19 @@ export default function InputPanel({
               </button>
             );
           })}
-          {source.kind === "sample" && <p className={styles.sampleNote}>{getSample(source.id).description}</p>}
         </div>
       ) : (
         <div role="tabpanel" id={`${id}-p2`} aria-labelledby={`${id}-t2`} className={styles.uploadPanel}>
           <FileDrop id={`${id}-file`} label="Excavated surface points" onFile={onFile} />
           <p className={styles.format}>
-            One point per line: <code>X,Y,Z</code>
-            <span>X = Easting · Y = Northing · Z = Elevation (m)</span>
-          </p>
-          <p className={styles.format}>
-            Header rows, spaces, tabs and <code>POINT_ID,X,Y,Z</code> are fine.{" "}
-            <a className="link-line" href="/downloads/xyz-template.csv" download>
-              Template
-            </a>{" "}
-            ·{" "}
+            One point per line: <code>X,Y,Z</code>{" "}
             <a className="link-line" href="/downloads/sample-xyz-points.csv" download>
               Sample file
             </a>
           </p>
           {upload && <Validation name={upload.name} parsed={upload.parsed} />}
-          <p className={styles.privacy}>Read in your browser. Nothing is uploaded.</p>
         </div>
       )}
-
-      {/* raw data, as received */}
-      <figure className={styles.raw} aria-label="First rows of the input data">
-        <figcaption>
-          <span>Raw XYZ</span>
-          <span className="num">{dataset.excavated.length.toLocaleString("en-GB")} pts</span>
-        </figcaption>
-        <pre className="num">
-          {`POINT_ID,X,Y,Z\n${preview.map((p) => `${p.id},${p.x.toFixed(3)},${p.y.toFixed(3)},${p.z.toFixed(3)}`).join("\n")}${more > 0 ? `\n… ${more.toLocaleString("en-GB")} more` : ""}`}
-        </pre>
-      </figure>
 
       {/* existing ground */}
       <fieldset className={styles.ground}>
@@ -162,15 +130,6 @@ export default function InputPanel({
             </span>
           </div>
         )}
-        <details className={styles.advanced} open={advanced} onToggle={(e) => setAdvanced((e.target as HTMLDetailsElement).open)}>
-          <summary>Advanced: existing ground from an XYZ file</summary>
-          <label className={styles.choice}>
-            <input type="radio" name={`${id}-ground`} checked={ground.kind === "points"} disabled={!groundUpload || !!groundUpload.parsed.error} onChange={() => groundUpload && onGround({ kind: "points", name: groundUpload.name, parsed: groundUpload.parsed })} />
-            <span>Compare two surveys (TIN to TIN)</span>
-          </label>
-          <FileDrop id={`${id}-gfile`} label="Existing ground points" onFile={onGroundFile} small />
-          {groundUpload && <Validation name={groundUpload.name} parsed={groundUpload.parsed} />}
-        </details>
       </fieldset>
     </div>
   );

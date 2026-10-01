@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DOCS,
   FIELDS,
-  FIELD_ORDER,
   ITEMS,
   addDays,
   check,
@@ -19,7 +18,6 @@ import {
   show,
   type Doc,
   type FieldId,
-  type Format,
   type Issue,
   type State,
 } from "@/lib/claims/model";
@@ -42,7 +40,6 @@ type Change = { field: FieldId; from: string; to: string; docs: string[] };
 export default function ClaimsDemo() {
   const [st, setSt] = useState<State>(() => initialState());
   const [sel, setSel] = useState("CL-10");
-  const [fmt, setFmt] = useState<Format | "all">("all");
   const [focus, setFocus] = useState<FieldId | null>("submitted");
   const [drafts, setDrafts] = useState<Record<FieldId, string>>(() => initialState().values);
   const [swept, setSwept] = useState<string[]>([]);
@@ -61,7 +58,6 @@ export default function ClaimsDemo() {
   const issues = useMemo(() => check(st), [st]);
   const shown = checked ? issues : [];
   const issuesOf = (id: string) => shown.filter((i) => i.doc === id);
-  const list = DOCS.filter((d) => fmt === "all" || d.format === fmt);
   const current = getDoc(sel);
 
   /* ---------- 02: apply a shared detail everywhere ---------- */
@@ -120,9 +116,6 @@ export default function ClaimsDemo() {
     setFocus("submitted");
   };
 
-  const counts = { DOCX: 0, XLSX: 0, PDF: 0 } as Record<Format, number>;
-  DOCS.forEach((d) => counts[d.format]++);
-  const total = claimTotal();
   const allClear = checked && issues.length === 0;
 
   return (
@@ -130,18 +123,9 @@ export default function ClaimsDemo() {
       <div className={styles.grid}>
         {/* 01 ------------------------------------------------------------ */}
         <section className={styles.cellPackage} aria-labelledby="clm-h-pkg">
-          <StepHead n="01" id="clm-h-pkg" title="Claim package" note={`${DOCS.length} documents`} />
-          <div className={styles.filters} role="group" aria-label="Show format">
-            {(["all", "DOCX", "XLSX", "PDF"] as const).map((k) => (
-              <button key={k} type="button" aria-pressed={fmt === k} data-fmt={k === "all" ? undefined : k} onClick={() => setFmt(k)}>
-                {k !== "all" && <i aria-hidden="true" />}
-                {k === "all" ? "All" : k}
-                <b className="num">{k === "all" ? DOCS.length : counts[k]}</b>
-              </button>
-            ))}
-          </div>
+          <StepHead n="01" id="clm-h-pkg" title="Claim documents" note={`${DOCS.length} files`} />
           <ul className={styles.docs}>
-            {list.map((d) => {
+            {DOCS.map((d) => {
               const n = issuesOf(d.id).length;
               const uses = focus ? d.fields.includes(focus) : false;
               return (
@@ -162,9 +146,7 @@ export default function ClaimsDemo() {
                     <span className={styles.badge}>{d.format}</span>
                     <span className={styles.docText}>
                       <b>{d.name}</b>
-                      <small>
-                        {d.id} · {d.file}
-                      </small>
+                      <small>{d.id}</small>
                     </span>
                     {n > 0 ? (
                       <span className={styles.count} aria-label={`${n} ${n === 1 ? "issue" : "issues"}`}>
@@ -178,16 +160,13 @@ export default function ClaimsDemo() {
               );
             })}
           </ul>
-          <p className={styles.small}>
-            Example package: interim payment application {st.values.claimNo} for a simplified road contract. Synthetic data.
-          </p>
         </section>
 
         {/* 02 ------------------------------------------------------------ */}
         <section className={styles.cellFields} aria-labelledby="clm-h-fields">
-          <StepHead n="02" id="clm-h-fields" title="Shared details" note="Edit once, update everywhere" />
+          <StepHead n="02" id="clm-h-fields" title="Change once" />
           <div className={styles.fields}>
-            {FIELD_ORDER.map((f) => {
+            {(["submitted"] as FieldId[]).map((f) => {
               const meta = FIELDS[f];
               const docs = docsWith(f);
               const dirty = drafts[f] !== st.values[f];
@@ -208,50 +187,30 @@ export default function ClaimsDemo() {
                     />
                     {meta.type === "date" && (
                       <span className={styles.nudges}>
-                        <button type="button" onClick={() => nudge(f, -1)} aria-label={`${meta.label}: one day earlier`}>
-                          −1d
-                        </button>
-                        <button type="button" onClick={() => nudge(f, 1)} aria-label={`${meta.label}: one day later`}>
-                          +1d
-                        </button>
                         <button type="button" onClick={() => nudge(f, 7)} aria-label={`${meta.label}: one week later`}>
-                          +1w
+                          +1 week
                         </button>
                       </span>
                     )}
                     <button type="button" className={styles.apply} disabled={!dirty || !drafts[f]} onClick={() => apply(f)}>
-                      Update {docs.length} <span className="arrow" aria-hidden="true">→</span>
+                      Update all <span className="arrow" aria-hidden="true">→</span>
                     </button>
                   </div>
                 </div>
               );
             })}
-            <div className={styles.field} data-calc>
-              <span className={styles.fieldLabel}>
-                Claim total
-                <span>calculated from the BOQ</span>
-              </span>
-              <span className={`num ${styles.totalValue}`}>{money(total)}</span>
-            </div>
           </div>
 
           <div className={styles.log} aria-live="polite">
             {log.length === 0 ? (
-              <p className={styles.small}>
-                The consultant’s project manager is out of office and one signature is missing? Move the <b>submission date</b> a week and update the package.
-              </p>
+              <p className={styles.small}>Signature delayed? Move the date a week, then update all.</p>
             ) : (
-              log.map((c, i) => (
-                <p key={`${c.field}-${c.to}-${i}`} className={styles.change} data-latest={i === 0}>
-                  <span className={styles.tick}>✓</span>
-                  <span>
-                    <b>{FIELDS[c.field].label}</b> {show(c.field, c.from)} → <em>{show(c.field, c.to)}</em>
-                    <small>
-                      updated in {c.docs.length} documents: {c.docs.join(", ")}
-                    </small>
-                  </span>
-                </p>
-              ))
+              <p key={`${log[0].field}-${log[0].to}`} className={styles.change} data-latest="true">
+                <span className={styles.tick}>✓</span>
+                <span>
+                  {show(log[0].field, log[0].from)} → <em>{show(log[0].field, log[0].to)}</em> in {log[0].docs.length} documents
+                </span>
+              </p>
             )}
           </div>
         </section>
@@ -264,25 +223,23 @@ export default function ClaimsDemo() {
 
         {/* 04 ------------------------------------------------------------ */}
         <section className={styles.cellCheck} aria-labelledby="clm-h-check">
-          <StepHead n="04" id="clm-h-check" title="Consistency check" note="Unit prices · amounts · totals" />
+          <StepHead n="04" id="clm-h-check" title="Check" />
           <div className={styles.checkBar}>
             <button type="button" className={styles.primary} onClick={runCheck} disabled={scanning}>
-              {scanning ? "Checking…" : checked ? "Check again" : "Check the package"} <span className="arrow" aria-hidden="true">→</span>
+              {scanning ? "Checking…" : checked ? "Check again" : "Check prices and totals"} <span className="arrow" aria-hidden="true">→</span>
             </button>
             <span className={styles.checkStatus} aria-live="polite">
               {scanning ? (
-                <span>Comparing {ITEMS.length} rates, {ITEMS.length} line amounts and the totals across {DOCS.length} documents…</span>
+                <span>Checking…</span>
               ) : allClear ? (
                 <span className={styles.clear}>
-                  <span className={styles.tick}>✓</span> All figures agree across {DOCS.length} documents.
+                  <span className={styles.tick}>✓</span> Everything matches.
                 </span>
               ) : checked ? (
                 <span>
-                  <b className={styles.bad}>{issues.length}</b> {issues.length === 1 ? "inconsistency" : "inconsistencies"} found. Show one to open it in the document.
+                  <b className={styles.bad}>{issues.length}</b> {issues.length === 1 ? "problem" : "problems"} found.
                 </span>
-              ) : (
-                <span>Unit prices against the bill of quantities, each line’s quantity × rate, and the totals against each other.</span>
-              )}
+              ) : null}
             </span>
             <button type="button" className={styles.replay} onClick={reset}>
               ↻ Reset example
@@ -295,9 +252,8 @@ export default function ClaimsDemo() {
                 <thead>
                   <tr>
                     <th scope="col">Document</th>
-                    <th scope="col">Inconsistency</th>
-                    <th scope="col">Found</th>
-                    <th scope="col">Expected</th>
+                    <th scope="col">Problem</th>
+                    <th scope="col">Should be</th>
                     <th scope="col">
                       <span className="sr-only">Actions</span>
                     </th>
@@ -305,23 +261,20 @@ export default function ClaimsDemo() {
                 </thead>
                 <tbody>
                   {issues.map((is) => (
-                    <tr key={is.id} aria-selected={hot === is.id}>
-                      <td>
-                        {getDoc(is.doc).name}
-                        <small>
-                          {is.doc}
-                          {is.against ? ` vs ${is.against}` : ""}
-                        </small>
-                      </td>
+                    <tr key={is.id} aria-selected={hot === is.id} onClick={() => reveal(is)} className={styles.issueRow}>
+                      <td>{getDoc(is.doc).name}</td>
                       <td className={styles.what}>{is.title}</td>
-                      <td className={styles.bad}>{is.found}</td>
-                      <td>{is.expected}</td>
+                      <td>{is.expected.split(" in the ")[0]}</td>
                       <td className={styles.actions}>
-                        <button type="button" className={styles.ghost} onClick={() => reveal(is)}>
-                          Show
-                        </button>
-                        <button type="button" className={styles.fix} onClick={() => fix(is)}>
-                          {is.fix}
+                        <button
+                          type="button"
+                          className={styles.fix}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fix(is);
+                          }}
+                        >
+                          Fix
                         </button>
                       </td>
                     </tr>
@@ -332,11 +285,6 @@ export default function ClaimsDemo() {
           )}
         </section>
       </div>
-
-      <p className={styles.fine}>
-        Shared details are held once and written into every document that uses them. Rates are compared with the bill of quantities, every line amount with its quantity × rate, and
-        the invoice with the payment summary. The example package is synthetic; everything runs in your browser.
-      </p>
     </div>
   );
 }

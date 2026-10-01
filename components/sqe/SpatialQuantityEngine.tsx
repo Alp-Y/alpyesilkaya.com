@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import SqeViewport from "./SqeViewport";
 import SqePanel from "./SqePanel";
-import SqeReport from "./SqeReport";
 import { advanceStory, getSqe, importDxf, loadExample, setStep, startStory, STEPS, useSqe } from "@/lib/sqe/store";
 import { selectEntity, setDisplayMode } from "@/lib/workspace/actions";
 import { useWorkspace, type DisplayMode } from "@/lib/workspace/store";
@@ -137,19 +136,10 @@ export default function SpatialQuantityEngine() {
       </div>
 
       <div className={styles.footer}>
-        {project && analysis && (
-          <details className={styles.details} id="sqe-report">
-            <summary>Full quantity report</summary>
-            <SqeReport project={project} analysis={analysis} />
-          </details>
-        )}
         <div className={styles.import}>
           <button type="button" className={styles.link} onClick={() => fileRef.current?.click()} disabled={loading}>
-            {loading ? "Reading…" : "Import your own DXF →"}
+            {loading ? "Reading…" : "Try your own DXF →"}
           </button>
-          <a className={styles.fine} href="/demo/example-project.dxf" download>
-            Example DXF
-          </a>
           <input
             ref={fileRef}
             id="sqe-dxf-input"

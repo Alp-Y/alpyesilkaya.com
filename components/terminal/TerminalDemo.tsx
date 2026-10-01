@@ -14,9 +14,7 @@ import {
   levelRange,
   nextTag,
   OPTIONS,
-  PACKAGES,
   quantity,
-  rawRows,
   rows as exportRows,
   SHAPE_LABEL,
   STATUSES,
@@ -41,33 +39,8 @@ import styles from "./terminal.module.css";
  */
 
 type Line = { k: "cmd" | "out" | "ok" | "err"; text: string; tag?: string; c?: string };
-type Group = "class" | "zone" | "status";
 
 const FILE = "example-road.dwg";
-const HELP: Line[] = [
-  { k: "out", text: "IDENTIFY <type>   identify the selected object (KERB, PIPE, MANHOLE, LIGHT, ASPHALT, DEMOLITION, EXCAVATION)" },
-  { k: "out", text: "IDENTIFY ALL      identify everything left, the way the example intends" },
-  { k: "out", text: "FIND <id>         find a structure, e.g. FIND MH-02" },
-  { k: "out", text: "SHOW <type>       show one type of structure (SHOW ALL to clear)" },
-  { k: "out", text: "LIST · EXPORT · REOPEN · RESET · ZOOM · CLEAR" },
-];
-const WORDS: Record<string, ClassId> = {
-  KERB: "kerb",
-  KERBS: "kerb",
-  PIPE: "pipe",
-  PIPES: "pipe",
-  MANHOLE: "manhole",
-  MANHOLES: "manhole",
-  MH: "manhole",
-  LIGHT: "light",
-  LIGHTS: "light",
-  ASPHALT: "asphalt",
-  DEMOLITION: "demolition",
-  DEMO: "demolition",
-  EXCAVATION: "excavation",
-  EX: "excavation",
-};
-
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -102,18 +75,12 @@ export default function TerminalDemo() {
   const [retype, setRetype] = useState(false);
   const [focus, setFocus] = useState<{ label: string; ids: Set<string> } | null>(null);
   const [fresh, setFresh] = useState<{ id: string; n: number } | null>(null);
-  const [group, setGroup] = useState<Group>("class");
   const [reopening, setReopening] = useState(false);
   const [log, setLog] = useState<Line[]>([
     { k: "cmd", text: `Command: OPEN ${FILE}` },
     { k: "out", text: `${ents.length} objects on layers 0, C-TOPO and SURVEY. None of them is a structure yet.` },
   ]);
   const [tip, setTip] = useState<{ id: string; x: number; y: number } | null>(null);
-  const [mode, setMode] = useState<"ct" | "raw">("ct");
-  const [pkg, setPkg] = useState<string | null>(null);
-  const [zone, setZone] = useState<Zone | null>(null);
-  const [status, setStatus] = useState<Status | null>(null);
-  const [cmd, setCmd] = useState("");
 
   const stageRef = useRef<HTMLDivElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
@@ -263,82 +230,6 @@ export default function TerminalDemo() {
     };
   }, [doIdentify, say]);
 
-  /* ---------- the command line ---------- */
-  const run = (raw: string) => {
-    const input = raw.trim().toUpperCase().replace(/\s+/g, " ");
-    if (!input) return;
-    ++script.current;
-    const [verb, ...rest] = input.split(" ");
-    const arg = rest.join(" ");
-    say({ k: "cmd", text: `Command: ${input}` });
-    const sel = selected ? byId.get(selected) : null;
-    switch (verb) {
-      case "HELP":
-      case "?":
-        return say(...HELP);
-      case "CLEAR":
-        return setLog([]);
-      case "IDENTIFY":
-      case "ID": {
-        if (arg === "ALL") return void identifyRest();
-        if (!sel) return say({ k: "err", text: "Select an object first (click it in the drawing), then IDENTIFY <type>." });
-        const cls = WORDS[arg];
-        const opts = OPTIONS[sel.shape];
-        if (!cls) return say({ k: "out", text: `A ${SHAPE_LABEL[sel.shape].toLowerCase()} can be: ${opts.map((o) => CLASSES[o].label.toUpperCase()).join(", ")}.` });
-        if (!opts.includes(cls)) return say({ k: "err", text: `A ${SHAPE_LABEL[sel.shape].toLowerCase()} can't be a ${CLASSES[cls].label.toLowerCase()}. Try ${opts.map((o) => CLASSES[o].label.toUpperCase()).join(" or ")}.` });
-        return doIdentify(sel, cls, "type");
-      }
-      case "FIND": {
-        const hit = Object.entries(idsRef.current).find(([, v]) => v.tag.replace("-", "") === arg.replace("-", ""));
-        if (!hit) return say({ k: "err", text: arg ? `No structure called ${arg} yet.` : "FIND what? e.g. FIND MH-02" });
-        select(hit[0], true);
-        const e = byId.get(hit[0])!;
-        return say({ k: "ok", text: `{tag} ${CLASSES[hit[1].cls].label} · ${hit[1].zone} · ${chainageRange(e)} · ${hit[1].status}`, tag: hit[1].tag, c: CLASSES[hit[1].cls].color });
-      }
-      case "SHOW": {
-        if (!arg || arg === "ALL") {
-          setFocus(null);
-          return say({ k: "out", text: "Showing everything." });
-        }
-        const cls = WORDS[arg];
-        if (!cls) return say({ k: "err", text: `Unknown type ${arg}. Try SHOW KERBS or SHOW MANHOLES.` });
-        const set = new Set(Object.entries(idsRef.current).filter(([, v]) => v.cls === cls).map(([k]) => k));
-        setFocus({ label: CLASSES[cls].plural, ids: set });
-        return say({ k: "out", text: `${set.size} ${CLASSES[cls].plural.toLowerCase()} shown.` });
-      }
-      case "LIST": {
-        const all = Object.values(idsRef.current);
-        if (!all.length) return say({ k: "out", text: "No structures yet." });
-        return say(
-          ...CLASS_IDS.filter((c) => all.some((a) => a.cls === c)).map<Line>((c) => ({
-            k: "out",
-            text: `${CLASSES[c].plural.padEnd(20)} ${all
-              .filter((a) => a.cls === c)
-              .map((a) => a.tag)
-              .sort()
-              .join(" ")}`,
-          })),
-          { k: "out", text: `${ents.length - all.length} objects not identified.` },
-        );
-      }
-      case "EXPORT":
-        exportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-        return say({ k: "out", text: `${Object.keys(idsRef.current).length} structures ready to export, below.` });
-      case "REOPEN":
-      case "OPEN":
-        return void reopen();
-      case "RESET":
-        return reset();
-      case "ZOOM":
-      case "Z":
-      case "ZE":
-        select(null);
-        return zoomTo(FULL);
-      default:
-        return say({ k: "err", text: `Unknown command ${verb}. Type HELP.` });
-    }
-  };
-
   /* ---------- pointer ---------- */
   const onPick = useCallback(
     (id: string | null) => {
@@ -366,35 +257,25 @@ export default function TerminalDemo() {
   const sel = selected ? byId.get(selected)! : null;
   const selIdent = selected ? ids[selected] : undefined;
   const allRows = useMemo(() => exportRows(ids), [ids]);
-  const shown = allRows.filter((r) => (!pkg || r.pkg === pkg) && (!zone || r.zone === zone) && (!status || r.status === status));
-  const raws = useMemo(() => rawRows(), []);
+  const shown = allRows;
 
   const groups = useMemo(() => {
     const idd = ents.filter((e) => ids[e.id]);
-    const list: { key: string; label: string; color?: string; items: RawEnt[] }[] =
-      group === "class"
-        ? CLASS_IDS.map((c) => ({ key: c, label: CLASSES[c].plural, color: CLASSES[c].color, items: idd.filter((e) => ids[e.id].cls === c) }))
-        : group === "zone"
-          ? ZONES.map((z) => ({ key: z, label: z, items: idd.filter((e) => ids[e.id].zone === z) }))
-          : STATUSES.map((s) => ({ key: s, label: s, items: idd.filter((e) => ids[e.id].status === s) }));
+    const list: { key: string; label: string; color?: string; items: RawEnt[] }[] = CLASS_IDS.map((c) => ({
+      key: c,
+      label: CLASSES[c].plural,
+      color: CLASSES[c].color,
+      items: idd.filter((e) => ids[e.id].cls === c),
+    }));
     for (const g of list) g.items.sort((a, b) => ids[a.id].tag.localeCompare(ids[b.id].tag));
     return list.filter((g) => g.items.length);
-  }, [ents, group, ids]);
-  const unidentified = ents.filter((e) => !ids[e.id]);
+  }, [ents, ids]);
 
   const update = (patch: Partial<{ zone: Zone; status: Status }>) => {
     if (!selected || !selIdent) return;
     setIds({ ...idsRef.current, [selected]: { ...selIdent, ...patch } });
     const [k, v] = Object.entries(patch)[0];
     say({ k: "cmd", text: `Command: SET ${selIdent.tag} ${k.toUpperCase()} "${v}"` }, { k: "ok", text: `{tag} ${k} is now ${v}. Saved with the drawing.`, tag: selIdent.tag, c: CLASSES[selIdent.cls].color });
-  };
-
-  const unidentify = () => {
-    if (!selected || !selIdent) return;
-    const next = { ...idsRef.current };
-    delete next[selected];
-    setIds(next);
-    say({ k: "cmd", text: `Command: UNIDENTIFY ${selIdent.tag}` }, { k: "out", text: `${selIdent.tag} is a plain ${SHAPE_LABEL[sel!.shape].toLowerCase()} again.` });
   };
 
   const download = () => {
@@ -469,53 +350,6 @@ export default function TerminalDemo() {
             )}
           </div>
 
-          <div className={styles.console}>
-            <div className={styles.history} ref={historyRef} aria-live="polite">
-              {log.map((l, i) => (
-                <p key={i} data-k={l.k}>
-                  {l.tag ? (
-                    <>
-                      {l.text.split("{tag}")[0]}
-                      <i style={{ "--c": l.c } as React.CSSProperties}>{l.tag}</i>
-                      {l.text.split("{tag}")[1]}
-                    </>
-                  ) : (
-                    l.text
-                  )}
-                </p>
-              ))}
-            </div>
-            <form
-              className={styles.prompt}
-              onSubmit={(e) => {
-                e.preventDefault();
-                run(cmd);
-                setCmd("");
-              }}
-            >
-              <span aria-hidden="true">Command:</span>
-              <label className="sr-only" htmlFor="ct-cmd">
-                CAD Terminal command. Type HELP for the list.
-              </label>
-              <input
-                id="ct-cmd"
-                value={cmd}
-                onChange={(e) => setCmd(e.target.value)}
-                autoComplete="off"
-                autoCapitalize="characters"
-                spellCheck={false}
-                enterKeyHint="go"
-                placeholder={sel && !selIdent ? `e.g. IDENTIFY ${CLASSES[OPTIONS[sel.shape][0]].label.split(" ")[0].toUpperCase()}` : "e.g. FIND MH-01, SHOW KERBS or HELP"}
-              />
-            </form>
-            <div className={styles.chips} aria-label="Suggested commands">
-              {["IDENTIFY ALL", "FIND MH-02", "SHOW KERBS", "LIST", "REOPEN", "HELP"].map((c) => (
-                <button key={c} type="button" onClick={() => run(c)}>
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
         </section>
 
         {/* 02 + 03 ------------------------------------------------------- */}
@@ -524,7 +358,7 @@ export default function TerminalDemo() {
             <StepHead n="02" id="ct-h-props" title="Properties" />
             <div className={styles.props}>
               {!sel ? (
-                <p className={styles.propsEmpty}>Pick any object in the drawing. A grey one is still just geometry: tell CAD Terminal what it is, and it becomes a structure.</p>
+                <p className={styles.propsEmpty}>Click a grey object in the drawing and pick what it is.</p>
               ) : !selIdent || retype ? (
                 <>
                   <div className={styles.objHead}>
@@ -537,13 +371,9 @@ export default function TerminalDemo() {
                     <dd>{sel.cad}</dd>
                     <dt>Layer</dt>
                     <dd>{sel.layer}</dd>
-                    <dt>Handle</dt>
-                    <dd className="num">{sel.handle}</dd>
-                    <dt>{sel.shape === "line" ? "Length" : sel.shape === "dot" ? "Position" : "Contains"}</dt>
-                    <dd className="num">{rawValue(sel)}</dd>
                   </dl>
                   <p className={styles.mono} style={{ margin: "4px 0 0" }}>
-                    Identify as
+                    This is a
                   </p>
                   <div className={styles.choices}>
                     {OPTIONS[sel.shape].map((c) => (
@@ -577,14 +407,12 @@ export default function TerminalDemo() {
                     <span className={styles.swatch} aria-hidden="true" />
                     <b>{selIdent.tag}</b>
                     <span className={styles.pill} data-on="true">
-                      Kept in drawing
+                      Saved
                     </span>
                   </div>
                   <dl className={styles.kv}>
                     <dt>Structure</dt>
                     <dd>{CLASSES[selIdent.cls].label}</dd>
-                    <dt>Package</dt>
-                    <dd>{CLASSES[selIdent.cls].pkg}</dd>
                     <dt>Zone</dt>
                     <dd>
                       <select aria-label="Zone" value={selIdent.zone} onChange={(e) => update({ zone: e.target.value as Zone })}>
@@ -593,8 +421,6 @@ export default function TerminalDemo() {
                         ))}
                       </select>
                     </dd>
-                    <dt>Chainage</dt>
-                    <dd className="num">{chainageRange(sel)}</dd>
                     <dt>Status</dt>
                     <dd>
                       <select aria-label="Status" value={selIdent.status} onChange={(e) => update({ status: e.target.value as Status })}>
@@ -605,28 +431,10 @@ export default function TerminalDemo() {
                     </dd>
                     <dt>Quantity</dt>
                     <dd className="num">{fmtQty(quantity(sel, selIdent.cls), CLASSES[selIdent.cls].unit)}</dd>
-                    {levelRange(sel) && (
-                      <>
-                        <dt>Levels</dt>
-                        <dd className="num">
-                          {levelRange(sel)![0].toFixed(2)} to {levelRange(sel)![1].toFixed(2)}
-                        </dd>
-                      </>
-                    )}
-                    <dt>From</dt>
-                    <dd className="num">
-                      {sel.cad} · {sel.handle}
-                    </dd>
                   </dl>
                   <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
                     <button type="button" className={styles.linkBtn} onClick={() => setRetype(true)}>
                       Change type
-                    </button>
-                    <button type="button" className={styles.linkBtn} onClick={unidentify}>
-                      Unidentify
-                    </button>
-                    <button type="button" className={styles.linkBtn} onClick={() => zoomTo(frame(sel))}>
-                      Zoom to it
                     </button>
                   </div>
                 </>
@@ -635,14 +443,7 @@ export default function TerminalDemo() {
           </div>
 
           <div>
-            <StepHead n="03" id="ct-h-browser" title="Project browser" />
-            <div className={styles.segmented} role="group" aria-label="Group structures by">
-              {(["class", "zone", "status"] as Group[]).map((g) => (
-                <button key={g} type="button" aria-pressed={group === g} onClick={() => setGroup(g)}>
-                  {g === "class" ? "Type" : g}
-                </button>
-              ))}
-            </div>
+            <StepHead n="03" id="ct-h-browser" title="Structures" />
             <ul className={styles.tree}>
               {groups.map((g) => {
                 const on = focus?.label === g.label;
@@ -679,7 +480,7 @@ export default function TerminalDemo() {
                               }}
                             >
                               <b>{it.tag}</b>
-                              {group !== "class" ? CLASSES[it.cls].label : it.status}
+                              {it.status}
                               <span>{chainageRange(e).split(" to ")[0]}</span>
                             </button>
                           </li>
@@ -689,144 +490,56 @@ export default function TerminalDemo() {
                   </li>
                 );
               })}
-              {unidentified.length > 0 && (
-                <li className={styles.group}>
-                  <p className={styles.groupHead} style={{ cursor: "default" }}>
-                    <span className={styles.swatch} aria-hidden="true" />
-                    Not identified
-                    <b>{unidentified.length}</b>
-                  </p>
-                  <ul className={styles.items}>
-                    {unidentified.map((e) => (
-                      <li key={e.id}>
-                        <button type="button" className={styles.item} aria-current={selected === e.id} onClick={() => onPick(e.id)}>
-                          {e.cad}
-                          <span>{e.handle}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              )}
             </ul>
           </div>
         </section>
 
         {/* 04 ------------------------------------------------------------ */}
         <section className={styles.cellExport} aria-labelledby="ct-h-export" ref={exportRef}>
-          <StepHead n="04" id="ct-h-export" title="Export" note={mode === "ct" ? `${shown.length} of ${allRows.length} structures` : `${raws.length} objects`} />
+          <StepHead n="04" id="ct-h-export" title="Export" note={`${shown.length} structures`} />
           <div className={styles.exportBar}>
-            <div className={styles.segmented} role="group" aria-label="Export" style={{ flex: "none" }}>
-              <button type="button" aria-pressed={mode === "ct"} onClick={() => setMode("ct")}>
-                CAD Terminal export
-              </button>
-              <button type="button" aria-pressed={mode === "raw"} onClick={() => setMode("raw")}>
-                Plain CAD export
-              </button>
-            </div>
-            {mode === "ct" && (
-              <button type="button" className={styles.primary} onClick={download} disabled={!shown.length}>
-                Download CSV <span className="arrow" aria-hidden="true">↓</span>
-              </button>
-            )}
+            <button type="button" className={styles.primary} onClick={download} disabled={!shown.length}>
+              Download CSV <span className="arrow" aria-hidden="true">↓</span>
+            </button>
           </div>
-
-          {mode === "ct" ? (
-            <>
-              <div className={styles.exportBar}>
-                <Chips label="Package" all="All packages" values={PACKAGES} value={pkg} onChange={setPkg} present={new Set(allRows.map((r) => r.pkg))} />
-                <Chips label="Zone" all="All zones" values={ZONES} value={zone} onChange={(v) => setZone(v as Zone | null)} present={new Set(allRows.map((r) => r.zone))} />
-                <Chips label="Status" all="Any status" values={STATUSES} value={status} onChange={(v) => setStatus(v as Status | null)} present={new Set(allRows.map((r) => r.status))} />
-              </div>
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th scope="col">ID</th>
-                      <th scope="col">Structure</th>
-                      <th scope="col">Package</th>
-                      <th scope="col">Zone</th>
-                      <th scope="col">Chainage</th>
-                      <th scope="col">Status</th>
-                      <th scope="col">Quantity</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {shown.map((r) => (
-                      <tr
-                        key={r.id}
-                        tabIndex={0}
-                        aria-selected={selected === r.id}
-                        style={{ "--c": CLASSES[r.cls].color } as React.CSSProperties}
-                        onClick={() => select(r.id, true)}
-                        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), select(r.id, true))}
-                      >
-                        <td>
-                          <b>{r.tag}</b>
-                        </td>
-                        <td>{CLASSES[r.cls].label}</td>
-                        <td>{r.pkg}</td>
-                        <td>{r.zone}</td>
-                        <td>{r.chainage}</td>
-                        <td className={styles.status} data-s={r.status}>
-                          {r.status}
-                        </td>
-                        <td className="num">
-                          {fmtQty(r.qty, r.unit)}
-                          {r.note && <small style={{ display: "block", fontSize: 10, color: "var(--text-3)" }}>{r.note}</small>}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {!shown.length && <p className={styles.empty}>{allRows.length ? "Nothing matches these filters." : "Nothing to export yet: identify a few objects in the drawing first."}</p>}
-              </div>
-              {shown.length > 0 && (
-                <p className={styles.sum}>
-                  {CLASS_IDS.filter((c) => shown.some((r) => r.cls === c)).map((c) => {
-                    const rs = shown.filter((r) => r.cls === c);
-                    return (
-                      <span key={c}>
-                        {CLASSES[c].plural}: <b className="num">{fmtQty(rs.reduce((s, r) => s + r.qty, 0), CLASSES[c].unit)}</b>
-                      </span>
-                    );
-                  })}
-                </p>
-              )}
-            </>
-          ) : (
-            <>
-              <p className={styles.compareNote}>The same drawing through a plain data extraction: object types, layers and handles. Nothing in it says which line is a kerb or which surface is being broken out.</p>
-              <div className={styles.tableWrap}>
-                <table className={`${styles.table} ${styles.rawTable}`}>
-                  <thead>
-                    <tr>
-                      <th scope="col">Handle</th>
-                      <th scope="col">Object</th>
-                      <th scope="col">Layer</th>
-                      <th scope="col">Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {raws.map((r) => (
-                      <tr key={r.handle}>
-                        <td>{r.handle}</td>
-                        <td>{r.cad}</td>
-                        <td>{r.layer}</td>
-                        <td>{r.value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Structure</th>
+                  <th scope="col">Zone</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shown.map((r) => (
+                  <tr
+                    key={r.id}
+                    tabIndex={0}
+                    aria-selected={selected === r.id}
+                    style={{ "--c": CLASSES[r.cls].color } as React.CSSProperties}
+                    onClick={() => select(r.id, true)}
+                    onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), select(r.id, true))}
+                  >
+                    <td>
+                      <b>{r.tag}</b>
+                    </td>
+                    <td>{CLASSES[r.cls].label}</td>
+                    <td>{r.zone}</td>
+                    <td className={styles.status} data-s={r.status}>
+                      {r.status}
+                    </td>
+                    <td className="num">{fmtQty(r.qty, r.unit)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!shown.length && <p className={styles.empty}>Identify a few objects first.</p>}
+          </div>
         </section>
       </div>
-
-      <p className={styles.fine}>
-        The example drawing is synthetic and everything runs in your browser. In the demonstration, &ldquo;Reopen drawing&rdquo; stands in for closing and opening the DWG: the structures come back with it.
-      </p>
     </div>
   );
 }
@@ -838,21 +551,6 @@ function rawValue(e: RawEnt) {
   if (e.shape === "dot") return `${e.pts[0][0].toFixed(2)}, ${e.pts[0][1].toFixed(2)}`;
   if (e.shape === "tin") return `${e.tris!.length} triangles`;
   return `${e.levels!.length} points, ${e.levels!.length} texts`;
-}
-
-function Chips({ label, all, values, value, onChange, present }: { label: string; all: string; values: string[]; value: string | null; onChange: (v: string | null) => void; present: Set<string> }) {
-  return (
-    <div className={styles.filters} role="group" aria-label={label}>
-      <button type="button" aria-pressed={value === null} onClick={() => onChange(null)}>
-        {all}
-      </button>
-      {values.map((v) => (
-        <button key={v} type="button" aria-pressed={value === v} disabled={!present.has(v)} onClick={() => onChange(value === v ? null : v)}>
-          {v}
-        </button>
-      ))}
-    </div>
-  );
 }
 
 function StepHead({ n, id, title, note }: { n: string; id: string; title: string; note?: string }) {

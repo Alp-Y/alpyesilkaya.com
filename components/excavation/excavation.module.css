@@ -36,8 +36,7 @@
     grid-template-columns: minmax(250px, 290px) minmax(0, 1fr);
     grid-template-areas:
       "input view"
-      "result result"
-      "lower lower";
+      "result result";
   }
   .cellInput {
     grid-area: input;
@@ -871,6 +870,11 @@
 .report {
   display: grid;
   gap: 14px;
+}
+/* just the download, under the volume */
+.report[data-compact] {
+  margin-top: 18px;
+  max-width: 380px;
 }
 .sheet {
   border: 1px solid var(--line-strong);

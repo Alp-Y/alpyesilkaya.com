@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getUpdates, ITEMS, KINDS, type Kind } from "@/lib/compare/model";
+import { getUpdates, ITEMS, type Kind } from "@/lib/compare/model";
 import { fmt, signed } from "@/lib/compare/format";
 import { compare, type Diffed, type Status } from "@/lib/compare/diff";
 import CompareDrawing from "./CompareDrawing";
@@ -13,7 +13,6 @@ import styles from "./compare.module.css";
  *   02 Overlay         the two sheets, merged on top of each other and swept:
  *                      removed (red), added (green), unchanged (grey)
  *   03 Net quantities  per item: previous, current, added, removed, net
- *   04 Progress ledger every period, net by item, adding up to the total
  * Everything runs in the browser on synthetic example drawings (lib/compare).
  */
 
@@ -126,11 +125,11 @@ export default function CompareDemo() {
       <div className={styles.grid}>
         {/* 01 ------------------------------------------------------------ */}
         <section className={styles.cellInput} aria-labelledby="cmp-h-input">
-          <StepHead n="01" id="cmp-h-input" title="Progress drawings" />
+          <StepHead n="01" id="cmp-h-input" title="Drawings" />
           <div className={styles.input}>
             <div>
               <p className={styles.mono} style={{ margin: "0 0 4px" }}>
-                Reporting period
+                Pick a period
               </p>
               <div className={styles.periods}>
                 {pairs.map((p, i) => (
@@ -147,15 +146,9 @@ export default function CompareDemo() {
               </div>
             </div>
 
-            <div className={styles.files}>
-              <FileCard tone="a" role="Previous update" file={cmp.a.file} meta={`${cmp.a.date} · ${cmp.a.entities.length} objects`} />
-              <FileCard tone="b" role="Current update" file={cmp.b.file} meta={`${cmp.b.date} · ${cmp.b.entities.length} objects`} />
-            </div>
-
             <button type="button" className={styles.primary} onClick={() => void overlay()}>
               {done ? "Compare again" : "Overlay and compare"} <span className="arrow" aria-hidden="true">→</span>
             </button>
-            <p className={styles.small}>Example drawings of a simplified road scheme, four progress updates two weeks apart. Synthetic data.</p>
           </div>
         </section>
 
@@ -212,22 +205,12 @@ export default function CompareDemo() {
           </div>
 
           <div className={styles.caption} aria-live="polite">
-            {!isOverlay ? (
+            {done ? (
               <span>
-                <b>{cmp.a.entities.length}</b> objects in {cmp.a.id}, <b>{cmp.b.entities.length}</b> in {cmp.b.id}. Which quantities are new, and did anything disappear?
-              </span>
-            ) : done ? (
-              <span>
-                <b className={styles.added}>{cmp.counts.added} added</b>, <b className={styles.removed}>{cmp.counts.removed} taken out</b>, {cmp.counts.unchanged} unchanged. Hover an object for its
-                quantity.
+                <b className={styles.added}>{cmp.counts.added} added</b> · <b className={styles.removed}>{cmp.counts.removed} taken out</b>
               </span>
             ) : (
-              <span>Comparing every object in both drawings…</span>
-            )}
-            {done && (
-              <button type="button" className={styles.replay} onClick={() => void overlay()}>
-                ↻ Replay
-              </button>
+              <span>{isOverlay ? "Comparing…" : "Press Overlay to compare."}</span>
             )}
           </div>
         </section>
@@ -275,95 +258,14 @@ export default function CompareDemo() {
               </tbody>
             </table>
           </div>
-          <p className={styles.check}>
-            <span>
-              <span className={styles.tick}>✓</span> Every item reconciles: <code>{cmp.a.id} + added − removed = {cmp.b.id}</code>
-            </span>
-            <span className={styles.small}>{focus ? "Click the row again to show every item." : "Click a row to find that item in the drawing."}</span>
-          </p>
         </section>
 
-        {/* 04 ------------------------------------------------------------ */}
-        <section className={styles.cellLedger} aria-labelledby="cmp-h-ledger">
-          <StepHead n="04" id="cmp-h-ledger" title="Progress ledger" note="Every update, one line" />
-          <Ledger pairs={pairs} active={pairIndex} onPick={choosePeriod} />
-        </section>
       </div>
-
-      <p className={styles.fine}>
-        Objects are matched by layer and geometry: only in the previous drawing means taken out, only in the current drawing means added. Example drawings are synthetic; everything is
-        calculated in your browser.
-      </p>
     </div>
   );
 }
 
 /* ---------- pieces ---------- */
-
-function Ledger({ pairs, active, onPick }: { pairs: ReturnType<typeof compare>[]; active: number; onPick: (i: number) => void }) {
-  const base = pairs[0];
-  const last = pairs[pairs.length - 1];
-  return (
-    <div className={styles.tableWrap}>
-      <table className={`${styles.table} ${styles.ledger}`}>
-        <thead>
-          <tr>
-            <th scope="col">Period</th>
-            {KINDS.map((k) => (
-              <th key={k} scope="col">
-                {ITEMS[k].short} ({ITEMS[k].unit})
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          <tr data-kind="base">
-            <td>{base.a.id} (recorded)</td>
-            {base.rows.map((r) => (
-              <td key={r.kind}>{fmt(r.prev, ITEMS[r.kind].unit, false)}</td>
-            ))}
-          </tr>
-          {pairs.map((p, i) => (
-            <tr
-              key={p.b.id}
-              tabIndex={0}
-              aria-selected={i === active}
-              onClick={() => onPick(i)}
-              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onPick(i))}
-            >
-              <td>
-                {p.a.id} → {p.b.id}
-              </td>
-              {p.rows.map((r) => (
-                <td key={r.kind} className={r.net > 0 ? styles.pos : r.net < 0 ? styles.neg : styles.zero}>
-                  {signed(r.net, ITEMS[r.kind].unit, false)}
-                  {r.removed > 0 && <small className={styles.neg} style={{ display: "block", fontSize: 10, opacity: 0.8 }}>incl. −{fmt(r.removed, ITEMS[r.kind].unit, false)} out</small>}
-                </td>
-              ))}
-            </tr>
-          ))}
-          <tr data-kind="total">
-            <td>{last.b.id} (to date)</td>
-            {last.rows.map((r) => (
-              <td key={r.kind}>{fmt(r.curr, ITEMS[r.kind].unit, false)}</td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function FileCard({ tone, role, file, meta }: { tone: "a" | "b"; role: string; file: string; meta: string }) {
-  return (
-    <div className={styles.file}>
-      <span className={styles.swatch} data-tone={tone} aria-hidden="true" />
-      <span className={styles.fileRole}>{role}</span>
-      <b>{file}</b>
-      <span>{meta}</span>
-    </div>
-  );
-}
 
 function StepHead({ n, id, title, note }: { n: string; id: string; title: string; note?: string }) {
   return (

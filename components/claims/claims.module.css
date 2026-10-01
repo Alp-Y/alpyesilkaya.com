@@ -935,3 +935,8 @@
   min-width: 38px;
   text-align: center;
 }
+
+/* a finding: click it to open the document at the wrong figure */
+.issueRow {
+  cursor: pointer;
+}

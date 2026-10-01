@@ -174,8 +174,7 @@
     grid-template-columns: minmax(250px, 290px) minmax(0, 1fr);
     grid-template-areas:
       "input view"
-      "result result"
-      "ledger ledger";
+      "result result";
   }
   .cellInput {
     grid-area: input;
