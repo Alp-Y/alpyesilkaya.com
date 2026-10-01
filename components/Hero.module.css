@@ -841,33 +841,17 @@
     font-size: 9.5px;
     letter-spacing: 0.1em;
   }
-  /* Two full-width buttons, stacked like an app's primary and secondary action */
+  /* One full-width button, like an app's primary action */
   .actions {
     width: 100%;
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
   }
-  .primary,
-  .secondary {
+  .primary {
     justify-content: space-between;
     height: 52px;
     padding: 0 18px;
     white-space: nowrap;
-  }
-  .secondary {
-    display: flex;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius);
-    background: rgba(255, 255, 255, 0.02);
-    font-size: 15px;
-    font-weight: 500;
-  }
-  .secondary::after {
-    display: none;
-  }
-  .secondary:active {
-    background: var(--surface);
   }
 }
 

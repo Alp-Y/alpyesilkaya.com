@@ -81,9 +81,6 @@ export default function Hero() {
             <a href="#tools" className={styles.primary} data-hud="GO TO|02 · TOOLS">
               View my work <span className="arrow arrow-down" aria-hidden="true">↓</span>
             </a>
-            <a href="#contact" className={`link-line ${styles.secondary}`} data-hud={`GO TO|${num.contact} · CONTACT`}>
-              Send me a brief <span className="arrow" aria-hidden="true">→</span>
-            </a>
           </div>
         </div>
       </div>
