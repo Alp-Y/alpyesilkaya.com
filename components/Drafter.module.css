@@ -111,8 +111,8 @@
   left: 0;
   width: 0;
   height: 0;
-  border: 1px dashed rgba(62, 224, 143, 0.85);
-  background: rgba(62, 224, 143, 0.045);
+  border: 1px dashed rgba(62, 224, 143, 0.5);
+  background: rgba(62, 224, 143, 0.03);
   opacity: 0;
   will-change: transform, width, height;
 }
@@ -133,36 +133,6 @@
 .marks [data-m] {
   position: absolute;
   animation: markOut 800ms var(--ease-out) forwards;
-}
-.marks [data-m="box"] {
-  outline: 1px solid rgba(62, 224, 143, 0.7);
-}
-/* selection grips, the same blue as CAD */
-.marks [data-m="grip"]::before,
-.marks [data-m] i {
-  content: "";
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  margin: -3.5px;
-  background: var(--grip);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-}
-.marks [data-m] i:nth-child(1) {
-  left: 0;
-  top: 0;
-}
-.marks [data-m] i:nth-child(2) {
-  left: 100%;
-  top: 0;
-}
-.marks [data-m] i:nth-child(3) {
-  left: 0;
-  top: 100%;
-}
-.marks [data-m] i:nth-child(4) {
-  left: 100%;
-  top: 100%;
 }
 /* a pick: the pickbox pulses where the cursor clicked */
 .marks [data-m="ping"] {
@@ -254,69 +224,6 @@
 }
 
 /* ---------- Extras left on the sheet after a block is drawn ---------- */
-/* dimension lines: the line extends from its middle, ticks at both ends, the size in the middle */
-.marks [data-m="dimw"],
-.marks [data-m="dimh"] {
-  animation: markOut 2100ms var(--ease-out) forwards;
-}
-.marks [data-m="dimw"]::before,
-.marks [data-m="dimh"]::before {
-  content: "";
-  position: absolute;
-  background: var(--text-3);
-}
-.marks [data-m="dimw"]::before {
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 1px;
-  animation: dimX 520ms var(--ease-draw) backwards;
-}
-.marks [data-m="dimh"]::before {
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 1px;
-  animation: dimY 520ms var(--ease-draw) backwards;
-}
-/* end ticks (the slanted "architectural" tick) */
-.marks [data-m="dimw"]::after,
-.marks [data-m="dimh"]::after {
-  content: "";
-  position: absolute;
-  inset: -4px;
-  animation: ptIn 200ms linear 420ms backwards;
-}
-.marks [data-m="dimw"]::after {
-  background:
-    linear-gradient(135deg, transparent 46%, var(--text-2) 46% 54%, transparent 54%) left center / 9px 9px no-repeat,
-    linear-gradient(135deg, transparent 46%, var(--text-2) 46% 54%, transparent 54%) right center / 9px 9px no-repeat;
-}
-.marks [data-m="dimh"]::after {
-  background:
-    linear-gradient(135deg, transparent 46%, var(--text-2) 46% 54%, transparent 54%) center top / 9px 9px no-repeat,
-    linear-gradient(135deg, transparent 46%, var(--text-2) 46% 54%, transparent 54%) center bottom / 9px 9px no-repeat;
-}
-.marks [data-m="dimw"] b,
-.marks [data-m="dimh"] b {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  padding: 1px 6px;
-  background: var(--bg-0);
-  color: var(--text-2);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 450;
-  letter-spacing: 0.08em;
-  line-height: 1.3;
-  font-variant-numeric: tabular-nums;
-  animation: ptIn 240ms linear 300ms backwards;
-}
-.marks [data-m="dimh"] b {
-  transform: translate(-50%, -50%) rotate(-90deg);
-}
 /* hatch: sweeps across the block, then clears */
 .marks [data-m="hatch"] {
   background: repeating-linear-gradient(45deg, rgba(62, 224, 143, 0.22) 0 1px, transparent 1px 9px);
@@ -326,16 +233,6 @@
 .marks [data-m="ticks"] {
   background: repeating-linear-gradient(90deg, var(--line-strong) 0 1px, transparent 1px 24px);
   animation: ticks 1250ms var(--ease-draw) forwards;
-}
-@keyframes dimX {
-  from {
-    transform: scaleX(0);
-  }
-}
-@keyframes dimY {
-  from {
-    transform: scaleY(0);
-  }
 }
 @keyframes hatch {
   0% {

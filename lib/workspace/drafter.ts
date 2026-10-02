@@ -15,8 +15,9 @@
  *                         usual staged fade, without the cursor going there
  *
  * Opening
- *   On the first load the drawing is "opened": the crosshair spans the whole
- *   screen, the grid regenerates outwards from it, then it gets to work.
+ *   On the first load the cursor opens the drawing itself: it glides to the
+ *   file tab in the header and clicks it, the tab lights up, the grid regenerates
+ *   outwards from the click, and it goes straight on to draft the sheet.
  *
  * Fast scrolling
  *   Nobody waits for the cursor. Scroll quickly and the screen is regenerated
@@ -34,7 +35,6 @@
  *   data-draft            a component supplies its own drawing script with
  *                         registerDraft() (the hero model: survey points, the
  *                         ground profile, the design line, then the 3D volumes)
- *   data-draft-fx="dim"   after a block is drawn, dimension lines measure it
  *   data-draft-fx="hatch" after a block is drawn, a hatch sweeps across it
  *   Drawn rules get station ticks, and a mark with data-play plays once the
  *   block it sits in has been drawn.
@@ -62,7 +62,7 @@ const MIN_SPEED = 0.6;
 /** How long the cursor stays after its last command, in ms. */
 const LINGER = 700;
 /** The pause after a piece is finished, before the cursor moves on, in ms. */
-const DWELL = 130;
+const DWELL = 60;
 /** Scrolling faster than this (px per ms) regenerates the screen instead of drawing it. */
 const RUSH_SPEED = 2.4;
 /** How long the regeneration sweep takes, top to bottom, in ms. */
@@ -266,12 +266,11 @@ export function initDrafter(): Drafter | null {
     doneIds.add(id);
     const els = held.get(id) ?? [];
     held.delete(id);
-    // they drop in one after another, each picked out with grips as it lands
+    // they drop in one after another
     els
       .filter((el) => el.isConnected && !el.classList.contains("is-in"))
       .forEach((el, i) => {
         later(() => {
-          if (el.offsetWidth || el.offsetHeight) markRect("grips", el.getBoundingClientRect());
           reveal(el, true);
         }, 140 + i * 170);
       });
@@ -323,33 +322,24 @@ export function initDrafter(): Drafter | null {
     band.dataset.on = "true";
   };
   /** A short-lived mark left on the sheet (page coordinates, so it scrolls with the content). */
-  type MarkType = "box" | "grips" | "grip" | "ping" | "dimw" | "dimh" | "hatch" | "ticks";
-  const mark = (type: MarkType, x: number, y: number, w = 0, h = 0, life = 900, label = "") => {
+  // (No outlines or grips are left around a finished piece: only the cursor's own
+  // pick, a hatch and the station ticks, so nothing frames the content.)
+  type MarkType = "ping" | "hatch" | "ticks";
+  const mark = (type: MarkType, x: number, y: number, w = 0, h = 0, life = 900) => {
     const m = document.createElement("span");
     m.dataset.m = type;
     m.style.left = `${x + window.scrollX}px`;
     m.style.top = `${y + window.scrollY}px`;
     m.style.width = `${w}px`;
     m.style.height = `${h}px`;
-    if (type === "box" || type === "grips") for (let i = 0; i < 4; i++) m.appendChild(document.createElement("i"));
-    if (label) {
-      const b = document.createElement("b");
-      b.textContent = label;
-      m.appendChild(b);
-    }
     marks.appendChild(m);
     later(() => m.remove(), life);
   };
-  const markRect = (type: "box" | "grips", r: DOMRect) => mark(type, r.left, r.top, r.width, r.height);
 
   /** The small extras: [data-draft-fx] on a block picks what happens once it is drawn. */
   const fx = (el: HTMLElement, r: DOMRect) => {
     const kind = el.dataset.draftFx;
-    if (kind === "dim") {
-      // dimension lines along the top and (where there is room) the left edge
-      mark("dimw", r.left, r.top - 14, r.width, 0, 2200, String(Math.round(r.width)));
-      if (r.left > 34) mark("dimh", r.left - 14, r.top, 0, r.height, 2200, String(Math.round(r.height)));
-    } else if (kind === "hatch") {
+    if (kind === "hatch") {
       mark("hatch", r.left, r.top, r.width, r.height, 1100);
     }
   };
@@ -388,10 +378,9 @@ export function initDrafter(): Drafter | null {
           },
           end: () => {
             setBand(null);
-            markRect("box", box());
             commit(el);
             if (kind === "rect") fx(el, box());
-            if (kind === "rect") el.animate([{ opacity: GHOST }, { opacity: 1 }], { duration: 240, easing: "ease-out" });
+            if (kind === "rect") el.animate([{ opacity: GHOST }, { opacity: 1 }], { duration: 420, easing: "ease-out" });
           },
         },
       ];
@@ -424,8 +413,6 @@ export function initDrafter(): Drafter | null {
           end: () => {
             const a = start();
             const b = finish();
-            mark("grip", a.x, a.y);
-            mark("grip", b.x, b.y);
             // station ticks ripple along a long rule
             if (!vertical && b.x - a.x > 240) mark("ticks", a.x, a.y - 7, b.x - a.x, 7, 1300);
             commit(el);
@@ -496,7 +483,6 @@ export function initDrafter(): Drafter | null {
             return onScreen({ x: r.left + Math.min(10, r.width / 2), y: r.top + r.height / 2 });
           },
           end: () => {
-            markRect("box", box());
             commit(el);
             el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" });
           },
@@ -672,7 +658,6 @@ export function initDrafter(): Drafter | null {
               ],
               { duration: 320, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
             );
-            markRect("box", kid.getBoundingClientRect());
             if (i === kids.length - 1) commit(el);
           },
         }),
@@ -697,7 +682,6 @@ export function initDrafter(): Drafter | null {
           return onScreen({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
         },
         end: () => {
-          markRect("grips", box());
           if (kind === "script") sketch!.replaceChildren();
           reveal(el, true);
         },
@@ -759,27 +743,43 @@ export function initDrafter(): Drafter | null {
     if (html.dataset.boot === "wait") html.dataset.boot = "in";
   }
   later(endIntro, 2500); // whatever happens, the grid never stays hidden
+  /** The file tab in the header ("name.dwg"), if it is showing at this screen size. */
+  const fileTab = () => {
+    const tab = document.querySelector<HTMLElement>("[data-file-tab]");
+    return tab && tab.offsetWidth > 0 ? tab : null;
+  };
+  /** Where the cursor comes in from: out in the sheet, crosshair spanning the screen. */
+  const introStart = (): Pt => ({ x: window.innerWidth * 0.56, y: window.innerHeight * 0.52 });
   function introSteps(): Step[] {
-    const centre = (): Pt => ({ x: window.innerWidth / 2, y: window.innerHeight * 0.46 });
+    const target = (): Pt => {
+      // (phones have no file tab: there it opens from the logo)
+      const tab = fileTab() ?? document.querySelector<HTMLElement>("[data-home-link]");
+      if (!tab) return { x: window.innerWidth / 2, y: window.innerHeight * 0.3 };
+      const r = tab.getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    };
     return [
       {
+        // it goes straight to the drawing's file tab and clicks it
         cmd: "OPEN",
-        ms: 650,
+        ms: 240,
         fixed: true,
         begin: () => {
-          root!.dataset.intro = "true"; // the crosshair spans the whole screen
-          html.dataset.boot = "in"; // the grid regenerates outwards from it
+          root!.dataset.intro = "true"; // the crosshair spans the whole screen on the way
         },
-        from: centre,
-        draw: () => window.location.hostname.replace(/^www\./, "") || "drawing",
-      },
-      {
-        cmd: "REGEN",
-        ms: 420,
-        fixed: true,
-        from: centre,
-        draw: () => "model space",
-        end: endIntro, // the crosshair draws back in to the cursor, which gets to work
+        from: target,
+        draw: () => fileTab()?.textContent?.trim() || "drawing",
+        end: () => {
+          const tab = fileTab();
+          const p = target();
+          if (tab) tab.dataset.opened = "true"; // the tab lights up: the drawing is open
+          // the grid regenerates outwards from the click, the crosshair draws back in,
+          // and the cursor goes straight on to draft the sheet
+          html.style.setProperty("--boot-x", `${p.x.toFixed(0)}px`);
+          html.style.setProperty("--boot-y", `${p.y.toFixed(0)}px`);
+          endIntro();
+          html.dataset.boot = "in";
+        },
       },
     ];
   }
@@ -960,7 +960,8 @@ export function initDrafter(): Drafter | null {
         intro = false;
         booted = true;
         steps = introSteps();
-        pos = { x: window.innerWidth / 2, y: window.innerHeight * 0.46 };
+        pos = introStart();
+        moveCursor(pos);
       }
       queue.push(...batch);
       // One pace for everything now waiting: a full screen takes about BUDGET ms

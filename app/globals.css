@@ -377,10 +377,10 @@ html[data-boot="in"] .workspace-grid {
 }
 @keyframes grid-in {
   from {
-    clip-path: circle(0% at 50% 46%);
+    clip-path: circle(0% at var(--boot-x, 50%) var(--boot-y, 46%));
   }
   to {
-    clip-path: circle(150% at 50% 46%);
+    clip-path: circle(170% at var(--boot-x, 50%) var(--boot-y, 46%));
   }
 }
 html[data-grid="off"] .workspace-light {
