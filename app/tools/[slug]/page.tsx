@@ -12,6 +12,7 @@ import ExcavationDemo from "@/components/excavation/ExcavationDemo";
 import CompareDemo from "@/components/compare/CompareDemo";
 import TerminalDemo from "@/components/terminal/TerminalDemo";
 import ClaimsDemo from "@/components/claims/ClaimsDemo";
+import OfficeDemo from "@/components/office/OfficeDemo";
 import styles from "../../inner.module.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -82,7 +83,7 @@ export default async function ToolPage({ params }: Props) {
         </div>
       </PageHeader>
 
-      {["sqe", "exv", "cmp", "ctm", "clm"].includes(tool.demo) ? (
+      {["sqe", "exv", "cmp", "ctm", "clm", "ofc"].includes(tool.demo) ? (
         <div className={styles.hero}>
           <div className="container">
             {tool.demo === "sqe" ? (
@@ -93,6 +94,8 @@ export default async function ToolPage({ params }: Props) {
               <TerminalDemo />
             ) : tool.demo === "clm" ? (
               <ClaimsDemo />
+            ) : tool.demo === "ofc" ? (
+              <OfficeDemo />
             ) : (
               <CompareDemo />
             )}

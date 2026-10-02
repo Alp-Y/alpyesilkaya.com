@@ -37,6 +37,7 @@ components/               ← each piece of the UI + its own .module.css
   sqe/                    ← the Quantity by Area Calculator demo (UI)
   terminal/               ← the CAD Terminal demo: drawing, command line, browser, export
   claims/                 ← the Claim Management Software demo: package, shared details, document, check
+  office/                 ← the Office Communication Software demo: messages, tasks, notes, calendar
 lib/
   content.ts              ← reads the Markdown files
   effects.ts              ← page behaviour: reveals, header, command line…
@@ -48,6 +49,7 @@ lib/
   earthworks/model.ts     ← the cut / fill maths (grid method)
   terminal/model.ts       ← CAD Terminal's example drawing, structure types and exports
   claims/model.ts         ← the example claim package: documents, shared details, checks
+  office/model.ts         ← the example office week: people (by role), messages, tasks, notes, calendar
   platforms.ts            ← the platforms (Civil 3D, Desktop App…); tools are grouped by them
   excavation/             ← the Excavation Volume Engine (no UI code):
                             xyz.ts (read + check XYZ files) · samples.ts (synthetic datasets)
