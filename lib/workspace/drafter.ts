@@ -13,8 +13,9 @@
  *   the About photo ([data-draft])  built like a drawing when it scrolls into view
  *                               (components/photoBuild/PhotoBuild.tsx)
  *
- * Scroll away quickly while it is drawing and it stops: what it was working on
- * simply appears.
+ * Scroll away quickly while the hero is being drawn and it stops: what it was
+ * working on simply appears. The About photo is different: however fast the
+ * visitor gets there, it waits until it is properly in view, then it is drawn.
  *
  * The other gestures (blocks dragged out, rules pulled, rows laid out, a second
  * cursor) are still in this file but switched off: DRAWN lists what the cursor
@@ -78,7 +79,19 @@ export type Step = {
   draw?: (t: number, at: Pt, start: Pt) => string | void;
   end?: () => void;
 };
-type Job = { el: HTMLElement; kind: Kind; key: number; deadline?: number; /** which cursor draws it (unset: whichever is free) */ owner?: number };
+type Job = {
+  el: HTMLElement;
+  kind: Kind;
+  key: number;
+  deadline?: number;
+  /** which cursor draws it (unset: whichever is free) */
+  owner?: number;
+  /**
+   * A showpiece outside the hero (the About photo): it is never skipped for
+   * fast scrolling. It waits until it is properly in view, then it is drawn.
+   */
+  sticky?: boolean;
+};
 /** One cursor and what it is doing. */
 type Worker = {
   index: number;
@@ -664,10 +677,14 @@ export function initDrafter(): Drafter | null {
 
   /** Drop what is being drawn and what is waiting: all of it is regenerated at once. */
   function flush() {
-    const els = queue.map((q) => q.el);
+    // (a sticky piece stays: it is waiting to be looked at, or is being drawn right now)
+    const stay = queue.filter((q) => q.sticky);
+    const els = queue.filter((q) => !q.sticky).map((q) => q.el);
     queue.length = 0;
+    queue.push(...stay);
     for (const w of workers) {
       W = w;
+      if (W.job?.sticky) continue;
       if (W.job) {
         clearInline(W.job.el);
         els.unshift(W.job.el);
@@ -678,10 +695,18 @@ export function initDrafter(): Drafter | null {
       W.step = null;
       W.restUntil = 0;
     }
-    sketch!.replaceChildren();
+    if (!workers.some((w) => w.job?.sticky)) sketch!.replaceChildren();
     root!.querySelectorAll("[data-ghost]").forEach((g) => g.remove());
     regen(els);
   }
+
+  /** Most of it is on screen (so a sticky piece is only drawn while it can be watched). */
+  const inView = (el: HTMLElement) => {
+    const r = el.getBoundingClientRect();
+    if (!r.height) return false;
+    const shown = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
+    return shown >= Math.min(r.height, window.innerHeight) * 0.6;
+  };
 
   /* ---------- the queue ---------- */
   const drawable = (el: HTMLElement) => {
@@ -704,7 +729,10 @@ export function initDrafter(): Drafter | null {
       // unassigned; once its side is finished it helps with the other one.
       // (A script that has not arrived yet stays where it is.)
       const mine = W.index;
-      const ready = (q: Job) => !(q.kind === "script" && !scripts.has(q.el) && now < (q.deadline ??= now + SCRIPT_WAIT));
+      const ready = (q: Job) =>
+        !(q.kind === "script" && !scripts.has(q.el) && now < (q.deadline ??= now + SCRIPT_WAIT)) &&
+        // a sticky piece waits until most of it is on screen and the scrolling has calmed down
+        (!q.sticky || (inView(q.el) && now >= rushUntil));
       const own = (q: Job) => (q.owner === undefined || q.owner === mine) && ready(q);
       let at = queue.findIndex(own);
       if (at < 0) at = queue.findIndex(ready);
@@ -833,7 +861,7 @@ export function initDrafter(): Drafter | null {
       // section is where they want to be, so it is drawn for them when they arrive
       if (v > RUSH_SPEED && performance.now() > calmUntil) rushUntil = now + 250;
     }
-    if (now < rushUntil && (queue.length || workers.some((w) => w.step || w.steps.length))) flush();
+    if (now < rushUntil && (queue.some((q) => !q.sticky) || workers.some((w) => (w.step || w.steps.length) && !w.job?.sticky))) flush();
     let more = false;
     for (const w of workers) {
       W = w;
@@ -887,14 +915,16 @@ export function initDrafter(): Drafter | null {
           // (by its left edge: some left-column pieces are as wide as the page)
           owner = r.left < window.innerWidth * 0.3 ? 0 : 1;
         }
-        batch.push({ el, kind, key, owner });
+        batch.push({ el, kind, key, owner, sticky: kind === "script" && !inHero });
       }
       // by key, then reading order
       batch.sort(
         (a, b) => a.key - b.key || (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1),
       );
       if (performance.now() < rushUntil) {
-        regen(batch.map((b) => b.el));
+        regen(batch.filter((b) => !b.sticky).map((b) => b.el));
+        queue.push(...batch.filter((b) => b.sticky)); // a showpiece waits instead
+        requestFrame();
         return;
       }
       queue.push(...batch);
