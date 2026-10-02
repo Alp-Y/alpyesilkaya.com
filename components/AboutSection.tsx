@@ -25,7 +25,9 @@ export default function AboutSection() {
 
         <div className={styles.grid}>
           <div className={styles.media}>
+            {/* Fig. 01, then Fig. 02 under it (both set in site.config.ts) */}
             <Portrait />
+            <Portrait photo={site.portraitSecond} />
           </div>
 
           <div className={styles.text}>
