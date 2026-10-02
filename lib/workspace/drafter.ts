@@ -9,6 +9,17 @@
  * In the hero (wide screens) one takes the text column on the left and the
  * other the viewport on the right; everywhere else they share one queue.
  *
+ * Two characters, so they never look like one cursor doubled:
+ *   the DRAFTER (green)   works by hand. It goes straight to a piece, drags
+ *                         blocks out as rectangles, pulls lines from their start,
+ *                         types text behind a caret and copies items one by one.
+ *   the MODELLER (teal)   works in ortho. It travels along the axes, sets blocks
+ *                         down from a point so they grow outwards, extends lines
+ *                         from their middle, places headings whole and lays out
+ *                         a row in one sweep. It is a little brisker.
+ *   When both are free to choose, each picks something different from what the
+ *   other is doing at that moment.
+ *
  *   data-reveal="draw"    LINE     pick the start, pull the line to its end
  *   data-reveal="rise"    RECTANG  drag a rubber band, the block shows ghosted
  *                                  inside it, then commits with corner grips
@@ -17,8 +28,9 @@
  *                         usual staged fade, without the cursor going there
  *
  * Fast scrolling
- *   Nobody waits for the cursor. Scroll quickly and the screen is regenerated
- *   instead (REGEN): a scan line sweeps down and everything appears behind it.
+ *   Nobody waits for the cursors. Scroll quickly and the screen is regenerated
+ *   instead: the first time a scan line sweeps down and everything appears
+ *   behind it; after that pieces simply come into focus, with no line.
  *
  * Special pieces
  *   data-draft-kind       "type"  a label typed out, its last characters still decoding
@@ -74,6 +86,9 @@ const OP: Record<Kind, number> = { rect: 620, frame: 720, line: 540, text: 620, 
 const DRAWN: ReadonlySet<Kind> = new Set<Kind>(["rect", "frame", "line", "text", "script", "type", "array", "para"]);
 /** Rough time to travel between two elements, used only for the pace estimate. */
 const TRAVEL = 480;
+
+/** The regeneration scan line plays once per page load. */
+let scanned = false;
 
 const PENDING = "[data-reveal]:not(.is-in), [data-observe]:not(.is-in)";
 
@@ -156,6 +171,14 @@ export type Drafter = {
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const lerp = (a: Pt, b: Pt, t: number): Pt => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+/** Ortho travel: along x first, then y, like a cursor with ORTHO on. */
+const ortho = (a: Pt, b: Pt, t: number): Pt => {
+  const dx = Math.abs(b.x - a.x);
+  const dy = Math.abs(b.y - a.y);
+  const d = (dx + dy) * t;
+  if (d <= dx) return { x: a.x + Math.sign(b.x - a.x) * d, y: a.y };
+  return { x: b.x, y: a.y + Math.sign(b.y - a.y) * (d - dx) };
+};
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const onScreen = (p: Pt): Pt => ({
   x: clamp(p.x, 6, window.innerWidth - 6),
@@ -187,6 +210,7 @@ function clearInline(el: HTMLElement) {
     n.style.transform = "";
     n.style.clipPath = "";
     n.style.opacity = "";
+    n.style.transformOrigin = "";
   }
   for (const c of Array.from(el.children) as HTMLElement[]) if (c.style) c.style.opacity = "";
 }
@@ -227,6 +251,7 @@ function commit(el: HTMLElement) {
     n.style.transform = "";
     n.style.clipPath = "";
     n.style.opacity = "";
+    n.style.transformOrigin = "";
   });
   // a mark that plays a sequence ([data-play]) plays it now that it can be seen
   if (el.matches("[data-play]")) el.classList.remove("play");
@@ -373,6 +398,154 @@ export function initDrafter(): Drafter | null {
   function plan(el: HTMLElement, kind: Kind): Step[] {
     const st = el.style;
     const box = () => el.getBoundingClientRect();
+
+    const modeller = W.index === 1;
+
+    if (modeller && kind === "rect") {
+      // The modeller sets a block down from a point: it grows outwards from the click.
+      let c = { x: 0, y: 0, r: 0 };
+      const centre = (): Pt => {
+        const r = box();
+        return onScreen({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+      };
+      return [
+        {
+          cmd: "INSERT",
+          ms: OP.rect,
+          begin: () => {
+            st.transition = "none";
+            st.transform = "none";
+            st.opacity = "1";
+            st.clipPath = "circle(0px at 50% 50%)";
+          },
+          from: centre,
+          draw: (t, at) => {
+            const r = box();
+            // measured from where the cursor really is (a tall block is entered where it shows)
+            const x = at.x - r.left;
+            const y = at.y - r.top;
+            c = { x, y, r: Math.hypot(Math.max(x, r.width - x), Math.max(y, r.height - y)) };
+            st.clipPath = `circle(${(c.r * t).toFixed(1)}px at ${c.x.toFixed(1)}px ${c.y.toFixed(1)}px)`;
+            return `SCALE ${t.toFixed(2)}`;
+          },
+          end: () => {
+            commit(el);
+            fx(el, box());
+          },
+        },
+      ];
+    }
+
+    if (modeller && kind === "text") {
+      // The modeller places a heading whole: one pick at its start and the lines rise into place.
+      const first = el.querySelector<HTMLElement>(".line > span") ?? el;
+      return [
+        {
+          cmd: "TEXT",
+          tool: "text",
+          ms: 180,
+          begin: () => {
+            W.cursor.style.setProperty("--caret", `${Math.round(first.getBoundingClientRect().height * 0.86)}px`);
+          },
+          from: () => {
+            const r = (first.parentElement ?? first).getBoundingClientRect();
+            return onScreen({ x: r.left, y: r.top + r.height / 2 });
+          },
+          end: () => reveal(el, true),
+        },
+      ];
+    }
+
+    if (modeller && kind === "line" && el.dataset.axis !== "y") {
+      // The modeller extends a line both ways from its middle.
+      const mid = (): Pt => {
+        const r = box();
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      };
+      let a0: Pt | null = null;
+      return [
+        {
+          cmd: "LINE",
+          ms: OP.line,
+          begin: () => {
+            st.transition = "none";
+            st.transform = "none";
+            const r = box(); // measured at full length
+            a0 = { x: r.left, y: r.top + r.height / 2 };
+            st.transformOrigin = "center";
+            st.transform = "scaleX(0)";
+          },
+          from: () => onScreen(mid()),
+          to: () => {
+            const m = mid();
+            return onScreen({ x: m.x + el.offsetWidth / 2, y: m.y });
+          },
+          draw: (t) => {
+            st.transform = `scaleX(${t.toFixed(4)})`;
+            return `MID  L = ${Math.round(el.offsetWidth * t)}`;
+          },
+          end: () => {
+            if (a0 && el.offsetWidth > 240) mark("ticks", a0.x, a0.y - 7, el.offsetWidth, 7, 1300);
+            commit(el);
+          },
+        },
+      ];
+    }
+
+    if (modeller && kind === "array") {
+      // The modeller lays a row out in one sweep: each item appears as the cursor passes it.
+      const kids = (Array.from(el.children) as HTMLElement[]).filter((c) => c.offsetWidth > 0);
+      if (!kids.length) return [];
+      const shown = new Set<HTMLElement>();
+      const show1 = (kid: HTMLElement) => {
+        if (shown.has(kid)) return;
+        shown.add(kid);
+        kid.style.opacity = "";
+        kid.animate(
+          [
+            { opacity: 0, transform: "scale(0.9)" },
+            { opacity: 1, transform: "none" },
+          ],
+          { duration: 300, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
+        );
+      };
+      const span = () => {
+        const a = kids[0].getBoundingClientRect();
+        const b = kids[kids.length - 1].getBoundingClientRect();
+        return { left: a.left - 6, right: Math.max(a.right, b.right) + 6, y: a.top + a.height / 2 };
+      };
+      return [
+        {
+          cmd: "ARRAY",
+          linear: true,
+          ms: clamp(kids.length * 260, 520, 1500),
+          begin: () => {
+            st.transition = "none";
+            st.transform = "none";
+            st.opacity = "1";
+            kids.forEach((k) => (k.style.opacity = "0"));
+          },
+          from: () => {
+            const sp = span();
+            return onScreen({ x: sp.left, y: sp.y });
+          },
+          path: (t) => {
+            const sp = span();
+            const x = sp.left + (sp.right - sp.left) * t;
+            for (const kid of kids) {
+              const r = kid.getBoundingClientRect();
+              if (x >= r.left + r.width / 2) show1(kid);
+            }
+            return onScreen({ x, y: sp.y });
+          },
+          draw: () => `${shown.size} / ${kids.length}`,
+          end: () => {
+            kids.forEach(show1);
+            commit(el);
+          },
+        },
+      ];
+    }
 
     if (kind === "rect" || kind === "frame") {
       return [
@@ -729,9 +902,20 @@ export function initDrafter(): Drafter | null {
       el.classList.add("is-in");
       releaseChildren(el);
       announce(el);
+      // after the first time there is no scan line: the piece comes into focus instead
+      if (scanned) {
+        el.animate([{ filter: "blur(7px)" }, { filter: "blur(0)" }], {
+          duration: 460,
+          delay: Math.round(top * REGEN_MS),
+          easing: "ease-out",
+          fill: "backwards",
+        });
+      }
     }
     if (!any || now - lastRegen < REGEN_MS + 200) return;
     lastRegen = now;
+    if (scanned) return; // the scan line is a one-off: after that, pieces just come into focus
+    scanned = true;
     regenLine!.animate(
       [
         { transform: "translate3d(0, 0, 0)", opacity: 0 },
@@ -786,9 +970,24 @@ export function initDrafter(): Drafter | null {
       // (A script that has not arrived yet stays where it is.)
       const mine = W.index;
       const ready = (q: Job) => !(q.kind === "script" && !scripts.has(q.el) && now < (q.deadline ??= now + SCRIPT_WAIT));
-      let at = queue.findIndex((q) => (q.owner === undefined || q.owner === mine) && ready(q));
+      const own = (q: Job) => (q.owner === undefined || q.owner === mine) && ready(q);
+      let at = queue.findIndex(own);
       if (at < 0) at = queue.findIndex(ready);
       if (at < 0) return false;
+      // Free to choose (an unassigned piece): rather something different from what the
+      // other cursor is doing right now, if one of the next few pieces is.
+      const busyWith = workers.find((w) => w !== W)?.job?.kind;
+      if (busyWith && queue[at].owner === undefined && queue[at].kind === busyWith) {
+        let seen = 0;
+        for (let i = at + 1; i < queue.length && seen < 3; i++) {
+          if (!own(queue[i]) || queue[i].owner !== undefined) continue;
+          seen++;
+          if (queue[i].kind !== busyWith) {
+            at = i;
+            break;
+          }
+        }
+      }
       const j = queue.splice(at, 1)[0];
       if (!j.el.isConnected || j.el.classList.contains("is-in")) continue;
       if (!drawable(j.el)) {
@@ -814,7 +1013,11 @@ export function initDrafter(): Drafter | null {
     const target = W.step.from();
     // first command after a pause: the cursor comes in from just off the element
     W.origin = W.pos ?? onScreen({ x: target.x - 90, y: target.y - 60 });
-    const dist = Math.hypot(target.x - W.origin.x, target.y - W.origin.y);
+    // the drafter goes straight there; the modeller travels along the axes (ortho)
+    const dist =
+      W.index === 1
+        ? Math.abs(target.x - W.origin.x) + Math.abs(target.y - W.origin.y)
+        : Math.hypot(target.x - W.origin.x, target.y - W.origin.y);
     // an unhurried glide: short hops stay quick, a move across the screen takes its time
     W.dur = clamp(160 + dist * 0.6, 220, 850) * (W.step.fixed ? 1 : speed);
     W.t0 = now;
@@ -858,7 +1061,8 @@ export function initDrafter(): Drafter | null {
     try {
       const t = W.dur <= 0 ? 1 : Math.min(1, (now - W.t0) / W.dur);
       if (W.phase === "travel") {
-        W.pos = lerp(W.origin, onScreen(s.from()), easeInOut(t));
+        const target = onScreen(s.from());
+        W.pos = W.index === 1 ? ortho(W.origin, target, easeInOut(t)) : lerp(W.origin, target, easeInOut(t));
         moveCursor(W.pos);
         if (t >= 1) {
           W.phase = "op";
@@ -877,7 +1081,7 @@ export function initDrafter(): Drafter | null {
           if (s.to) mark("ping", W.pos.x, W.pos.y);
           s.end?.();
           W.step = null;
-          if (!W.steps.length) W.restUntil = now + DWELL;
+          if (!W.steps.length) W.restUntil = now + (W.index === 1 ? DWELL / 2 : DWELL);
         }
       }
     } catch {

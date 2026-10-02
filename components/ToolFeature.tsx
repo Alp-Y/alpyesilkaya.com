@@ -25,7 +25,7 @@ import styles from "./ToolFeature.module.css";
 export default function ToolFeature({ tool, index }: { tool: Tool; index: number }) {
   const href = `/tools/${tool.slug}`;
   return (
-    <article className={styles.item} data-play data-reveal="rise" data-draft-fx="hatch" aria-labelledby={`tool-${tool.slug}`}>
+    <article className={styles.item} data-play data-reveal="rise" aria-labelledby={`tool-${tool.slug}`}>
       <div className={styles.heading}>
         {tool.demo === "sqe" && <SqeGlyph className={styles.glyph} />}
         {tool.demo === "exv" && <ExvGlyph className={styles.glyph} />}
