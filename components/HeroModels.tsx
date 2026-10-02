@@ -142,13 +142,15 @@ export default function HeroModels() {
   const ready = PLATFORMS.filter((p) => p.ready && scenesOf(p.short).length > 0);
   const later = PLATFORMS.filter((p) => !p.ready);
 
+  // data-draft-kind: the drafter types the label, sets the tabs down one by one and
+  // draws the sentence (lib/workspace/drafter.ts); the delays give their order.
   return (
     <div className={styles.panel}>
-      <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "860ms" } as React.CSSProperties}>
+      <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-overlay data-reveal="fade" data-draft-kind="type" style={{ "--delay": "1021ms" } as React.CSSProperties}>
         Tools in development
       </p>
       {/* the platforms with tools: each shows its scenes (Civil 3D's open one by one); the rest are on the way */}
-      <div ref={tabsRef} className={styles.models} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "880ms" } as React.CSSProperties}>
+      <div ref={tabsRef} className={styles.models} data-hero-exit data-overlay data-reveal="fade" data-draft-kind="array" style={{ "--delay": "1023ms" } as React.CSSProperties}>
         {ready.map((p) => {
           const on = p.short === platform;
           const scenes = scenesOf(p.short);
@@ -238,7 +240,8 @@ export default function HeroModels() {
         data-hero-exit
         data-overlay
         data-reveal="fade"
-        style={{ "--delay": "960ms" } as React.CSSProperties}
+        data-draft-kind="rect"
+        style={{ "--delay": "1026ms" } as React.CSSProperties}
       >
         <p key={m.id} className={styles.storyLine}>
           <strong>{m.title}</strong> {m.line}{" "}

@@ -361,6 +361,28 @@ html[data-grid="off"] .cad-grid {
 .workspace-light[data-on="true"] {
   opacity: 1;
 }
+/*
+  Opening (lib/workspace/drafter.ts): on the first load the grid waits, then
+  regenerates outwards from the crosshair in the middle of the screen.
+*/
+.workspace-grid {
+  transition: opacity var(--motion-section) var(--ease-out);
+}
+.js:not(.fx-ready):not(.reveal-all) .workspace-grid,
+html[data-boot="wait"]:not(.reveal-all) .workspace-grid {
+  opacity: 0;
+}
+html[data-boot="in"] .workspace-grid {
+  animation: grid-in 1500ms var(--ease-out) backwards;
+}
+@keyframes grid-in {
+  from {
+    clip-path: circle(0% at 50% 46%);
+  }
+  to {
+    clip-path: circle(150% at 50% 46%);
+  }
+}
 html[data-grid="off"] .workspace-light {
   display: none;
 }

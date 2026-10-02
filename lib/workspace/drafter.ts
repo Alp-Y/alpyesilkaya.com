@@ -14,7 +14,18 @@
  *   everything small      (labels, icons, frames) appears on its own with its
  *                         usual staged fade, without the cursor going there
  *
+ * Opening
+ *   On the first load the drawing is "opened": the crosshair spans the whole
+ *   screen, the grid regenerates outwards from it, then it gets to work.
+ *
+ * Fast scrolling
+ *   Nobody waits for the cursor. Scroll quickly and the screen is regenerated
+ *   instead (REGEN): a scan line sweeps down and everything appears behind it.
+ *
  * Special pieces
+ *   data-draft-kind       "type"  a label typed out character by character
+ *                         "array" its children are inserted one after another
+ *                         "rect"  drawn as a block whatever its reveal type
  *   data-draft            a component supplies its own drawing script with
  *                         registerDraft() (the hero model: survey points, the
  *                         ground profile, the design line, then the 3D volumes)
@@ -47,14 +58,21 @@ const MIN_SPEED = 0.6;
 const LINGER = 700;
 /** The pause after a piece is finished, before the cursor moves on, in ms. */
 const DWELL = 180;
+/** Scrolling faster than this (px per ms) regenerates the screen instead of drawing it. */
+const RUSH_SPEED = 2.4;
+/** How long the regeneration sweep takes, top to bottom, in ms. */
+const REGEN_MS = 420;
 /** Opacity of a block while its rubber band is still being dragged. */
 const GHOST = 0.4;
 
-type Kind = "rect" | "frame" | "line" | "text" | "place" | "insert" | "script";
+type Kind = "rect" | "frame" | "line" | "text" | "place" | "insert" | "script" | "type" | "array";
 /** Time each command takes at normal speed, in ms. */
-const OP: Record<Kind, number> = { rect: 540, frame: 620, line: 480, text: 540, place: 120, insert: 120, script: 0 };
+const OP: Record<Kind, number> = { rect: 540, frame: 620, line: 480, text: 540, place: 120, insert: 120, script: 0, type: 700, array: 700 };
 /** The kinds the cursor draws itself. The rest appear on their own. */
-const DRAWN: ReadonlySet<Kind> = new Set<Kind>(["rect", "line", "text", "script"]);
+const DRAWN: ReadonlySet<Kind> = new Set<Kind>(["rect", "line", "text", "script", "type", "array"]);
+
+/** The opening plays once per page load, not on every navigation. */
+let booted = false;
 /** Rough time to travel between two elements, used only for the pace estimate. */
 const TRAVEL = 420;
 
@@ -73,6 +91,8 @@ export type Step = {
   path?: (t: number) => Pt;
   /** Keeps its own pace: never sped up when a lot is waiting. */
   fixed?: boolean;
+  /** Even progress (typing) instead of easing in and out. */
+  linear?: boolean;
   begin?: () => void;
   /** t runs 0 → 1; returns the value shown in the cursor tag. */
   draw?: (t: number, at: Pt, start: Pt) => string | void;
@@ -124,6 +144,8 @@ const onScreen = (p: Pt): Pt => ({
 
 function kindOf(el: HTMLElement): Kind {
   if (el.hasAttribute("data-draft")) return "script";
+  const forced = el.dataset.draftKind;
+  if (forced === "type" || forced === "array" || forced === "rect") return forced;
   const reveal = el.dataset.reveal;
   if (reveal === "draw") return "line";
   if (reveal === "lines") return el.querySelector(".line > span") ? "text" : "insert";
@@ -146,6 +168,7 @@ function clearInline(el: HTMLElement) {
     n.style.clipPath = "";
     n.style.opacity = "";
   }
+  for (const c of Array.from(el.children) as HTMLElement[]) if (c.style) c.style.opacity = "";
 }
 
 /** Anything nested inside a finished element follows with its normal entrance. */
@@ -171,6 +194,8 @@ function commit(el: HTMLElement) {
   const nodes = nodesOf(el);
   nodes.forEach((n) => (n.style.transition = "none"));
   el.style.setProperty("--delay", "0ms");
+  // it has just been drawn: its own CSS fade must not play on top of that
+  if (el.dataset.reveal === "fade") el.style.animation = "none";
   el.classList.add("is-in");
   nodes.forEach((n) => {
     n.style.transform = "";
@@ -194,7 +219,14 @@ export function initDrafter(): Drafter | null {
   const valOut = root?.querySelector<HTMLElement>("[data-dr-val]");
   const marks = document.querySelector<HTMLElement>("[data-dr-marks]");
   const sketch = root?.querySelector<SVGSVGElement>("[data-dr-sketch]");
-  if (!root || !cursor || !band || !cmdOut || !valOut || !marks || !sketch) return null;
+  const regenLine = root?.querySelector<HTMLElement>("[data-dr-regen]");
+  if (!root || !cursor || !band || !cmdOut || !valOut || !marks || !sketch || !regenLine) return null;
+  const html = document.documentElement;
+
+  // The opening is armed here (before the first paint with effects on), so the
+  // grid waits hidden for its regeneration instead of flashing in first.
+  let intro = !booted && window.scrollY < 80 && !!document.querySelector("[data-hero]");
+  if (intro) html.dataset.boot = "wait";
 
   const queue: Job[] = [];
   const timers = new Set<number>();
@@ -209,6 +241,15 @@ export function initDrafter(): Drafter | null {
   let speed = 1;
   let idleAt = 0;
   let restUntil = 0;
+  let rushUntil = 0;
+  let lastY = window.scrollY;
+  let lastScrollAt = 0;
+  let lastRegen = 0;
+  let calmUntil = 0;
+  const onAnchor = (e: MouseEvent) => {
+    if ((e.target as Element | null)?.closest?.('a[href*="#"]')) calmUntil = performance.now() + 1600;
+  };
+  document.addEventListener("click", onAnchor, true);
   let visible = false;
   let stopped = false;
 
@@ -431,6 +472,86 @@ export function initDrafter(): Drafter | null {
       ];
     }
 
+    if (kind === "type") {
+      // typed out like a command: the text is uncovered one character at a time
+      const chars = Math.max(1, (el.textContent ?? "").trim().length);
+      let m: { l: number; r: number; w: number } | null = null;
+      const measure = () => {
+        if (m) return m;
+        const er = box();
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const rr = range.getBoundingClientRect();
+        m = rr.width > 0 ? { l: rr.left - er.left, r: rr.right - er.left, w: er.width } : { l: 0, r: er.width, w: er.width };
+        return m;
+      };
+      const at = (t: number): Pt => {
+        const r = box();
+        const { l, r: right } = measure();
+        const n = Math.round(chars * t);
+        return { x: r.left + l + ((right - l) * n) / chars, y: r.top + r.height / 2 };
+      };
+      return [
+        {
+          cmd: "TEXT",
+          tool: "text",
+          linear: true,
+          ms: clamp(chars * 42, 320, 1000),
+          begin: () => {
+            st.transition = "none";
+            st.transform = "none";
+            st.opacity = "1";
+            st.clipPath = "inset(0 100% 0 0)";
+            cursor!.style.setProperty("--caret", `${Math.round(box().height * 1.1)}px`);
+          },
+          from: () => at(0),
+          path: at,
+          draw: (t) => {
+            const { l, r, w } = measure();
+            const x = l + ((r - l) * Math.round(chars * t)) / chars;
+            st.clipPath = `inset(-0.3em ${(w - x).toFixed(1)}px -0.3em -0.3em)`;
+          },
+          end: () => commit(el),
+        },
+      ];
+    }
+
+    if (kind === "array") {
+      // its children are set down one after another, left to right
+      const kids = (Array.from(el.children) as HTMLElement[]).filter((c) => c.offsetWidth > 0);
+      if (!kids.length) return [];
+      return kids.map(
+        (kid, i): Step => ({
+          cmd: "INSERT",
+          ms: 90,
+          begin: () => {
+            if (i > 0) return;
+            st.transition = "none";
+            st.transform = "none";
+            st.opacity = "1";
+            kids.forEach((k) => (k.style.opacity = "0"));
+          },
+          from: () => {
+            const r = kid.getBoundingClientRect();
+            return onScreen({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+          },
+          draw: () => `${i + 1} / ${kids.length}`,
+          end: () => {
+            kid.style.opacity = "";
+            kid.animate(
+              [
+                { opacity: 0, transform: "translateY(5px)" },
+                { opacity: 1, transform: "none" },
+              ],
+              { duration: 260, easing: "ease-out" },
+            );
+            markRect("box", kid.getBoundingClientRect());
+            if (i === kids.length - 1) commit(el);
+          },
+        }),
+      );
+    }
+
     if (kind === "script") {
       const script = scripts.get(el);
       const own = script?.({ el, svg: sketch!, reveal: () => reveal(el, true) });
@@ -453,6 +574,83 @@ export function initDrafter(): Drafter | null {
           if (kind === "script") sketch!.replaceChildren();
           reveal(el, true);
         },
+      },
+    ];
+  }
+
+  /* ---------- fast scrolling: regenerate instead of drawing ---------- */
+  /** Everything given appears behind a scan line that sweeps down the screen. */
+  function regen(els: HTMLElement[], now: number) {
+    const H = window.innerHeight;
+    let any = false;
+    for (const el of els) {
+      if (!el.isConnected || el.classList.contains("is-in")) continue;
+      any = true;
+      const top = clamp(el.getBoundingClientRect().top / H, 0, 1);
+      el.style.setProperty("--delay", `${Math.round(top * REGEN_MS)}ms`);
+      el.style.setProperty("--i", "0");
+      if (el.hasAttribute("data-draft")) el.dispatchEvent(new CustomEvent("draft:skipped"));
+      el.classList.add("is-in");
+      releaseChildren(el);
+    }
+    if (!any || now - lastRegen < REGEN_MS + 200) return;
+    lastRegen = now;
+    regenLine!.animate(
+      [
+        { transform: "translate3d(0, 0, 0)", opacity: 0 },
+        { opacity: 1, offset: 0.12 },
+        { opacity: 1, offset: 0.8 },
+        { transform: `translate3d(0, ${H}px, 0)`, opacity: 0 },
+      ],
+      { duration: REGEN_MS + 180, easing: "linear" },
+    );
+  }
+
+  /** Drop what is being drawn and what is waiting: all of it is regenerated at once. */
+  function flush(now: number) {
+    const els = queue.map((q) => q.el);
+    queue.length = 0;
+    if (job) {
+      clearInline(job.el);
+      els.unshift(job.el);
+    }
+    endIntro();
+    setBand(null);
+    sketch!.replaceChildren();
+    job = null;
+    steps = [];
+    step = null;
+    restUntil = 0;
+    regen(els, now);
+  }
+
+  /* ---------- the opening: the drawing is opened and regenerated ---------- */
+  function endIntro() {
+    if (root!.dataset.intro === "true") root!.dataset.intro = "false";
+    if (html.dataset.boot === "wait") html.dataset.boot = "in";
+  }
+  later(endIntro, 2500); // whatever happens, the grid never stays hidden
+  function introSteps(): Step[] {
+    const centre = (): Pt => ({ x: window.innerWidth / 2, y: window.innerHeight * 0.46 });
+    return [
+      {
+        cmd: "OPEN",
+        ms: 800,
+        fixed: true,
+        begin: () => {
+          root!.dataset.intro = "true"; // the crosshair spans the whole screen
+          html.dataset.boot = "in"; // the grid regenerates outwards from it
+        },
+        from: centre,
+        draw: () => window.location.hostname.replace(/^www\./, "") || "drawing",
+      },
+      {
+        cmd: "REGEN",
+        ms: 420,
+        fixed: true,
+        from: centre,
+        draw: () => "model space",
+        end: endIntro, // the crosshair draws back in to the cursor, which gets to work
       },
     ];
   }
@@ -534,6 +732,17 @@ export function initDrafter(): Drafter | null {
   const stopFrames = onFrame((p) => {
     if (stopped) return false;
     const now = p.time;
+    if (p.scrolled) {
+      const y = window.scrollY;
+      // (a jump after a pause counts too: a long way in one frame is fast)
+      const v = Math.abs(y - lastY) / clamp(now - lastScrollAt, 8, 50);
+      lastY = y;
+      lastScrollAt = now;
+      // ...unless a menu link or button is taking the visitor to a section: that
+      // section is where they want to be, so it is drawn for them when they arrive
+      if (v > RUSH_SPEED && performance.now() > calmUntil) rushUntil = now + 250;
+    }
+    if (now < rushUntil && (step || steps.length || queue.length)) flush(now);
     if (!step && now < restUntil) return true; // a short rest on the piece just finished
     if (!step && !next(now)) {
       const waiting = queue.length > 0; // a script that has not arrived yet
@@ -561,7 +770,7 @@ export function initDrafter(): Drafter | null {
         }
       } else {
         const a = onScreen(s.from());
-        const e = easeInOut(t);
+        const e = s.linear ? t : easeInOut(t);
         pos = s.path ? onScreen(s.path(e)) : s.to ? lerp(a, s.to(), e) : a;
         const val = s.draw?.(e, pos, a);
         setTag(s.cmd, val || "");
@@ -607,6 +816,16 @@ export function initDrafter(): Drafter | null {
       batch.sort(
         (a, b) => a.key - b.key || (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1),
       );
+      if (performance.now() < rushUntil) {
+        regen(batch.map((b) => b.el), performance.now());
+        return;
+      }
+      if (intro && !job && !step && batch.length) {
+        intro = false;
+        booted = true;
+        steps = introSteps();
+        pos = { x: window.innerWidth / 2, y: window.innerHeight * 0.46 };
+      }
       queue.push(...batch);
       // One pace for everything now waiting: a full screen takes about BUDGET ms
       const cost = (q: Job) => OP[q.kind] * (q.kind === "text" ? 2 : 1) + TRAVEL;
@@ -617,6 +836,9 @@ export function initDrafter(): Drafter | null {
     stop() {
       stopped = true;
       stopFrames();
+      document.removeEventListener("click", onAnchor, true);
+      if (root.dataset.intro === "true") root.dataset.intro = "false";
+      if (html.dataset.boot === "wait") delete html.dataset.boot;
       timers.forEach((id) => window.clearTimeout(id));
       timers.clear();
       if (job) clearInline(job.el); // back to hidden, so a fresh start can draw it again
