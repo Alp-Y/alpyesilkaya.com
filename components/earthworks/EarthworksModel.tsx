@@ -209,8 +209,9 @@ export default function EarthworksModel({ className = "" }: { className?: string
       // ----- built by the drafter (lib/workspace/drafter.ts): the road, the way it is
       // really worked out. Survey points are picked, the existing ground profile is
       // drawn through them, then the design level; the 3D volumes sweep in between
-      // the two lines, and only then does the model start to turn. Every position
-      // is projected from the model itself, so the sketch sits exactly on it.
+      // the two lines. The view keeps its slow turn the whole time: every position
+      // is projected from the model each frame, so the sketch turns with it and the
+      // finished model simply carries on turning.
       let building = false;
       let aborted = false; // the visitor switched model while it was being drawn
       const script: DraftScript = ({ svg, reveal }) => {
@@ -224,10 +225,9 @@ export default function EarthworksModel({ className = "" }: { className?: string
           return { x: c.left + p.x, y: c.top + p.y };
         };
         const station = (x: number) => `STA 0+${String(Math.round(x + half)).padStart(3, "0")}`;
-        // hold the slow turn and the hero's auto-advance to the next model while drawing
+        // hold the hero's auto-advance to the next model while drawing (the turn carries on)
         const hero = fig.closest<HTMLElement>("[data-hero]");
         const hold = () => {
-          getOrbit()?.spin(false);
           hero?.dispatchEvent(new Event("keydown"));
         };
 
@@ -262,7 +262,7 @@ export default function EarthworksModel({ className = "" }: { className?: string
 
         const steps: Step[] = [];
         // 1. survey: pick the points, each with its level
-        [-56, -40, -26, -6, 14, 30, 54].forEach((x, i) => {
+        [-56, -26, -6, 14, 30, 54].forEach((x, i) => {
           steps.push({
             cmd: "POINT",
             ms: 110,
@@ -354,9 +354,7 @@ export default function EarthworksModel({ className = "" }: { className?: string
             if (aborted) return;
             s.setReveal(1);
             setStateFlag("revealed");
-            hold();
-            // ...and it comes to life: back to its own angle, then the slow turn
-            getOrbit()?.showcase(heroModel("road").view);
+            hold(); // the model stays for its full time before the next one
           },
         });
         return steps;

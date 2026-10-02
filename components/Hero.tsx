@@ -98,7 +98,8 @@ export default function Hero() {
 
       {/* Earthworks model — follows the ViewCube and the display mode.
           data-draft: the drafter builds it with the model's own script (survey points,
-          ground profile, design line, then the volumes), after the text column is in. */}
+          ground profile, design line, then the volumes), after the text column is in,
+          while it keeps turning. */}
       <div className={styles.modelWrap} data-hero-exit data-reveal="fade" data-draft="model" style={{ "--delay": "1030ms" } as React.CSSProperties}>
         <EarthworksModel className={styles.model} />
       </div>

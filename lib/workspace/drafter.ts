@@ -3,17 +3,16 @@
  * ------------------------------------------------------------------
  * A second, autonomous CAD cursor (accent green, so it is never mistaken
  * for the visitor's own) that constructs the page as it scrolls into view.
- * It replaces the plain scroll reveals: lib/effects.ts hands it every
- * [data-reveal] / [data-observe] element that enters the screen, and it
- * builds them one by one with CAD verbs:
+ * lib/effects.ts hands it every [data-reveal] / [data-observe] element that
+ * enters the screen. The cursor only draws the pieces that matter, so it is
+ * easy to follow: a few calm stops per screen, never a dash between details.
  *
  *   data-reveal="draw"    LINE     pick the start, pull the line to its end
  *   data-reveal="rise"    RECTANG  drag a rubber band, the block shows ghosted
  *                                  inside it, then commits with corner grips
- *                         (small pieces are simply placed with a click)
  *   data-reveal="lines"   MTEXT    a caret sweeps each line, text appears behind it
- *   data-reveal="frame"   RECTANG  the frame is dragged out from its corner
- *   anything else         INSERT   click, and the piece plays its own entrance
+ *   everything small      (labels, icons, frames) appears on its own with its
+ *                         usual staged fade, without the cursor going there
  *
  * Special pieces
  *   data-draft            a component supplies its own drawing script with
@@ -41,19 +40,23 @@
 import { onFrame, reducedMotion, requestFrame } from "./pointer";
 
 /** Longest a waiting queue should take to draw, in ms (it speeds up to fit). */
-const BUDGET = 5200;
+const BUDGET = 6500;
 /** ...but never faster than this fraction of the normal durations. */
-const MIN_SPEED = 0.5;
+const MIN_SPEED = 0.6;
 /** How long the cursor stays after its last command, in ms. */
-const LINGER = 600;
+const LINGER = 700;
+/** The pause after a piece is finished, before the cursor moves on, in ms. */
+const DWELL = 180;
 /** Opacity of a block while its rubber band is still being dragged. */
 const GHOST = 0.4;
 
 type Kind = "rect" | "frame" | "line" | "text" | "place" | "insert" | "script";
 /** Time each command takes at normal speed, in ms. */
-const OP: Record<Kind, number> = { rect: 460, frame: 620, line: 420, text: 460, place: 120, insert: 120, script: 0 };
+const OP: Record<Kind, number> = { rect: 540, frame: 620, line: 480, text: 540, place: 120, insert: 120, script: 0 };
+/** The kinds the cursor draws itself. The rest appear on their own. */
+const DRAWN: ReadonlySet<Kind> = new Set<Kind>(["rect", "line", "text", "script"]);
 /** Rough time to travel between two elements, used only for the pace estimate. */
-const TRAVEL = 240;
+const TRAVEL = 420;
 
 const PENDING = "[data-reveal]:not(.is-in), [data-observe]:not(.is-in)";
 
@@ -205,6 +208,7 @@ export function initDrafter(): Drafter | null {
   let pos: Pt | null = null;
   let speed = 1;
   let idleAt = 0;
+  let restUntil = 0;
   let visible = false;
   let stopped = false;
 
@@ -503,7 +507,8 @@ export function initDrafter(): Drafter | null {
     // first command after a pause: the cursor comes in from just off the element
     origin = pos ?? onScreen({ x: target.x - 90, y: target.y - 60 });
     const dist = Math.hypot(target.x - origin.x, target.y - origin.y);
-    dur = Math.max(60, Math.min(320, 90 + dist * 0.26) * (step.fixed ? 1 : speed));
+    // an unhurried glide: short hops stay quick, a move across the screen takes its time
+    dur = clamp(120 + dist * 0.5, 160, 700) * (step.fixed ? 1 : speed);
     t0 = now;
     phase = "travel";
     const tool = step.tool ?? "cross";
@@ -529,6 +534,7 @@ export function initDrafter(): Drafter | null {
   const stopFrames = onFrame((p) => {
     if (stopped) return false;
     const now = p.time;
+    if (!step && now < restUntil) return true; // a short rest on the piece just finished
     if (!step && !next(now)) {
       const waiting = queue.length > 0; // a script that has not arrived yet
       if (!visible) return waiting;
@@ -564,6 +570,7 @@ export function initDrafter(): Drafter | null {
           if (s.to) mark("ping", pos.x, pos.y);
           s.end?.();
           step = null;
+          if (!steps.length) restUntil = now + DWELL;
         }
       }
     } catch {
@@ -588,7 +595,13 @@ export function initDrafter(): Drafter | null {
         // (in 40 px rows), so a heading is always drawn before what sits under it.
         const row = Math.round((el.getBoundingClientRect().top + window.scrollY) / 40);
         const key = el.closest("[data-hero]") ? staged : 1e6 + row * 2000 + staged;
-        batch.push({ el, kind: kindOf(el), key });
+        const kind = kindOf(el);
+        if (!DRAWN.has(kind)) {
+          // a small piece: it fades in by itself, on its usual staged timing
+          reveal(el, false);
+          continue;
+        }
+        batch.push({ el, kind, key });
       }
       // by key, then reading order
       batch.sort(
