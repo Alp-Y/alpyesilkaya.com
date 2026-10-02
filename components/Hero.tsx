@@ -59,13 +59,11 @@ export default function Hero() {
         </h1>
 
         {/* What I work across: a quiet annotation under the name, not a set of tabs */}
-        {/* the drafter sets these down one by one, each copied across from the one before */}
         <ul
           className={styles.disciplines}
           aria-label="Disciplines"
           data-cursor="text"
           data-reveal="rise"
-          data-draft-kind="array"
           style={{ "--delay": "650ms" } as React.CSSProperties}
         >
           {site.process.map((d) => (
@@ -84,7 +82,7 @@ export default function Hero() {
             {site.statement}
           </p>
 
-          <div className={styles.actions} data-reveal="rise" data-draft-kind="rect" data-draft-fx="hatch" style={{ "--delay": "1020ms" } as React.CSSProperties}>
+          <div className={styles.actions} data-reveal="rise" data-draft-kind="rect" style={{ "--delay": "1020ms" } as React.CSSProperties}>
             <a href="#tools" className={styles.primary} data-hud="GO TO|02 · TOOLS">
               View my work <span className="arrow arrow-down" aria-hidden="true">↓</span>
             </a>
@@ -95,9 +93,8 @@ export default function Hero() {
       {/* Desktop: the model sits in a drawn viewport, like model space in CAD. Its
           controls, model tabs and the line on what the tool does there (top left),
           ViewCube (top right), UCS icon and scale bar (bottom corners) all sit
-          inside it. The drafter drags the frame out after the text column is in
-          (data-draft-id); the ViewCube, UCS icon and scale bar wait for it
-          (data-draft-with) and then drop in one by one. */}
+          inside it. The drafter drags the frame out (data-draft-id); everything that
+          sits in it waits for it (data-draft-with) and then fades in piece by piece. */}
       <div
         className={styles.viewport}
         data-hero-exit
@@ -115,8 +112,7 @@ export default function Hero() {
 
       {/* Earthworks model — follows the ViewCube and the display mode.
           data-draft: the drafter builds it with the model's own script (survey points,
-          ground profile, design line, then the volumes), after the text column is in,
-          while it keeps turning. */}
+          a surface through them, then the volumes) while it keeps turning. */}
       <div className={styles.modelWrap} data-hero-exit data-reveal="fade" data-draft="model" style={{ "--delay": "1030ms" } as React.CSSProperties}>
         <EarthworksModel className={styles.model} />
       </div>

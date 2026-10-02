@@ -186,47 +186,15 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.sketch text {
-  font-family: var(--font-mono);
-  letter-spacing: 0.04em;
-  text-anchor: middle;
-}
-/* survey points: small crosses, a few with their level */
+/* survey points: small crosses */
 .sketch [data-s="cloud"] {
   stroke: var(--accent);
   stroke-width: 1.1;
 }
-.sketch [data-s="lvl"] {
-  fill: var(--text-2);
-  font-size: 9px;
-}
-/* TIN of the existing ground */
+/* the surface through them */
 .sketch [data-s="tin"] {
   stroke: rgba(201, 209, 218, 0.5);
   stroke-width: 0.75;
-}
-/* alignment: dashed centreline, solid formation edges */
-.sketch [data-s="dg"] {
-  stroke: var(--accent);
-  stroke-width: 1.25;
-  stroke-dasharray: 9 4 2 4;
-}
-.sketch [data-s="edge"] {
-  stroke: rgba(62, 224, 143, 0.6);
-  stroke-width: 1;
-}
-/* cross-sections: ground over formation, with the station */
-.sketch [data-s="sec-g"] {
-  stroke: #e8ecf0;
-  stroke-width: 1.25;
-}
-.sketch [data-s="sec-d"] {
-  stroke: var(--accent);
-  stroke-width: 1.25;
-}
-.sketch [data-s="sta"] {
-  fill: var(--accent);
-  font-size: 8.5px;
 }
 @keyframes ptIn {
   from {
@@ -314,22 +282,4 @@
 .root [data-ghost] i {
   font-style: normal;
   color: var(--accent);
-}
-
-/* Later regenerations: a command-line note, bottom right, above the status bar */
-.note {
-  position: absolute;
-  right: max(var(--gutter), 20px);
-  bottom: calc(var(--status-h) + 14px);
-  padding: 3px 7px;
-  border: 1px solid var(--line-strong);
-  border-radius: 2px;
-  background: rgba(7, 9, 11, 0.86);
-  color: var(--text-2);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  line-height: 1.4;
-  white-space: pre;
-  opacity: 0;
 }

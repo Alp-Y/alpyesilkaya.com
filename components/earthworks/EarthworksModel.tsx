@@ -207,7 +207,7 @@ export default function EarthworksModel({ className = "" }: { className?: string
       };
 
       // ----- built by the drafter (lib/workspace/drafter.ts) with buildScript.ts: survey
-      // points, a TIN of the ground, the alignment, then sections and the 3D volumes.
+      // points, a surface through them, then the 3D model sweeps in.
       // The view keeps its slow turn the whole time and simply carries on after.
       let building = false;
       let tilted = false;
