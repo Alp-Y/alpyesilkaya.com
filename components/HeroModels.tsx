@@ -241,7 +241,7 @@ export default function HeroModels() {
         data-overlay
         data-reveal="fade"
         data-draft-kind="para"
-        style={{ "--delay": "1026ms" } as React.CSSProperties}
+        style={{ "--delay": "1040ms" } as React.CSSProperties}
       >
         <p key={m.id} className={styles.storyLine}>
           <strong>{m.title}</strong> {m.line}{" "}

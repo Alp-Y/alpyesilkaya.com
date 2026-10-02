@@ -1,11 +1,13 @@
 /**
  * DRAFTER
  * ------------------------------------------------------------------
- * A second, autonomous CAD cursor (accent green, so it is never mistaken
- * for the visitor's own) that constructs the page as it scrolls into view.
- * lib/effects.ts hands it every [data-reveal] / [data-observe] element that
- * enters the screen. The cursor only draws the pieces that matter, so it is
- * easy to follow: a few calm stops per screen, never a dash between details.
+ * Two autonomous CAD cursors (one green, one teal, so they are never mistaken
+ * for the visitor's own) that construct the page as it scrolls into view.
+ * lib/effects.ts hands over every [data-reveal] / [data-observe] element that
+ * enters the screen. They only draw the pieces that matter, each at a calm
+ * pace; working side by side is what makes the page come together quickly.
+ * In the hero (wide screens) one takes the text column on the left and the
+ * other the viewport on the right; everywhere else they share one queue.
  *
  *   data-reveal="draw"    LINE     pick the start, pull the line to its end
  *   data-reveal="rise"    RECTANG  drag a rubber band, the block shows ghosted
@@ -41,8 +43,8 @@
  *   motion, or a script failure) the usual reveals still work.
  *
  * Pace
- *   One cursor, one queue. When a lot is waiting (the hero) it speeds up
- *   so a whole screen takes about BUDGET ms. Elements already scrolled past
+ *   Each cursor keeps an even pace. When a lot is waiting they speed up a
+ *   little so a whole screen takes about BUDGET ms. Elements already scrolled past
  *   just appear. Tune the constants below.
  *
  * Markup: components/Drafter.tsx (rendered once in the layout).
@@ -57,7 +59,7 @@ const MIN_SPEED = 0.85;
 /** How long the cursor stays after its last command, in ms. */
 const LINGER = 700;
 /** The pause after a piece is finished, before the cursor moves on, in ms. */
-const DWELL = 150;
+const DWELL = 120;
 /** Scrolling faster than this (px per ms) regenerates the screen instead of drawing it. */
 const RUSH_SPEED = 2.4;
 /** How long the regeneration sweep takes, top to bottom, in ms. */
@@ -95,7 +97,28 @@ export type Step = {
   draw?: (t: number, at: Pt, start: Pt) => string | void;
   end?: () => void;
 };
-type Job = { el: HTMLElement; kind: Kind; key: number; deadline?: number };
+type Job = { el: HTMLElement; kind: Kind; key: number; deadline?: number; /** which cursor draws it (unset: whichever is free) */ owner?: number };
+/** One cursor and what it is doing. */
+type Worker = {
+  index: number;
+  cursor: HTMLElement;
+  band: HTMLElement;
+  cmdOut: HTMLElement;
+  valOut: HTMLElement;
+  job: Job | null;
+  steps: Step[];
+  step: Step | null;
+  phase: "travel" | "op";
+  t0: number;
+  dur: number;
+  origin: Pt;
+  pos: Pt | null;
+  idleAt: number;
+  restUntil: number;
+  visible: boolean;
+  lastCmd: string;
+  lastVal: string;
+};
 
 /** What a component's own drawing script gets to work with. */
 export type DraftTools = {
@@ -217,28 +240,47 @@ function commit(el: HTMLElement) {
 export function initDrafter(): Drafter | null {
   if (reducedMotion()) return null;
   const root = document.querySelector<HTMLElement>("[data-drafter]");
-  const cursor = root?.querySelector<HTMLElement>("[data-dr-cursor]");
-  const band = root?.querySelector<HTMLElement>("[data-dr-band]");
-  const cmdOut = root?.querySelector<HTMLElement>("[data-dr-cmd]");
-  const valOut = root?.querySelector<HTMLElement>("[data-dr-val]");
   const marks = document.querySelector<HTMLElement>("[data-dr-marks]");
   const sketch = root?.querySelector<SVGSVGElement>("[data-dr-sketch]");
   const regenLine = root?.querySelector<HTMLElement>("[data-dr-regen]");
-  if (!root || !cursor || !band || !cmdOut || !valOut || !marks || !sketch || !regenLine) return null;
+  if (!root || !marks || !sketch || !regenLine) return null;
+
+  // One worker per cursor in the markup (two: they share the work).
+  const bands = Array.from(root.querySelectorAll<HTMLElement>("[data-dr-band]"));
+  const workers: Worker[] = [];
+  root.querySelectorAll<HTMLElement>("[data-dr-cursor]").forEach((cursor, index) => {
+    const band = bands[index];
+    const cmdOut = cursor.querySelector<HTMLElement>("[data-dr-cmd]");
+    const valOut = cursor.querySelector<HTMLElement>("[data-dr-val]");
+    if (!band || !cmdOut || !valOut) return;
+    workers.push({
+      index,
+      cursor,
+      band,
+      cmdOut,
+      valOut,
+      job: null,
+      steps: [],
+      step: null,
+      phase: "travel",
+      t0: 0,
+      dur: 0,
+      origin: { x: 0, y: 0 },
+      pos: null,
+      idleAt: 0,
+      restUntil: 0,
+      visible: false,
+      lastCmd: "",
+      lastVal: "",
+    });
+  });
+  if (!workers.length) return null;
+  /** The worker whose turn it is: everything below acts on this one. */
+  let W = workers[0];
 
   const queue: Job[] = [];
   const timers = new Set<number>();
-  let job: Job | null = null;
-  let steps: Step[] = [];
-  let step: Step | null = null;
-  let phase: "travel" | "op" = "travel";
-  let t0 = 0;
-  let dur = 0;
-  let origin: Pt = { x: 0, y: 0 };
-  let pos: Pt | null = null;
   let speed = 1;
-  let idleAt = 0;
-  let restUntil = 0;
   let rushUntil = 0;
   let lastY = window.scrollY;
   let lastScrollAt = 0;
@@ -267,7 +309,6 @@ export function initDrafter(): Drafter | null {
     if ((e.target as Element | null)?.closest?.('a[href*="#"]')) calmUntil = performance.now() + 1600;
   };
   document.addEventListener("click", onAnchor, true);
-  let visible = false;
   let stopped = false;
 
   const later = (fn: () => void, ms: number) => {
@@ -279,33 +320,31 @@ export function initDrafter(): Drafter | null {
   };
 
   /* ---------- overlay ---------- */
-  let lastCmd = "";
-  let lastVal = "";
   const setTag = (cmd: string, val = "") => {
-    if (cmd !== lastCmd) cmdOut.textContent = lastCmd = cmd;
-    if (val !== lastVal) valOut.textContent = lastVal = val;
+    if (cmd !== W.lastCmd) W.cmdOut.textContent = W.lastCmd = cmd;
+    if (val !== W.lastVal) W.valOut.textContent = W.lastVal = val;
   };
   const moveCursor = (p: Pt) => {
-    cursor.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0)`;
+    W.cursor.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0)`;
     const flipX = String(p.x > window.innerWidth - 190);
     const flipY = String(p.y > window.innerHeight - 60);
-    if (cursor.dataset.flipX !== flipX) cursor.dataset.flipX = flipX;
-    if (cursor.dataset.flipY !== flipY) cursor.dataset.flipY = flipY;
+    if (W.cursor.dataset.flipX !== flipX) W.cursor.dataset.flipX = flipX;
+    if (W.cursor.dataset.flipY !== flipY) W.cursor.dataset.flipY = flipY;
   };
   const show = (on: boolean) => {
-    if (visible === on) return;
-    visible = on;
-    root.dataset.on = String(on);
+    if (W.visible === on) return;
+    W.visible = on;
+    W.cursor.dataset.on = String(on);
   };
   const setBand = (a: Pt | null, b?: Pt) => {
     if (!a || !b) {
-      band.dataset.on = "false";
+      W.band.dataset.on = "false";
       return;
     }
-    band.style.transform = `translate3d(${Math.min(a.x, b.x).toFixed(1)}px, ${Math.min(a.y, b.y).toFixed(1)}px, 0)`;
-    band.style.width = `${Math.abs(b.x - a.x).toFixed(1)}px`;
-    band.style.height = `${Math.abs(b.y - a.y).toFixed(1)}px`;
-    band.dataset.on = "true";
+    W.band.style.transform = `translate3d(${Math.min(a.x, b.x).toFixed(1)}px, ${Math.min(a.y, b.y).toFixed(1)}px, 0)`;
+    W.band.style.width = `${Math.abs(b.x - a.x).toFixed(1)}px`;
+    W.band.style.height = `${Math.abs(b.y - a.y).toFixed(1)}px`;
+    W.band.dataset.on = "true";
   };
   /** A short-lived mark left on the sheet (page coordinates, so it scrolls with the content). */
   // (No outlines or grips are left around a finished piece: only the cursor's own
@@ -438,7 +477,7 @@ export function initDrafter(): Drafter | null {
                 s.style.clipPath = "inset(0 100% 0 0)";
               }
             }
-            cursor!.style.setProperty("--caret", `${Math.round(span.getBoundingClientRect().height * 0.86)}px`);
+            W.cursor.style.setProperty("--caret", `${Math.round(span.getBoundingClientRect().height * 0.86)}px`);
           },
           from: () => onScreen(at(0)),
           to: () => onScreen(at(1)),
@@ -513,7 +552,7 @@ export function initDrafter(): Drafter | null {
             ghost.style.textTransform = cs.textTransform;
             ghost.style.color = cs.color;
             root!.appendChild(ghost);
-            cursor!.style.setProperty("--caret", `${Math.round(textBox().height * 1.1)}px`);
+            W.cursor.style.setProperty("--caret", `${Math.round(textBox().height * 1.1)}px`);
           },
           from: () => at(0),
           path: at,
@@ -596,7 +635,7 @@ export function initDrafter(): Drafter | null {
             st.opacity = "1";
             st.clipPath = "inset(0 100% 100% 0)";
             const l = measure()[0];
-            cursor!.style.setProperty("--caret", `${Math.round((l.bottom - l.top) * 0.9)}px`);
+            W.cursor.style.setProperty("--caret", `${Math.round((l.bottom - l.top) * 0.9)}px`);
           },
           from: () => at(0),
           path: at,
@@ -708,17 +747,20 @@ export function initDrafter(): Drafter | null {
   function flush(now: number) {
     const els = queue.map((q) => q.el);
     queue.length = 0;
-    if (job) {
-      clearInline(job.el);
-      els.unshift(job.el);
+    for (const w of workers) {
+      W = w;
+      if (W.job) {
+        clearInline(W.job.el);
+        els.unshift(W.job.el);
+      }
+      setBand(null);
+      W.job = null;
+      W.steps = [];
+      W.step = null;
+      W.restUntil = 0;
     }
-    setBand(null);
     sketch!.replaceChildren();
     root!.querySelectorAll("[data-ghost]").forEach((g) => g.remove());
-    job = null;
-    steps = [];
-    step = null;
-    restUntil = 0;
     regen(els, now);
   }
 
@@ -731,26 +773,27 @@ export function initDrafter(): Drafter | null {
 
   /** Take the next step (or the next element). False when there is nothing left to draw. */
   function next(now: number): boolean {
-    while (!steps.length) {
-      if (job?.kind === "script") {
+    while (!W.steps.length) {
+      if (W.job?.kind === "script") {
         // a component's script has finished: clear its sketch, make sure the piece shows
         sketch!.replaceChildren();
         sketch!.style.opacity = "";
-        if (!job.el.classList.contains("is-in")) reveal(job.el, true);
+        if (!W.job.el.classList.contains("is-in")) reveal(W.job.el, true);
       }
-      job = null;
-      const j = queue.shift();
-      if (!j) return false;
+      W.job = null;
+      // The first waiting piece for this worker: its own side of the hero or anything
+      // unassigned; once its side is finished it helps with the other one.
+      // (A script that has not arrived yet stays where it is.)
+      const mine = W.index;
+      const ready = (q: Job) => !(q.kind === "script" && !scripts.has(q.el) && now < (q.deadline ??= now + SCRIPT_WAIT));
+      let at = queue.findIndex((q) => (q.owner === undefined || q.owner === mine) && ready(q));
+      if (at < 0) at = queue.findIndex(ready);
+      if (at < 0) return false;
+      const j = queue.splice(at, 1)[0];
       if (!j.el.isConnected || j.el.classList.contains("is-in")) continue;
       if (!drawable(j.el)) {
         if (j.kind === "script") j.el.dispatchEvent(new CustomEvent("draft:skipped"));
         reveal(j.el, false);
-        continue;
-      }
-      if (j.kind === "script" && !scripts.has(j.el) && now < (j.deadline ??= now + SCRIPT_WAIT)) {
-        // its script has not arrived yet (it loads with the 3D scene): do the rest first
-        queue.push(j);
-        if (queue.every((q) => q.kind === "script" && !scripts.has(q.el))) return false;
         continue;
       }
       let planned: Step[] = [];
@@ -763,22 +806,22 @@ export function initDrafter(): Drafter | null {
         reveal(j.el, false);
         continue;
       }
-      job = j;
-      steps = planned;
+      W.job = j;
+      W.steps = planned;
     }
-    step = steps.shift()!;
-    step.begin?.();
-    const target = step.from();
+    W.step = W.steps.shift()!;
+    W.step.begin?.();
+    const target = W.step.from();
     // first command after a pause: the cursor comes in from just off the element
-    origin = pos ?? onScreen({ x: target.x - 90, y: target.y - 60 });
-    const dist = Math.hypot(target.x - origin.x, target.y - origin.y);
+    W.origin = W.pos ?? onScreen({ x: target.x - 90, y: target.y - 60 });
+    const dist = Math.hypot(target.x - W.origin.x, target.y - W.origin.y);
     // an unhurried glide: short hops stay quick, a move across the screen takes its time
-    dur = clamp(160 + dist * 0.6, 220, 850) * (step.fixed ? 1 : speed);
-    t0 = now;
-    phase = "travel";
-    const tool = step.tool ?? "cross";
-    if (root!.dataset.tool !== tool) root!.dataset.tool = tool;
-    setTag(step.cmd);
+    W.dur = clamp(160 + dist * 0.6, 220, 850) * (W.step.fixed ? 1 : speed);
+    W.t0 = now;
+    W.phase = "travel";
+    const tool = W.step.tool ?? "cross";
+    if (W.cursor.dataset.tool !== tool) W.cursor.dataset.tool = tool;
+    setTag(W.step.cmd);
     show(true);
     return true;
   }
@@ -787,13 +830,60 @@ export function initDrafter(): Drafter | null {
   function bail() {
     setBand(null);
     sketch!.replaceChildren();
-    if (job) {
-      clearInline(job.el);
-      reveal(job.el, false);
+    if (W.job) {
+      clearInline(W.job.el);
+      reveal(W.job.el, false);
     }
-    job = null;
-    steps = [];
-    step = null;
+    W.job = null;
+    W.steps = [];
+    W.step = null;
+  }
+
+  /** One worker's frame. True while it still has something to do. */
+  function tick(now: number): boolean {
+    if (!W.step && now < W.restUntil) return true; // a short rest on the piece just finished
+    if (!W.step && !next(now)) {
+      const waiting = queue.length > 0; // a script that has not arrived yet
+      if (!W.visible) return waiting;
+      if (!W.idleAt) W.idleAt = now;
+      if (now - W.idleAt > LINGER) {
+        show(false);
+        W.pos = null;
+        return waiting;
+      }
+      return true;
+    }
+    W.idleAt = 0;
+    const s = W.step!;
+    try {
+      const t = W.dur <= 0 ? 1 : Math.min(1, (now - W.t0) / W.dur);
+      if (W.phase === "travel") {
+        W.pos = lerp(W.origin, onScreen(s.from()), easeInOut(t));
+        moveCursor(W.pos);
+        if (t >= 1) {
+          W.phase = "op";
+          W.t0 = now;
+          W.dur = s.ms * (s.fixed ? 1 : speed);
+          mark("ping", W.pos.x, W.pos.y);
+        }
+      } else {
+        const a = onScreen(s.from());
+        const e = s.linear ? t : easeInOut(t);
+        W.pos = s.path ? onScreen(s.path(e)) : s.to ? lerp(a, s.to(), e) : a;
+        const val = s.draw?.(e, W.pos, a);
+        setTag(s.cmd, val || "");
+        moveCursor(W.pos);
+        if (t >= 1) {
+          if (s.to) mark("ping", W.pos.x, W.pos.y);
+          s.end?.();
+          W.step = null;
+          if (!W.steps.length) W.restUntil = now + DWELL;
+        }
+      }
+    } catch {
+      bail();
+    }
+    return true;
   }
 
   const stopFrames = onFrame((p) => {
@@ -809,50 +899,13 @@ export function initDrafter(): Drafter | null {
       // section is where they want to be, so it is drawn for them when they arrive
       if (v > RUSH_SPEED && performance.now() > calmUntil) rushUntil = now + 250;
     }
-    if (now < rushUntil && (step || steps.length || queue.length)) flush(now);
-    if (!step && now < restUntil) return true; // a short rest on the piece just finished
-    if (!step && !next(now)) {
-      const waiting = queue.length > 0; // a script that has not arrived yet
-      if (!visible) return waiting;
-      if (!idleAt) idleAt = now;
-      if (now - idleAt > LINGER) {
-        show(false);
-        pos = null;
-        return waiting;
-      }
-      return true;
+    if (now < rushUntil && (queue.length || workers.some((w) => w.step || w.steps.length))) flush(now);
+    let more = false;
+    for (const w of workers) {
+      W = w;
+      if (tick(now)) more = true;
     }
-    idleAt = 0;
-    const s = step!;
-    try {
-      const t = dur <= 0 ? 1 : Math.min(1, (now - t0) / dur);
-      if (phase === "travel") {
-        pos = lerp(origin, onScreen(s.from()), easeInOut(t));
-        moveCursor(pos);
-        if (t >= 1) {
-          phase = "op";
-          t0 = now;
-          dur = s.ms * (s.fixed ? 1 : speed);
-          mark("ping", pos.x, pos.y);
-        }
-      } else {
-        const a = onScreen(s.from());
-        const e = s.linear ? t : easeInOut(t);
-        pos = s.path ? onScreen(s.path(e)) : s.to ? lerp(a, s.to(), e) : a;
-        const val = s.draw?.(e, pos, a);
-        setTag(s.cmd, val || "");
-        moveCursor(pos);
-        if (t >= 1) {
-          if (s.to) mark("ping", pos.x, pos.y);
-          s.end?.();
-          step = null;
-          if (!steps.length) restUntil = now + DWELL;
-        }
-      }
-    } catch {
-      bail();
-    }
-    return true;
+    return more;
   });
 
   return {
@@ -884,7 +937,15 @@ export function initDrafter(): Drafter | null {
           reveal(el, false);
           continue;
         }
-        batch.push({ el, kind, key });
+        // In the hero on a wide screen each cursor has its side: the text column on
+        // the left, the viewport on the right. Everywhere else they share the work.
+        let owner: number | undefined;
+        if (workers.length > 1 && window.innerWidth >= 1100 && el.closest("[data-hero]")) {
+          const r = el.getBoundingClientRect();
+          // (by its left edge: some left-column pieces are as wide as the page)
+          owner = r.left < window.innerWidth * 0.3 ? 0 : 1;
+        }
+        batch.push({ el, kind, key, owner });
       }
       // by key, then reading order
       batch.sort(
@@ -897,8 +958,8 @@ export function initDrafter(): Drafter | null {
       queue.push(...batch);
       // One pace for everything now waiting: a full screen takes about BUDGET ms
       const cost = (q: Job) => OP[q.kind] * (q.kind === "text" ? 2 : 1) + TRAVEL;
-      const waiting = queue.reduce((sum, q) => sum + cost(q), job ? cost(job) / 2 : 0);
-      speed = clamp(BUDGET / waiting, MIN_SPEED, 1);
+      const waiting = queue.reduce((sum, q) => sum + cost(q), 0) / workers.length;
+      speed = clamp(BUDGET / Math.max(1, waiting), MIN_SPEED, 1);
       requestFrame();
     },
     stop() {
@@ -908,15 +969,19 @@ export function initDrafter(): Drafter | null {
       document.removeEventListener("draft:done", onDone);
       timers.forEach((id) => window.clearTimeout(id));
       timers.clear();
-      if (job) clearInline(job.el); // back to hidden, so a fresh start can draw it again
       queue.length = 0;
-      steps = [];
-      step = null;
-      job = null;
+      for (const w of workers) {
+        W = w;
+        if (W.job) clearInline(W.job.el); // back to hidden, so a fresh start can draw it again
+        W.steps = [];
+        W.step = null;
+        W.job = null;
+        setBand(null);
+        show(false);
+      }
       marks.replaceChildren();
       sketch.replaceChildren();
-      setBand(null);
-      show(false);
+      root.querySelectorAll("[data-ghost]").forEach((g) => g.remove());
     },
   };
 }

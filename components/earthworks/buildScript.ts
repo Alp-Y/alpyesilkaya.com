@@ -188,7 +188,7 @@ export function roadBuildScript(ctx: Ctx): DraftScript {
     const steps: Step[] = [
       {
         cmd: "POINTS",
-        ms: 1000,
+        ms: 850,
         fixed: true,
         begin: () => {
           ctx.hold();
@@ -211,7 +211,7 @@ export function roadBuildScript(ctx: Ctx): DraftScript {
       },
       {
         cmd: "SURFACE",
-        ms: 1100,
+        ms: 900,
         fixed: true,
         begin: ctx.hold,
         from: () => {
@@ -227,7 +227,7 @@ export function roadBuildScript(ctx: Ctx): DraftScript {
       },
       {
         cmd: "ALIGNMENT",
-        ms: 800,
+        ms: 650,
         fixed: true,
         begin: ctx.hold,
         from: () => {
@@ -243,7 +243,7 @@ export function roadBuildScript(ctx: Ctx): DraftScript {
       },
       {
         cmd: "VOLUME",
-        ms: 1900,
+        ms: 1650,
         fixed: true,
         begin: ctx.hold,
         from: () => {

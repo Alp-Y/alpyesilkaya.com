@@ -1,5 +1,5 @@
 /* ==================================================================
-   DRAFTER: the green cursor that builds the page (lib/workspace/drafter.ts).
+   DRAFTER: the two cursors that build the page (lib/workspace/drafter.ts).
    Sits under the visitor's own cursor (z 60) and never takes the pointer.
    ================================================================== */
 .root {
@@ -7,11 +7,6 @@
   inset: 0;
   z-index: 55;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--motion-ui) var(--ease-out);
-}
-.root[data-on="true"] {
-  opacity: 1;
 }
 
 /* ---------- The cursor: crosshair + pickbox, in the accent ---------- */
@@ -22,12 +17,24 @@
   width: 0;
   height: 0;
   will-change: transform;
+  opacity: 0;
+  transition: opacity var(--motion-ui) var(--ease-out);
+  /* each cursor has its own colour: the first green, the second teal */
+  --dc: var(--accent);
+  --dc-band: rgba(62, 224, 143, 0.5);
+  --dc-fill: rgba(62, 224, 143, 0.03);
+}
+.cursor[data-on="true"] {
+  opacity: 1;
+}
+.cursor[data-n="1"] {
+  --dc: #6fc9c9;
 }
 .plus::before,
 .plus::after {
   content: "";
   position: absolute;
-  --arm: var(--accent);
+  --arm: var(--dc);
 }
 .plus::before {
   left: -13px;
@@ -49,7 +56,7 @@
   top: -4px;
   width: 9px;
   height: 9px;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--dc);
 }
 /* MTEXT: the crosshair becomes a text caret as tall as the line */
 .caret {
@@ -58,14 +65,14 @@
   top: calc(var(--caret, 24px) / -2);
   width: 2px;
   height: var(--caret, 24px);
-  background: var(--accent);
+  background: var(--dc);
   display: none;
 }
-.root[data-tool="text"] .plus,
-.root[data-tool="text"] .box {
+.cursor[data-tool="text"] .plus,
+.cursor[data-tool="text"] .box {
   display: none;
 }
-.root[data-tool="text"] .caret {
+.cursor[data-tool="text"] .caret {
   display: block;
 }
 
@@ -90,7 +97,7 @@
 }
 .tag b {
   font-weight: 500;
-  color: var(--accent);
+  color: var(--dc);
 }
 .tag span:empty {
   display: none;
@@ -115,6 +122,10 @@
   background: rgba(62, 224, 143, 0.03);
   opacity: 0;
   will-change: transform, width, height;
+}
+.band[data-n="1"] {
+  border-color: rgba(111, 201, 201, 0.5);
+  background: rgba(111, 201, 201, 0.03);
 }
 .band[data-on="true"] {
   opacity: 1;
