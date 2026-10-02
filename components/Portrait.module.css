@@ -40,6 +40,14 @@
 :global(.reveal-all) .frame {
   clip-path: none !important;
 }
+/* While the drafter builds the photo as a drawing (photoBuild/PhotoBuild.tsx),
+   the photo itself waits under the drawing layer. */
+.frame[data-build="pending"] .image {
+  opacity: 0;
+}
+:global(.reveal-all) .frame[data-build="pending"] .image {
+  opacity: 1;
+}
 
 /* Crop marks at the corners */
 .crop {

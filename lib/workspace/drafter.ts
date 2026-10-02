@@ -10,6 +10,8 @@
  *   the name   (hero "lines")   MTEXT   a caret runs along each line, the words follow
  *   the model  ([data-draft])   the component's own script (survey points, then the
  *                               model: components/earthworks/buildScript.ts)
+ *   the About photo ([data-draft])  built like a drawing when it scrolls into view
+ *                               (components/photoBuild/PhotoBuild.tsx)
  *
  * Scroll away quickly while it is drawing and it stops: what it was working on
  * simply appears.
@@ -869,7 +871,8 @@ export function initDrafter(): Drafter | null {
         // Only the hero's name and its model are drawn by the cursor. Everything
         // else, on every page, fades in by itself on its usual staged timing.
         const inHero = !!el.closest("[data-hero]");
-        if (!DRAWN.has(kind) || !inHero) {
+        // (a component's own script, like the About photo's, is drawn wherever it is)
+        if (!DRAWN.has(kind) || (!inHero && kind !== "script")) {
           // In the hero the name leads: the rest of the sheet follows once it is
           // (nearly) written, in its staged order, so there is one clear sequence.
           if (inHero && leads) el.style.setProperty("--delay", `${Math.round(staged + NAME_LEAD)}ms`);

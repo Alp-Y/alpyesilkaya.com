@@ -37,6 +37,9 @@ export const site = {
     src: "/images/about-mountain.jpg",
     alt: "Alp Yesilkaya standing on a rock in front of a mountain, under a dark sky",
     caption: "Fig. 01",
+    // the cursor builds this photo like a drawing (outlines in components/photoBuild/geometry.ts);
+    // remove this line and the photo just appears
+    build: "mountain",
     // the frame is a little shorter than the photo: the bottom (Alp, the peak) stays, some sky is trimmed
     focus: "50% 100%",
     width: 1400,

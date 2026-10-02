@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { site } from "@/site.config";
+import PhotoBuild from "./photoBuild/PhotoBuild";
+import { PHOTO_GEOMETRY } from "./photoBuild/geometry";
 import styles from "./Portrait.module.css";
 
 type Photo = {
@@ -19,6 +21,11 @@ type Photo = {
    * beside the file name (e.g. "Engineer · 1 selected").
    */
   selected?: string;
+  /**
+   * The drafter's cursor builds the photo like a drawing (outline, hatch, skyline,
+   * contours). Names a set of outlines in components/photoBuild/geometry.ts.
+   */
+  build?: string;
 };
 
 /**
@@ -30,8 +37,10 @@ type Photo = {
 export default function Portrait({ priority = false, photo }: { priority?: boolean; photo?: Photo }) {
   const p: Photo = photo ?? site.portrait;
   const selected = !!p.selected;
+  const geometry = p.build ? PHOTO_GEOMETRY[p.build] : undefined;
   return (
-    <figure className={`${styles.portrait} ${selected ? styles.selected : ""}`} data-observe>
+    // data-draft: the drafter waits for the photo's own drawing script (PhotoBuild)
+    <figure className={`${styles.portrait} ${selected ? styles.selected : ""}`} data-observe {...(geometry ? { "data-draft": "photo" } : {})}>
       <div className={styles.plate}>
         <div className={styles.frame} style={p.aspect ? { aspectRatio: p.aspect } : undefined}>
           <Image
@@ -45,6 +54,7 @@ export default function Portrait({ priority = false, photo }: { priority?: boole
             className={styles.image}
             style={p.focus ? { objectPosition: p.focus } : undefined}
           />
+          {geometry && <PhotoBuild src={p.src} geometry={geometry} />}
         </div>
         <span className={`${styles.crop} ${styles.tl}`} aria-hidden="true" />
         <span className={`${styles.crop} ${styles.tr}`} aria-hidden="true" />
