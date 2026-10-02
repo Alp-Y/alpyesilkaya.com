@@ -315,3 +315,21 @@
   font-style: normal;
   color: var(--accent);
 }
+
+/* Later regenerations: a command-line note, bottom right, above the status bar */
+.note {
+  position: absolute;
+  right: max(var(--gutter), 20px);
+  bottom: calc(var(--status-h) + 14px);
+  padding: 3px 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  background: rgba(7, 9, 11, 0.86);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  white-space: pre;
+  opacity: 0;
+}

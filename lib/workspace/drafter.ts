@@ -30,7 +30,8 @@
  * Fast scrolling
  *   Nobody waits for the cursors. Scroll quickly and the screen is regenerated
  *   instead: the first time a scan line sweeps down and everything appears
- *   behind it; after that pieces simply come into focus, with no line.
+ *   behind it; after that each piece is plotted in from its left edge and a
+ *   short command-line note (REGEN n OBJECTS) says what happened, with no line.
  *
  * Special pieces
  *   data-draft-kind       "type"  a label typed out, its last characters still decoding
@@ -268,6 +269,7 @@ export function initDrafter(): Drafter | null {
   const marks = document.querySelector<HTMLElement>("[data-dr-marks]");
   const sketch = root?.querySelector<SVGSVGElement>("[data-dr-sketch]");
   const regenLine = root?.querySelector<HTMLElement>("[data-dr-regen]");
+  const regenNote = root?.querySelector<HTMLElement>("[data-dr-note]");
   if (!root || !marks || !sketch || !regenLine) return null;
 
   // One worker per cursor in the markup (two: they share the work).
@@ -892,6 +894,7 @@ export function initDrafter(): Drafter | null {
   function regen(els: HTMLElement[], now: number) {
     const H = window.innerHeight;
     let any = false;
+    let count = 0;
     for (const el of els) {
       if (!el.isConnected || el.classList.contains("is-in")) continue;
       any = true;
@@ -902,19 +905,28 @@ export function initDrafter(): Drafter | null {
       el.classList.add("is-in");
       releaseChildren(el);
       announce(el);
-      // after the first time there is no scan line: the piece comes into focus instead
+      // after the first time there is no scan line: each piece is plotted in, drawn
+      // across from its left edge like a plotter laying it down, top of the screen first
       if (scanned) {
-        el.animate([{ filter: "blur(7px)" }, { filter: "blur(0)" }], {
-          duration: 460,
+        count++;
+        el.animate([{ clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 -2% 0 0)" }], {
+          duration: 340,
           delay: Math.round(top * REGEN_MS),
-          easing: "ease-out",
+          easing: "cubic-bezier(0.33, 0.1, 0.25, 1)",
           fill: "backwards",
         });
       }
     }
     if (!any || now - lastRegen < REGEN_MS + 200) return;
     lastRegen = now;
-    if (scanned) return; // the scan line is a one-off: after that, pieces just come into focus
+    if (scanned) {
+      // the scan line is a one-off: from then on a command-line note says what happened
+      if (regenNote) {
+        regenNote.textContent = `REGEN  ${count} OBJECT${count === 1 ? "" : "S"}`;
+        regenNote.animate([{ opacity: 0 }, { opacity: 1, offset: 0.15 }, { opacity: 1, offset: 0.75 }, { opacity: 0 }], { duration: 1300 });
+      }
+      return;
+    }
     scanned = true;
     regenLine!.animate(
       [

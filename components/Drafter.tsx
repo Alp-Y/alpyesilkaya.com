@@ -13,6 +13,8 @@ export default function Drafter() {
         <div className={styles.regen} data-dr-regen>
           <span>REGEN</span>
         </div>
+        {/* later regenerations: a short command-line note instead of the scan line */}
+        <span className={styles.note} data-dr-note />
         {/* sketch geometry drawn by a component's own script (the hero model) */}
         <svg className={styles.sketch} data-dr-sketch />
         {/* two cursors, each with its own rubber band: they draw side by side */}
