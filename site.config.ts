@@ -35,13 +35,13 @@ export const site = {
   /** The portrait in the homepage About section (in /public/images/). */
   portrait: {
     // (the at-work photo is still in /public/images/about-at-work.jpg if you want it back)
-    src: "/images/about-ride.jpg",
-    alt: "Alp Yesilkaya sitting on a stone wall above the sea, between two bicycles",
+    src: "/images/about-seaside.jpg",
+    alt: "Alp Yesilkaya sitting on a stone wall above the sea, between two bicycles, with a small island behind",
     caption: "Fig. 01 / Out of office",
-    // which part of the photo stays in the frame when it is cropped (square on phones)
-    focus: "50% 58%",
-    width: 1136,
-    height: 1420,
+    // a landscape frame in the photo's own shape, so nothing is cropped: the island stays in
+    aspect: "4 / 3",
+    width: 1760,
+    height: 1320,
     isPlaceholder: false,
   },
 
