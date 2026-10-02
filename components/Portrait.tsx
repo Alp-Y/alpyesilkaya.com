@@ -51,16 +51,19 @@ export default function Portrait({ priority = false, photo }: { priority?: boole
         <span className={`${styles.crop} ${styles.bl}`} aria-hidden="true" />
         <span className={`${styles.crop} ${styles.br}`} aria-hidden="true" />
       </div>
-      <figcaption className={styles.caption}>
-        <span className="mono">{p.caption ?? "Fig. 01 / The engineer"}</span>
-        {selected && (
-          <span className={`mono ${styles.selectedLabel}`}>
-            <i aria-hidden="true" />
-            {p.selected}
-          </span>
-        )}
-        {p.isPlaceholder && <span className="placeholder-tag">Photo placeholder</span>}
-      </figcaption>
+      {/* no caption row when there is nothing to put in it (caption: "") */}
+      {(p.caption !== "" || selected || p.isPlaceholder) && (
+        <figcaption className={styles.caption}>
+          <span className="mono">{p.caption ?? "Fig. 01 / The engineer"}</span>
+          {selected && (
+            <span className={`mono ${styles.selectedLabel}`}>
+              <i aria-hidden="true" />
+              {p.selected}
+            </span>
+          )}
+          {p.isPlaceholder && <span className="placeholder-tag">Photo placeholder</span>}
+        </figcaption>
+      )}
     </figure>
   );
 }

@@ -33,14 +33,14 @@ export const site = {
   },
 
   /**
-   * The photos in the homepage About section (in /public/images/), in order.
-   * `portrait` is the first one (also the picture given to search engines);
-   * `portraitSecond` sits under it.
+   * The photos in the homepage About section (in /public/images/). One shows at
+   * a time, with "Fig. 01" / "Fig. 02" tabs above the frame to switch.
+   * `portrait` is the first one (also the picture given to search engines).
    */
   portrait: {
     src: "/images/about-mountain.jpg",
     alt: "Alp Yesilkaya standing on a rock in front of a mountain, under a dark sky",
-    caption: "Fig. 01",
+    caption: "", // the tab above the frame already says Fig. 01
     // the frame is a little shorter than the photo: keep the bottom (Alp), trim the sky
     focus: "50% 100%",
     width: 1400,
@@ -51,7 +51,7 @@ export const site = {
     // (the at-work photo is still in /public/images/about-at-work.jpg if you want it back)
     src: "/images/about-seaside.jpg",
     alt: "Alp Yesilkaya sitting on a stone wall above the sea, between two bicycles, with a small island behind",
-    caption: "Fig. 02",
+    caption: "",
     // a landscape frame in the photo's own shape, so nothing is cropped: the island stays in
     aspect: "4 / 3",
     width: 1760,

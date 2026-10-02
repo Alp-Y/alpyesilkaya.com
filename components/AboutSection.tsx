@@ -1,7 +1,7 @@
 import { getPage } from "@/lib/content";
 import { site } from "@/site.config";
 import { sectionNumbers } from "@/lib/sections";
-import Portrait from "./Portrait";
+import PhotoSwitcher from "./PhotoSwitcher";
 import PropertiesPalette, { parseExperience } from "./PropertiesPalette";
 import styles from "./AboutSection.module.css";
 
@@ -25,9 +25,8 @@ export default function AboutSection() {
 
         <div className={styles.grid}>
           <div className={styles.media}>
-            {/* Fig. 01, then Fig. 02 under it (both set in site.config.ts) */}
-            <Portrait />
-            <Portrait photo={site.portraitSecond} />
+            {/* one frame, with "Fig. 01 / Fig. 02" tabs to switch (the photos are set in site.config.ts) */}
+            <PhotoSwitcher photos={[site.portrait, site.portraitSecond]} />
           </div>
 
           <div className={styles.text}>

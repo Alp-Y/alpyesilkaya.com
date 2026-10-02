@@ -29,17 +29,10 @@
     gap: clamp(48px, 7vw, 120px);
     align-items: start;
   }
-  /* the photo column is the taller one: the text stays in view beside it */
-  .text {
+  .media {
     position: sticky;
     top: calc(var(--header-h) + 40px);
   }
-}
-
-/* the photos, one under the other */
-.media {
-  display: grid;
-  gap: clamp(28px, 3vw, 40px);
 }
 
 .text {
