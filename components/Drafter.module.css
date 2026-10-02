@@ -205,31 +205,47 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-/* a surveyed point: a small cross with its level */
-.sketch [data-s="pt"] path {
-  stroke: var(--accent);
-  stroke-width: 1.25;
-}
-.sketch [data-s="pt"] text {
-  fill: var(--text-2);
+.sketch text {
   font-family: var(--font-mono);
-  font-size: 9px;
   letter-spacing: 0.04em;
   text-anchor: middle;
 }
-.sketch [data-s="pt"] {
-  animation: ptIn 260ms var(--ease-out) backwards;
+/* survey points: small crosses, a few with their level */
+.sketch [data-s="cloud"] {
+  stroke: var(--accent);
+  stroke-width: 1.1;
 }
-/* existing ground profile */
-.sketch [data-s="eg"] {
-  stroke: #c9d1da;
-  stroke-width: 1.25;
+.sketch [data-s="lvl"] {
+  fill: var(--text-2);
+  font-size: 9px;
 }
-/* design (finished) level */
+/* TIN of the existing ground */
+.sketch [data-s="tin"] {
+  stroke: rgba(201, 209, 218, 0.5);
+  stroke-width: 0.75;
+}
+/* alignment: dashed centreline, solid formation edges */
 .sketch [data-s="dg"] {
   stroke: var(--accent);
   stroke-width: 1.25;
-  stroke-dasharray: 7 4;
+  stroke-dasharray: 9 4 2 4;
+}
+.sketch [data-s="edge"] {
+  stroke: rgba(62, 224, 143, 0.6);
+  stroke-width: 1;
+}
+/* cross-sections: ground over formation, with the station */
+.sketch [data-s="sec-g"] {
+  stroke: #e8ecf0;
+  stroke-width: 1.25;
+}
+.sketch [data-s="sec-d"] {
+  stroke: var(--accent);
+  stroke-width: 1.25;
+}
+.sketch [data-s="sta"] {
+  fill: var(--accent);
+  font-size: 8.5px;
 }
 @keyframes ptIn {
   from {

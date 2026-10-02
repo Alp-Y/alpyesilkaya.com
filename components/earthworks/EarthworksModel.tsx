@@ -6,8 +6,8 @@ import { getOrbit } from "@/lib/workspace/actions";
 import { getHeroModel, heroModel, type HeroModelId } from "@/lib/heroModels";
 import { setHud } from "@/lib/workspace/cadCursor";
 import { onFrame, reducedMotion } from "@/lib/workspace/pointer";
-import { registerDraft, type DraftScript, type Pt, type Step } from "@/lib/workspace/drafter";
-import { LENGTH, roadLevel, sample } from "@/lib/earthworks/model";
+import { registerDraft, type DraftScript } from "@/lib/workspace/drafter";
+import { roadBuildScript } from "./buildScript";
 import type { EarthworksScene } from "./scene";
 import styles from "./EarthworksModel.module.css";
 
@@ -206,158 +206,41 @@ export default function EarthworksModel({ className = "" }: { className?: string
         requestAnimationFrame(tick);
       };
 
-      // ----- built by the drafter (lib/workspace/drafter.ts): the road, the way it is
-      // really worked out. Survey points are picked, the existing ground profile is
-      // drawn through them, then the design level; the 3D volumes sweep in between
-      // the two lines. The view keeps its slow turn the whole time: every position
-      // is projected from the model each frame, so the sketch turns with it and the
-      // finished model simply carries on turning.
+      // ----- built by the drafter (lib/workspace/drafter.ts) with buildScript.ts: survey
+      // points, a TIN of the ground, the alignment, then sections and the 3D volumes.
+      // The view keeps its slow turn the whole time and simply carries on after.
       let building = false;
+      let tilted = false;
       let aborted = false; // the visitor switched model while it was being drawn
-      const script: DraftScript = ({ svg, reveal }) => {
+      const hero = fig.closest<HTMLElement>("[data-hero]");
+      const script: DraftScript = (tools) => {
         if (getHeroModel() !== "road") return null;
-        const NS = "http://www.w3.org/2000/svg";
-        const half = LENGTH / 2;
-        const ground = (x: number) => sample(s.model.ground, x, 0);
-        const at = (x: number, level: number): Pt => {
-          const c = canvas.getBoundingClientRect();
-          const p = s.project([x, level, 0]);
-          return { x: c.left + p.x, y: c.top + p.y };
-        };
-        const station = (x: number) => `STA 0+${String(Math.round(x + half)).padStart(3, "0")}`;
-        // hold the hero's auto-advance to the next model while drawing (the turn carries on)
-        const hero = fig.closest<HTMLElement>("[data-hero]");
-        const hold = () => {
-          hero?.dispatchEvent(new Event("keydown"));
-        };
-
-        const points: { x: number; node: SVGGElement }[] = [];
-        const eg = document.createElementNS(NS, "path");
-        const dg = document.createElementNS(NS, "path");
-        eg.dataset.s = "eg";
-        dg.dataset.s = "dg";
-        let egX: number | null = null;
-        let dgX: number | null = null;
-        /** Re-place the sketch on the model (it may have scrolled or turned a little). */
-        const sync = () => {
-          for (const p of points) {
-            const a = at(p.x, ground(p.x));
-            p.node.setAttribute("transform", `translate(${a.x.toFixed(1)} ${a.y.toFixed(1)})`);
-          }
-          if (egX !== null) {
-            let d = "";
-            for (let x = -half; x < egX; x += 2) {
-              const a = at(x, ground(x));
-              d += `${d ? "L" : "M"}${a.x.toFixed(1)} ${a.y.toFixed(1)}`;
-            }
-            const a = at(egX, ground(egX));
-            eg.setAttribute("d", `${d}${d ? "L" : "M"}${a.x.toFixed(1)} ${a.y.toFixed(1)}`);
-          }
-          if (dgX !== null) {
-            const a = at(-half, roadLevel(-half));
-            const b = at(dgX, roadLevel(dgX));
-            dg.setAttribute("d", `M${a.x.toFixed(1)} ${a.y.toFixed(1)}L${b.x.toFixed(1)} ${b.y.toFixed(1)}`);
-          }
-        };
-
-        const steps: Step[] = [];
-        // 1. survey: pick the points, each with its level
-        [-56, -26, -6, 14, 30, 54].forEach((x, i) => {
-          steps.push({
-            cmd: "POINT",
-            ms: 110,
-            fixed: true,
-            begin: () => {
-              hold();
-              if (i > 0) return;
-              building = true;
-              aborted = false;
-              s.setReveal(0);
-              svg.style.opacity = "1";
-              svg.append(eg, dg);
-              reveal();
-            },
-            from: () => {
-              sync();
-              return at(x, ground(x));
-            },
-            draw: () => `Z ${ground(x).toFixed(2)}`,
-            end: () => {
-              const node = document.createElementNS(NS, "g");
-              node.dataset.s = "pt";
-              const cross = document.createElementNS(NS, "path");
-              cross.setAttribute("d", "M-4 0H4M0 -4V4");
-              const label = document.createElementNS(NS, "text");
-              label.setAttribute("y", "-9");
-              label.textContent = ground(x).toFixed(2);
-              node.append(cross, label);
-              svg.append(node);
-              points.push({ x, node });
-              sync();
-            },
-          });
-        });
-        // 2. existing ground: a polyline through the survey
-        steps.push({
-          cmd: "PLINE",
-          ms: 900,
-          fixed: true,
-          begin: hold,
-          from: () => {
-            sync();
-            return at(-half, ground(-half));
+        return roadBuildScript({
+          scene: s,
+          canvas,
+          // keeps the hero from auto-advancing to the next model while this one is drawn,
+          // and (once) tilts the view up from the flat front to the model's own angle, from
+          // where the slow turn carries on
+          hold: () => {
+            hero?.dispatchEvent(new Event("keydown"));
+            const orbit = getOrbit();
+            if (tilted || !orbit) return;
+            tilted = true;
+            orbit.showcase(heroModel("road").view);
           },
-          path: (t) => {
-            egX = -half + LENGTH * t;
-            sync();
-            return at(egX, ground(egX));
+          aborted: () => aborted,
+          start: () => {
+            building = true;
+            aborted = false;
           },
-          draw: () => `EXISTING  ${station(egX ?? -half)}`,
-        });
-        // 3. design level: the road's steady grade
-        steps.push({
-          cmd: "LINE",
-          ms: 650,
-          fixed: true,
-          begin: hold,
-          from: () => {
-            sync();
-            return at(-half, roadLevel(-half));
-          },
-          path: (t) => {
-            dgX = -half + LENGTH * t;
-            sync();
-            return at(dgX, roadLevel(dgX));
-          },
-          draw: () => "DESIGN  2.0%",
-        });
-        // 4. the volumes: cut and fill sweep in between the two lines, the sketch gives way
-        steps.push({
-          cmd: "VOLUME",
-          ms: 1500,
-          fixed: true,
-          begin: hold,
-          from: () => {
-            sync();
-            return at(-half, roadLevel(-half));
-          },
-          path: (t) => {
-            sync();
-            const x = -half + LENGTH * t;
-            if (!aborted) s.setReveal(t);
-            svg.style.opacity = aborted ? "0" : String(Math.max(0, 1 - t * 1.15));
-            return at(x, roadLevel(x));
-          },
-          draw: (t) => `CUT / FILL  ${station(-half + LENGTH * t)}`,
-          end: () => {
+          done: () => {
             building = false;
             if (aborted) return;
             s.setReveal(1);
             setStateFlag("revealed");
-            hold(); // the model stays for its full time before the next one
+            hero?.dispatchEvent(new Event("keydown")); // the model stays for its full time
           },
-        });
-        return steps;
+        })(tools);
       };
 
       // ----- switching models: draw the new one in, and show it from its own angle -----

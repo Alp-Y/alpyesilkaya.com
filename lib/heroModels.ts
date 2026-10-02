@@ -37,7 +37,8 @@ export const HERO_MODELS: HeroModel[] = [
     title: "Road earthworks.",
     line: "Turn XYZ survey points into cut and fill volumes and an Excel report, in seconds.",
     tool: { name: "Excavation Volume Calculator", href: "/tools/excavation-volume-calculator" },
-    view: { azimuth: 0, elevation: 0 },
+    // seen from above and to one side, so the survey, the TIN and the volumes read as 3D
+    view: { azimuth: -32, elevation: 24 },
   },
   {
     id: "basement",
