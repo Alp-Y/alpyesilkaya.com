@@ -14,11 +14,6 @@
  *   everything small      (labels, icons, frames) appears on its own with its
  *                         usual staged fade, without the cursor going there
  *
- * Opening
- *   On the first load the cursor opens the drawing itself: it glides to the
- *   file tab in the header and clicks it, the tab lights up, the grid regenerates
- *   outwards from the click, and it goes straight on to draft the sheet.
- *
  * Fast scrolling
  *   Nobody waits for the cursor. Scroll quickly and the screen is regenerated
  *   instead (REGEN): a scan line sweeps down and everything appears behind it.
@@ -56,13 +51,13 @@
 import { onFrame, reducedMotion, requestFrame } from "./pointer";
 
 /** Longest a waiting queue should take to draw, in ms (it speeds up to fit). */
-const BUDGET = 6500;
+const BUDGET = 12000;
 /** ...but never faster than this fraction of the normal durations. */
-const MIN_SPEED = 0.6;
+const MIN_SPEED = 0.85;
 /** How long the cursor stays after its last command, in ms. */
 const LINGER = 700;
 /** The pause after a piece is finished, before the cursor moves on, in ms. */
-const DWELL = 60;
+const DWELL = 150;
 /** Scrolling faster than this (px per ms) regenerates the screen instead of drawing it. */
 const RUSH_SPEED = 2.4;
 /** How long the regeneration sweep takes, top to bottom, in ms. */
@@ -72,14 +67,11 @@ const GHOST = 0.4;
 
 type Kind = "rect" | "frame" | "line" | "text" | "place" | "insert" | "script" | "type" | "array" | "para";
 /** Time each command takes at normal speed, in ms. */
-const OP: Record<Kind, number> = { rect: 540, frame: 620, line: 480, text: 540, place: 120, insert: 120, script: 0, type: 700, array: 700, para: 800 };
+const OP: Record<Kind, number> = { rect: 620, frame: 720, line: 540, text: 620, place: 120, insert: 120, script: 0, type: 700, array: 700, para: 800 };
 /** The kinds the cursor draws itself. The rest appear on their own. */
 const DRAWN: ReadonlySet<Kind> = new Set<Kind>(["rect", "frame", "line", "text", "script", "type", "array", "para"]);
-
-/** The opening plays once per page load, not on every navigation. */
-let booted = false;
 /** Rough time to travel between two elements, used only for the pace estimate. */
-const TRAVEL = 420;
+const TRAVEL = 480;
 
 const PENDING = "[data-reveal]:not(.is-in), [data-observe]:not(.is-in)";
 
@@ -233,12 +225,6 @@ export function initDrafter(): Drafter | null {
   const sketch = root?.querySelector<SVGSVGElement>("[data-dr-sketch]");
   const regenLine = root?.querySelector<HTMLElement>("[data-dr-regen]");
   if (!root || !cursor || !band || !cmdOut || !valOut || !marks || !sketch || !regenLine) return null;
-  const html = document.documentElement;
-
-  // The opening is armed here (before the first paint with effects on), so the
-  // grid waits hidden for its regeneration instead of flashing in first.
-  let intro = !booted && window.scrollY < 80 && !!document.querySelector("[data-hero]");
-  if (intro) html.dataset.boot = "wait";
 
   const queue: Job[] = [];
   const timers = new Set<number>();
@@ -513,7 +499,7 @@ export function initDrafter(): Drafter | null {
           cmd: "TEXT",
           tool: "text",
           linear: true,
-          ms: clamp(chars * 34, 360, 900),
+          ms: clamp(chars * 45, 400, 1100),
           begin: () => {
             st.transition = "none";
             st.transform = "none";
@@ -603,7 +589,7 @@ export function initDrafter(): Drafter | null {
         {
           cmd: "MTEXT",
           tool: "text",
-          ms: clamp((el.textContent ?? "").length * 12, 480, 1000),
+          ms: clamp((el.textContent ?? "").length * 16, 600, 1400),
           begin: () => {
             st.transition = "none";
             st.transform = "none";
@@ -633,7 +619,7 @@ export function initDrafter(): Drafter | null {
       return kids.map(
         (kid, i): Step => ({
           cmd: i === 0 ? "INSERT" : "COPY",
-          ms: 90,
+          ms: 130,
           begin: () => {
             if (i > 0) return;
             st.transition = "none";
@@ -726,7 +712,6 @@ export function initDrafter(): Drafter | null {
       clearInline(job.el);
       els.unshift(job.el);
     }
-    endIntro();
     setBand(null);
     sketch!.replaceChildren();
     root!.querySelectorAll("[data-ghost]").forEach((g) => g.remove());
@@ -735,53 +720,6 @@ export function initDrafter(): Drafter | null {
     step = null;
     restUntil = 0;
     regen(els, now);
-  }
-
-  /* ---------- the opening: the drawing is opened and regenerated ---------- */
-  function endIntro() {
-    if (root!.dataset.intro === "true") root!.dataset.intro = "false";
-    if (html.dataset.boot === "wait") html.dataset.boot = "in";
-  }
-  later(endIntro, 2500); // whatever happens, the grid never stays hidden
-  /** The file tab in the header ("name.dwg"), if it is showing at this screen size. */
-  const fileTab = () => {
-    const tab = document.querySelector<HTMLElement>("[data-file-tab]");
-    return tab && tab.offsetWidth > 0 ? tab : null;
-  };
-  /** Where the cursor comes in from: out in the sheet, crosshair spanning the screen. */
-  const introStart = (): Pt => ({ x: window.innerWidth * 0.56, y: window.innerHeight * 0.52 });
-  function introSteps(): Step[] {
-    const target = (): Pt => {
-      // (phones have no file tab: there it opens from the logo)
-      const tab = fileTab() ?? document.querySelector<HTMLElement>("[data-home-link]");
-      if (!tab) return { x: window.innerWidth / 2, y: window.innerHeight * 0.3 };
-      const r = tab.getBoundingClientRect();
-      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-    };
-    return [
-      {
-        // it goes straight to the drawing's file tab and clicks it
-        cmd: "OPEN",
-        ms: 240,
-        fixed: true,
-        begin: () => {
-          root!.dataset.intro = "true"; // the crosshair spans the whole screen on the way
-        },
-        from: target,
-        draw: () => fileTab()?.textContent?.trim() || "drawing",
-        end: () => {
-          const tab = fileTab();
-          const p = target();
-          if (tab) tab.dataset.opened = "true"; // the tab lights up: the drawing is open
-          // the grid regenerates outwards from the click, the crosshair draws back in,
-          // and the cursor goes straight on to draft the sheet
-          html.style.setProperty("--boot-x", `${p.x.toFixed(0)}px`);
-          html.style.setProperty("--boot-y", `${p.y.toFixed(0)}px`);
-          endIntro();
-          html.dataset.boot = "in";
-        },
-      },
-    ];
   }
 
   /* ---------- the queue ---------- */
@@ -835,7 +773,7 @@ export function initDrafter(): Drafter | null {
     origin = pos ?? onScreen({ x: target.x - 90, y: target.y - 60 });
     const dist = Math.hypot(target.x - origin.x, target.y - origin.y);
     // an unhurried glide: short hops stay quick, a move across the screen takes its time
-    dur = clamp(120 + dist * 0.5, 160, 700) * (step.fixed ? 1 : speed);
+    dur = clamp(160 + dist * 0.6, 220, 850) * (step.fixed ? 1 : speed);
     t0 = now;
     phase = "travel";
     const tool = step.tool ?? "cross";
@@ -956,13 +894,6 @@ export function initDrafter(): Drafter | null {
         regen(batch.map((b) => b.el), performance.now());
         return;
       }
-      if (intro && !job && !step && batch.length) {
-        intro = false;
-        booted = true;
-        steps = introSteps();
-        pos = introStart();
-        moveCursor(pos);
-      }
       queue.push(...batch);
       // One pace for everything now waiting: a full screen takes about BUDGET ms
       const cost = (q: Job) => OP[q.kind] * (q.kind === "text" ? 2 : 1) + TRAVEL;
@@ -975,8 +906,6 @@ export function initDrafter(): Drafter | null {
       stopFrames();
       document.removeEventListener("click", onAnchor, true);
       document.removeEventListener("draft:done", onDone);
-      if (root.dataset.intro === "true") root.dataset.intro = "false";
-      if (html.dataset.boot === "wait") delete html.dataset.boot;
       timers.forEach((id) => window.clearTimeout(id));
       timers.clear();
       if (job) clearInline(job.el); // back to hidden, so a fresh start can draw it again

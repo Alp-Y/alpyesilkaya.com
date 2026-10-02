@@ -17,9 +17,6 @@ export default function Drafter() {
         <svg className={styles.sketch} data-dr-sketch />
         <div className={styles.band} data-dr-band data-on="false" />
         <div className={styles.cursor} data-dr-cursor>
-          {/* the opening: the crosshair spans the whole screen, then draws back in */}
-          <span className={styles.hairH} />
-          <span className={styles.hairV} />
           <span className={styles.plus} />
           <span className={styles.box} />
           <span className={styles.caret} />

@@ -263,32 +263,6 @@
   }
 }
 
-/* ---------- Opening: the crosshair spans the screen, then draws back in ---------- */
-.hairH,
-.hairV {
-  position: absolute;
-  background: rgba(62, 224, 143, 0.35);
-  transition: transform 650ms var(--ease-in-out);
-}
-.hairH {
-  left: -100vw;
-  top: 0;
-  width: 200vw;
-  height: 1px;
-  transform: scaleX(0);
-}
-.hairV {
-  top: -100vh;
-  left: 0;
-  width: 1px;
-  height: 200vh;
-  transform: scaleY(0);
-}
-.root[data-intro="true"] .hairH,
-.root[data-intro="true"] .hairV {
-  transform: none;
-}
-
 /* ---------- Fast scrolling: the scan line of a regeneration ---------- */
 .regen {
   position: absolute;

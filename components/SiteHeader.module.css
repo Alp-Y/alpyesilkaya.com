@@ -81,36 +81,6 @@
   letter-spacing: 0.02em;
   color: var(--text-2);
 }
-/* The opening: the tab waits dim, then lights up when the drafter's cursor clicks it */
-.fileTab {
-  transition:
-    opacity var(--motion-medium) var(--ease-out),
-    border-color var(--motion-medium) var(--ease-out);
-}
-:global(html[data-boot="wait"]) .fileTab {
-  opacity: 0.45;
-}
-:global(html[data-boot="wait"]) .fileDot {
-  background: var(--text-3);
-  box-shadow: none;
-}
-.fileTab[data-opened="true"] {
-  animation: tab-open 900ms var(--ease-out);
-}
-@keyframes tab-open {
-  0% {
-    transform: scale(0.96);
-    border-color: var(--accent);
-    background: var(--accent-soft);
-    color: var(--text-1);
-  }
-  35% {
-    transform: none;
-    border-color: var(--accent);
-    background: var(--accent-soft);
-    color: var(--text-1);
-  }
-}
 .fileDot {
   width: 6px;
   height: 6px;

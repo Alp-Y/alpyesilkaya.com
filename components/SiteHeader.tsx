@@ -19,8 +19,7 @@ export default function SiteHeader() {
           <span className={styles.brandName}>{site.name}</span>
         </Link>
 
-        {/* on the first load the drafter's cursor clicks this to "open the drawing" (lib/workspace/drafter.ts) */}
-        <div className={styles.fileTab} data-file-tab aria-hidden="true">
+        <div className={styles.fileTab} aria-hidden="true">
           <span className={styles.fileDot} />
           <span>{site.domain.replace(".com", "")}.dwg</span>
         </div>
