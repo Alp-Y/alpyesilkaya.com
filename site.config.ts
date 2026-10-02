@@ -39,8 +39,9 @@ export const site = {
     caption: "Fig. 01 / At work",
     // which part of the photo stays in the frame when it is cropped: Alp, on the right
     focus: "88% 40%",
+    // (the photo is trimmed at the bottom; the uncut original is in the git history)
     width: 1280,
-    height: 1010,
+    height: 905,
     isPlaceholder: false,
   },
 
