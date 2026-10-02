@@ -34,14 +34,14 @@ export const site = {
 
   /** The portrait in the homepage About section (in /public/images/). */
   portrait: {
-    src: "/images/about-at-work.jpg",
-    alt: "Alp Yesilkaya explaining a project on a laptop to a visitor",
-    caption: "Fig. 01 / At work",
-    // which part of the photo stays in the frame when it is cropped: Alp, on the right
-    focus: "88% 40%",
-    // (the photo is trimmed at the bottom; the uncut original is in the git history)
-    width: 1280,
-    height: 905,
+    // (the at-work photo is still in /public/images/about-at-work.jpg if you want it back)
+    src: "/images/about-ride.jpg",
+    alt: "Alp Yesilkaya sitting on a stone wall above the sea, between two bicycles",
+    caption: "Fig. 01 / Out of office",
+    // which part of the photo stays in the frame when it is cropped (square on phones)
+    focus: "50% 58%",
+    width: 1136,
+    height: 1420,
     isPlaceholder: false,
   },
 
