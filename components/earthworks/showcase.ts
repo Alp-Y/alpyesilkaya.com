@@ -8,6 +8,7 @@
  *   areas      one asphalt layer and a pipe trench split by project area (Quantity by Area Calculator)
  *   structures a road whose lines, dots and surfaces are identified as structures, each with a tag (CAD Terminal)
  *   claims     a claim package standing as sheets, one shared date threaded through them, two flagged (Claim Management Software)
+ *   office     a message, the task it becomes and a note, each led down to its day on the week's calendar (Office Communication Software)
  *
  * Every model fits the same 120 × 64 m footprint as the earthworks model,
  * so the scale bar and the fit stay the same when you switch.
@@ -32,6 +33,7 @@ import {
 } from "three";
 import { AREA_COLORS, CUT, FILL, LINE, STRUCTURE_COLORS as SC } from "@/lib/heroModels";
 import { DOCS, FORMAT_COLORS, ISSUE_COLOR } from "@/lib/claims/model";
+import { KIND_COLORS, NOTE, PEOPLE, TASK, WEEK } from "@/lib/office/model";
 import type { DisplayMode } from "./scene";
 
 const HALF_L = 60;
@@ -519,10 +521,81 @@ function claims(): ShowcaseModel {
   return finish(kit, g);
 }
 
-export const SHOWCASE: Record<"basement" | "progress" | "areas" | "structures" | "claims", () => ShowcaseModel> = {
+/**
+ * An office week: the calendar lies flat as five day plates (today's in
+ * green). Behind it stand a message, the task it becomes and a note. One
+ * green line runs from the message to the task, and a leader takes the
+ * task and the note down to the day they fall on. The token on the task
+ * is the person it is assigned to.
+ */
+function office(): ShowcaseModel {
+  const kit = newKit();
+  const g = new Group();
+  g.add(groundGrid(kit, () => 0, 4));
+  const DAY = 20; // one day plate, along x
+  const dayX = (iso: string) => (WEEK.indexOf(iso) - 2) * DAY;
+  const Z0 = -2; // the calendar runs from here towards the viewer
+  const Z1 = 24;
+  const BACK = -18; // where the three cards stand
+  const H = 20; // card height
+  const W = 8; // half a card's width
+  const T = 0.5;
+  const green = ghostMat(kit, 0.9, FILL);
+  const lines = (pts: number[], mat: LineBasicMaterial) => {
+    const geo = new BufferGeometry();
+    geo.setAttribute("position", new BufferAttribute(new Float32Array(pts), 3));
+    return new LineSegments(geo, mat);
+  };
+
+  // the week: five day plates, today's lit
+  WEEK.forEach((iso, i) => {
+    const x = dayX(iso);
+    g.add(box(kit, x - DAY / 2 + 0.6, 0, Z0, x + DAY / 2 - 0.6, 0.4, Z1, i === 0 ? FILL : LINE, i === 0 ? 0.12 : 0.05));
+    // the day's heading, as a rule across the top of the plate
+    g.add(lines([x - DAY / 2 + 2.4, 0.46, Z0 + 2.6, x + DAY / 2 - 2.4, 0.46, Z0 + 2.6], ghostMat(kit, 0.4, i === 0 ? FILL : LINE)));
+  });
+
+  // a card standing behind the calendar, with its text as lines on the face that looks at the viewer
+  const text: number[] = [];
+  const card = (x: number, color: string, rows: number) => {
+    g.add(box(kit, x - W, 0, BACK - T / 2, x + W, H, BACK + T / 2, color, 0.12));
+    const fz = BACK + T / 2 + 0.06;
+    for (let k = 0; k < rows; k++) text.push(x - W + 1.6, H - 3 - k * 2.4, fz, x + W - 1.6 - ((k * 5) % 7), H - 3 - k * 2.4, fz);
+  };
+  const MSG_X = dayX(TASK.due) - 34;
+  const TASK_X = dayX(TASK.due);
+  const NOTE_X = dayX(NOTE.day);
+  card(MSG_X, KIND_COLORS.message, 4);
+  card(TASK_X, KIND_COLORS.task, 2);
+  card(NOTE_X, KIND_COLORS.note, 3);
+  g.add(lines(text, ghostMat(kit, 0.3)));
+
+  // message → task
+  const MID = H / 2;
+  g.add(lines([MSG_X + W, MID, BACK, TASK_X - W, MID, BACK, TASK_X - W - 2.4, MID + 1.4, BACK, TASK_X - W, MID, BACK, TASK_X - W - 2.4, MID - 1.4, BACK, TASK_X - W, MID, BACK], green));
+
+  // each one led down to its day, where it sits on the calendar
+  const land = (x: number, color: string, height: number) => {
+    g.add(lines([x, 0.5, BACK + T / 2, x, 0.5, Z0 + 6], green));
+    g.add(box(kit, x - DAY / 2 + 2.4, 0.4, Z0 + 6, x + DAY / 2 - 2.4, 0.4 + height, Z0 + 14, color, 0.34));
+  };
+  land(TASK_X, KIND_COLORS.task, 2.4);
+  land(NOTE_X, KIND_COLORS.note, 1);
+
+  // who the task is assigned to: a token on the task
+  const token = new CylinderGeometry(2, 2, 1.2, 24);
+  token.translate(TASK_X + 3.4, 0.4 + 2.4 + 0.6, Z0 + 10);
+  g.add(solid(kit, token, PEOPLE[TASK.to].color, 0.5));
+
+  g.add(pickPlate(kit, 0.5));
+  return finish(kit, g);
+}
+
+export const SHOWCASE: Record<"basement" | "progress" | "areas" | "structures" | "claims" | "office", () => ShowcaseModel> = {
   basement,
   progress,
   areas,
   structures,
   claims,
+  office,
 };

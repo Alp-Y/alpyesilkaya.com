@@ -1,6 +1,6 @@
 /* ==================================================================
    OFFICE COMMUNICATION — the interactive tool (tool page).
-   Desktop:  Messages | Assign a task | Take a note
+   Desktop:  Messages | Task | Note
              Calendar (full width)
    Mobile:   one column, same order
    ================================================================== */
@@ -34,12 +34,12 @@
     grid-area: thread;
     border-right: 1px solid var(--line);
   }
-  .cellTasks {
+  .cellTask {
     grid-area: tasks;
     border-top: 0 !important;
     border-right: 1px solid var(--line);
   }
-  .cellNotes {
+  .cellNote {
     grid-area: notes;
     border-top: 0 !important;
   }
@@ -55,10 +55,10 @@
       "thread notes"
       "week week";
   }
-  .cellTasks {
+  .cellTask {
     border-right: 0;
   }
-  .cellNotes {
+  .cellNote {
     border-top: 1px solid var(--line) !important;
   }
 }
@@ -127,48 +127,51 @@
   color: var(--p);
 }
 
-/* ---------- 01 messages ---------- */
+/* ---------- 01 messages: each one a button that starts a task ---------- */
 .thread {
   display: grid;
-  align-content: start;
-  gap: 10px;
-  max-height: 470px;
+  gap: 8px;
   margin: 0;
-  padding: 0 4px 2px 0;
+  padding: 0;
   list-style: none;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
 }
 .msg {
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  width: 100%;
   min-width: 0;
-  animation: ofc-in 320ms var(--ease-out) both;
-}
-.msgBody {
-  flex: 1;
-  min-width: 0;
-  padding: 9px 12px 10px;
+  padding: 10px 12px 11px 10px;
   border: 1px solid var(--line);
   border-radius: 3px 10px 10px 10px;
   background: rgba(255, 255, 255, 0.018);
+  text-align: left;
   transition:
-    border-color var(--motion-medium) var(--ease-out),
-    background-color var(--motion-medium) var(--ease-out);
+    border-color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out);
 }
-.msg[data-mine="true"] .msgBody {
-  border-color: rgba(62, 224, 143, 0.35);
-  background: rgba(62, 224, 143, 0.05);
+.msg:hover:not(:disabled) {
+  border-color: color-mix(in srgb, #6fc9c9 55%, transparent);
 }
-.msg[data-picked="true"] .msgBody {
+.msg[aria-pressed="true"] {
   border-color: #6fc9c9;
   background: color-mix(in srgb, #6fc9c9 7%, transparent);
 }
-.meta {
-  display: block;
+.msg:disabled {
+  cursor: default;
+}
+.msg:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+.msgBody {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.meta,
+.toTask,
+.made {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.06em;
@@ -180,40 +183,23 @@
   font-style: normal;
   opacity: 0.8;
 }
-.msgBody p {
-  margin: 3px 0 4px;
+.text {
   font-size: 0.875rem;
   line-height: 1.45;
   color: var(--text-1);
-  overflow-wrap: anywhere;
 }
-.toTask {
-  min-height: 24px;
-  font-family: var(--font-mono);
-  font-size: 10px;
+.toTask,
+.made {
+  margin-top: 3px;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-3);
   transition: color var(--motion-fast) var(--ease-out);
 }
-.toTask:hover,
-.toTask[aria-pressed="true"] {
+.msg:hover .toTask,
+.msg[aria-pressed="true"] .toTask {
   color: #6fc9c9;
 }
-.toTask:focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: 2px;
-}
-.madeTask {
-  display: block;
-  font-size: 0.75rem;
-  line-height: 1.4;
-  color: var(--text-2);
-}
-.compose {
-  display: flex;
-  gap: 6px;
-  margin-top: 14px;
+.made {
+  color: var(--accent);
 }
 
 /* ---------- fields and buttons (the same as the other tools) ---------- */
@@ -241,15 +227,6 @@
   outline: none;
   border-color: var(--accent);
 }
-.area {
-  display: block;
-  height: auto;
-  min-height: 78px;
-  padding: 8px 10px;
-  line-height: 1.5;
-  resize: vertical;
-}
-.apply,
 .primary {
   display: inline-flex;
   align-items: center;
@@ -272,21 +249,17 @@
   justify-self: start;
   font-size: 0.875rem;
 }
-.apply:hover:not(:disabled),
 .primary:hover:not(:disabled) {
   background: rgba(62, 224, 143, 0.2);
   border-color: var(--accent);
 }
-.apply:disabled,
 .primary:disabled {
   opacity: 0.35;
   cursor: default;
 }
-.apply :global(.arrow),
 .primary :global(.arrow) {
   color: var(--accent);
 }
-.apply:focus-visible,
 .primary:focus-visible,
 .person:focus-visible,
 .dayPick:focus-visible,
@@ -306,12 +279,6 @@
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--k) 5%, transparent), transparent 90px),
     #0b0e12;
-}
-.source {
-  margin: -4px 0 0;
-  font-size: 0.75rem;
-  line-height: 1.4;
-  color: var(--text-3);
 }
 .pick {
   display: flex;
@@ -346,12 +313,6 @@
 .person[aria-pressed="true"] {
   opacity: 1;
   border-color: var(--accent);
-}
-.who {
-  flex: 1 1 100%;
-  padding-left: 35px;
-  font-size: 0.75rem;
-  color: var(--text-2);
 }
 .dayPick {
   display: grid;
@@ -390,167 +351,12 @@
   color: var(--text-1);
 }
 
-/* ---------- 02 the tasks ---------- */
-.tasks,
-.notes {
-  display: grid;
-  margin: 12px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.task {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  min-height: 48px;
-  padding: 6px 6px 6px 8px;
-  border-bottom: 1px solid var(--line);
-  box-shadow: inset 2px 0 0 #6fc9c9;
-  transition: background-color var(--motion-fast) var(--ease-out);
-}
-.task:first-child,
-.note:first-child {
-  border-top: 1px solid var(--line);
-}
-.check {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border: 1px solid #6fc9c9;
-  border-radius: 3px;
-  font-size: 12px;
-  line-height: 1;
-  color: #07090b;
-  transition:
-    background-color var(--motion-fast) var(--ease-out),
-    border-color var(--motion-fast) var(--ease-out);
-}
-.check:hover {
-  background: color-mix(in srgb, #6fc9c9 20%, transparent);
-}
-.check[aria-checked="true"] {
-  border-color: var(--accent);
-  background: var(--accent);
-}
-.taskText {
-  display: grid;
-  flex: 1;
-  min-width: 0;
-}
-.taskText b {
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.35;
-  color: var(--text-1);
-  overflow-wrap: anywhere;
-}
-.taskText small {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.02em;
-  color: var(--text-3);
-}
-.task[data-done="true"] .taskText b {
-  color: var(--text-3);
-  text-decoration: line-through;
-}
-.task[data-done="true"] .avatar {
-  opacity: 0.45;
-}
-.due {
-  flex: none;
-  padding: 2px 7px;
-  border: 1px solid var(--line-strong);
-  border-radius: 2px;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  color: var(--text-2);
-  white-space: nowrap;
-}
-
-/* ---------- 03 the notes ---------- */
-.note {
-  display: grid;
-  gap: 4px;
-  padding: 10px 6px 10px 10px;
-  border-bottom: 1px solid var(--line);
-  box-shadow: inset 2px 0 0 #b59ce6;
-  transition: background-color var(--motion-fast) var(--ease-out);
-}
-.noteHead {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-.noteHead b {
-  min-width: 0;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.35;
-  color: var(--text-1);
-  overflow-wrap: anywhere;
-}
-.note ul {
-  display: grid;
-  gap: 2px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.note ul li {
-  position: relative;
-  padding-left: 12px;
-  font-size: 0.8125rem;
-  line-height: 1.45;
-  color: var(--text-2);
-  overflow-wrap: anywhere;
-}
-.note ul li::before {
-  content: "";
-  position: absolute;
-  left: 1px;
-  top: 0.72em;
-  width: 5px;
-  height: 1px;
-  background: #b59ce6;
-}
-
-/* pointed at, here or on the calendar: both light up */
-.task[data-hot="true"],
-.note[data-hot="true"] {
-  background: var(--surface-strong);
-}
-/* just added */
-.task[data-fresh="true"],
-.note[data-fresh="true"] {
-  animation: ofc-row 1600ms var(--ease-out);
-}
-@keyframes ofc-row {
-  0% {
-    background: rgba(62, 224, 143, 0.24);
-  }
-  100% {
-    background: transparent;
-  }
-}
-@keyframes ofc-in {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 4px, 0);
-  }
-}
-
 /* ---------- 04 the calendar ---------- */
 .weekBar {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: space-between;
   gap: 6px 22px;
   margin-bottom: 14px;
 }
@@ -559,41 +365,6 @@
 }
 .weekBar .stepNote {
   margin-left: 4px;
-}
-.status {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 18px;
-  margin-left: auto;
-  font-size: 0.8125rem;
-  color: var(--text-2);
-}
-.status > b {
-  font-weight: 600;
-  color: var(--accent);
-}
-.keys {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-.keys span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.keys i {
-  width: 8px;
-  height: 8px;
-  border: 1px solid var(--k);
-  border-radius: 1px;
-  background: color-mix(in srgb, var(--k) 20%, transparent);
 }
 .replay {
   font-family: var(--font-mono);
@@ -614,7 +385,7 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   min-width: 640px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.012);
 }
@@ -623,7 +394,7 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  min-height: 168px;
+  min-height: 150px;
   padding: 10px;
 }
 .day + .day {
@@ -632,46 +403,40 @@
 .dayHead {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  padding-bottom: 8px;
-  margin-bottom: 2px;
-  border-bottom: 1px solid var(--line);
+  justify-content: space-between;
+  margin-bottom: 4px;
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-3);
 }
 .dayHead b {
-  font-size: 15px;
+  font-family: var(--font-sans);
+  font-size: 18px;
   font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--text-1);
+  letter-spacing: -0.02em;
+  color: var(--text-2);
 }
-.dayHead em {
-  margin-left: auto;
-  font-style: normal;
-  color: var(--accent);
-}
-.day[data-today="true"] .dayHead {
-  border-bottom-color: rgba(62, 224, 143, 0.55);
-}
+.day[data-today="true"] .dayHead,
 .day[data-today="true"] .dayHead b {
   color: var(--accent);
 }
 .item {
-  display: grid;
-  gap: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
-  padding: 6px 8px 7px;
+  min-height: 36px;
+  padding: 5px 8px;
   border-left: 2px solid var(--k);
   border-radius: 2px;
-  background: color-mix(in srgb, var(--k) 11%, transparent);
-  transition:
-    box-shadow var(--motion-fast) var(--ease-out),
-    opacity var(--motion-fast) var(--ease-out);
+  background: color-mix(in srgb, var(--k) 12%, transparent);
+  transition: opacity var(--motion-fast) var(--ease-out);
 }
 .item b {
+  flex: 1;
+  min-width: 0;
   font-size: 0.8125rem;
   font-weight: 500;
   line-height: 1.3;
@@ -679,12 +444,19 @@
   overflow-wrap: anywhere;
 }
 .item small {
+  flex: none;
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10px;
   letter-spacing: 0.04em;
-  color: color-mix(in srgb, var(--k) 70%, var(--text-2));
+  color: var(--text-3);
+}
+.item .avatar {
+  width: 22px;
+  height: 22px;
+  font-size: 8.5px;
 }
 .item[data-kind="meeting"] b {
+  font-weight: 400;
   color: var(--text-2);
 }
 .item[data-done="true"] {
@@ -692,9 +464,6 @@
 }
 .item[data-done="true"] b {
   text-decoration: line-through;
-}
-.item[data-hot="true"] {
-  box-shadow: 0 0 0 1px var(--accent);
 }
 .item[data-fresh="true"] {
   animation: ofc-land 1800ms var(--ease-out);
@@ -711,29 +480,35 @@
       0 0 0 1px var(--accent);
   }
 }
-.empty {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  color: var(--text-3);
-  opacity: 0.6;
+.check {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #6fc9c9;
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 1;
+  color: #07090b;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
+}
+.check:hover {
+  background: color-mix(in srgb, #6fc9c9 20%, transparent);
+}
+.check[aria-checked="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
 }
 
 @media (max-width: 640px) {
   .grid > section {
     padding: 16px;
   }
-  .thread {
-    max-height: 340px;
-  }
-  .status {
-    margin-left: 0;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .msg,
-  .task[data-fresh="true"],
-  .note[data-fresh="true"],
   .item[data-fresh="true"] {
     animation: none;
   }

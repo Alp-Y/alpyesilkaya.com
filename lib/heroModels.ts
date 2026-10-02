@@ -5,7 +5,7 @@
  * (see content/tools/*.md).
  */
 
-export type HeroModelId = "road" | "basement" | "progress" | "areas" | "structures" | "claims";
+export type HeroModelId = "road" | "basement" | "progress" | "areas" | "structures" | "claims" | "office";
 
 export type HeroModel = {
   id: HeroModelId;
@@ -83,6 +83,15 @@ export const HERO_MODELS: HeroModel[] = [
     line: "Move the submission date once and every claim document follows, with unit prices and totals checked against each other.",
     tool: { name: "Claim Management Software", href: "/tools/claim-management-software" },
     view: { azimuth: -38, elevation: 22 },
+  },
+  {
+    id: "office",
+    platform: "Desktop App",
+    tab: "Office",
+    title: "Office week.",
+    line: "Turn a message into a task with one owner and a due day, and see it on the calendar next to the notes.",
+    tool: { name: "Office Communication Software", href: "/tools/office-communication-software" },
+    view: { azimuth: -28, elevation: 34 },
   },
 ];
 

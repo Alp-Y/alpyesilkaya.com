@@ -1,34 +1,32 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { CALENDAR_ORDER, MESSAGES, NOTES, PEOPLE, TASKS, TODAY, WEEK, dayName, dayNum, onDay } from "@/lib/office/model";
+import { MESSAGES, NOTE, PEOPLE, TASK, TODAY, WEEK, dayName, dayNum } from "@/lib/office/model";
 import { PreviewBar } from "./SqePreview";
 import { usePreviewLoop } from "./usePreviewLoop";
 import { useHold } from "./useHold";
 import styles from "./preview.module.css";
 import c from "./ofc.module.css";
 
-/** the conversation → tasks given out → a note → all of it on the week's calendar → result, on repeat */
+/** a message → the task it becomes → a note → both on the week's calendar, on repeat */
 const PHASES = [
-  { label: "Messages", ms: 2200 },
-  { label: "Assign", ms: 2600 },
-  { label: "Note", ms: 2200 },
-  { label: "Calendar", ms: 2400 },
-  { label: "Result", ms: 4600 },
+  { label: "Message", ms: 1700 },
+  { label: "Task", ms: 2200 },
+  { label: "Note", ms: 1900 },
+  { label: "Calendar", ms: 5200 },
 ];
 
-type Frame = { msg: number; task: number; note: number; cal: number; res: number; fade: number };
-const FINAL: Frame = { msg: 1, task: 1, note: 1, cal: 1, res: 1, fade: 1 };
-const ease = (t: number) => 1 - Math.pow(1 - t, 3);
-/** how many of n things have arrived, a little ahead of time so the last one can be read */
-const arrived = (t: number, n: number) => (t <= 0 ? 0 : Math.min(n, Math.floor(t * n * 1.15) + 1));
+type Frame = { msg: number; task: number; note: number; cal: number; fade: number };
+const FINAL: Frame = { msg: 1, task: 1, note: 1, cal: 1, fade: 1 };
+const clamp = (t: number) => Math.max(0, Math.min(1, t));
+const ease = (t: number) => 1 - Math.pow(1 - clamp(t), 3);
 
 /**
- * OFFICE COMMUNICATION — homepage preview. The office conversation comes in,
- * tasks are given to people with a due day, a note is written, and then the
- * due days and the note land on the week's calendar. Point at a task, the
- * note or a calendar entry to see where it sits on the other side; press and
- * hold to pause.
+ * OFFICE COMMUNICATION — homepage preview, drawn as one small diagram.
+ * A message comes in and becomes a task with one owner and a due day; a
+ * note is written against a day; leader lines then carry both down to the
+ * week's calendar. Point at the task or the note to find it on the
+ * calendar; press and hold to pause.
  */
 export default function OfcPreview({ title }: { title: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -42,180 +40,94 @@ export default function OfcPreview({ title }: { title: string }) {
     PHASES.map((p) => p.ms),
     (p, t, _dt, wrapped) => {
       if (wrapped) setHot(null);
-      if (p === 0) setF({ msg: t, task: 0, note: 0, cal: 0, res: 0, fade: Math.min(1, t * 5) });
-      else if (p === 1) setF({ msg: 1, task: t, note: 0, cal: 0, res: 0, fade: 1 });
-      else if (p === 2) setF({ msg: 1, task: 1, note: t, cal: 0, res: 0, fade: 1 });
-      else if (p === 3) setF({ msg: 1, task: 1, note: 1, cal: t, res: 0, fade: 1 });
-      else setF({ msg: 1, task: 1, note: 1, cal: 1, res: Math.min(1, t * 2.5), fade: t > 0.93 ? 1 - (t - 0.93) / 0.07 : 1 });
+      if (p === 0) setF({ msg: t, task: 0, note: 0, cal: 0, fade: Math.min(1, t * 5) });
+      else if (p === 1) setF({ msg: 1, task: t, note: 0, cal: 0, fade: 1 });
+      else if (p === 2) setF({ msg: 1, task: 1, note: t, cal: 0, fade: 1 });
+      else setF({ msg: 1, task: 1, note: 1, cal: t, fade: t > 0.94 ? 1 - (t - 0.94) / 0.06 : 1 });
     },
     heldRef,
   );
 
-  const note = NOTES[0];
-  const msgs = arrived(f.msg, MESSAGES.length);
-  const tasks = arrived(f.task, TASKS.length);
-  const typed = Math.round(ease(Math.min(1, f.note * 1.8)) * note.title.length);
-  const noteLines = f.note >= 1 ? note.lines.length : f.note > 0.75 ? 2 : f.note > 0.55 ? 1 : 0;
-  const placed = CALENDAR_ORDER.slice(0, arrived(f.cal, CALENDAR_ORDER.length));
-  const res = held && f.cal >= 1 ? 1 : ease(f.res);
-  const people = new Set(TASKS.map((t) => t.to)).size;
-  // the messages that became tasks, once their task is there
-  const becameTask = (id: string) => TASKS.slice(0, tasks).some((t) => t.from === id);
+  const m = MESSAGES[0];
+  const typed = Math.round(ease(f.note * 1.6) * NOTE.title.length);
+  const arrow = ease(f.task * 3); // message → task
+  const drop = ease(f.cal * 4.5); // task and note → calendar
+  const landed = f.cal > 0.2;
+  const link = (id: string) => ({ "data-hot": hot === id, onPointerEnter: () => setHot(id), onPointerLeave: () => setHot(null) });
+  const dash = (p: number) => ({ pathLength: 1, strokeDasharray: 1, strokeDashoffset: 1 - p });
 
   return (
     <div ref={ref} className={styles.card} data-held={held}>
       <div ref={area} className={`${styles.stage} ${c.stage} ${styles.pointable}`} onPointerLeave={() => setHot(null)}>
         <div className={c.inner} style={{ opacity: f.fade }}>
-          <div className={c.top}>
-            <span className={c.channel}>
-              <i aria-hidden="true" />
-              Technical office
-            </span>
-            <span className={c.counts}>
-              <span data-show={tasks > 0}>
-                <b>{tasks}</b> {tasks === 1 ? "task" : "tasks"} assigned
-              </span>
-              <span data-show={f.cal > 0}>
-                <b className={c.ok}>
-                  {placed.length}/{CALENDAR_ORDER.length}
-                </b>{" "}
-                on the calendar
-              </span>
-            </span>
-          </div>
+          {/* the leader lines: message → task, then task and note → their days */}
+          <svg className={c.leaders} viewBox="0 0 72 39.6" preserveAspectRatio="none" fill="none" aria-hidden="true">
+            <path d="M22.67 9.6H25.33" {...dash(arrow)} />
+            {arrow >= 1 && <path d="M24.7 9.05L25.33 9.6L24.7 10.15" />}
+            <path d="M36 16V22" {...dash(drop)} />
+            <path d="M59.67 16V19H49.6V22" {...dash(drop)} />
+          </svg>
 
-          <div className={c.main}>
-            {/* the conversation */}
-            <ul className={c.thread}>
-              {MESSAGES.map((m, i) => (
-                <li key={m.id} className={c.msg} data-show={i < msgs} data-task={becameTask(m.id)}>
-                  <Avatar id={m.from} />
-                  <span className={c.msgBody}>
-                    <span className={c.meta}>
-                      {PEOPLE[m.from].role} <em>{m.time}</em>
-                    </span>
-                    <span className={c.text}>{m.text}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
+          <div className={c.cards}>
+            <div className={c.node} data-kind="message" data-show={f.msg > 0}>
+              <span className={c.cap}>
+                Message <em>{m.time}</em>
+              </span>
+              <p className={c.body}>{m.text}</p>
+              <span className={c.foot}>
+                <Avatar id={m.from} />
+                <span className={c.role}>{PEOPLE[m.from].role}</span>
+              </span>
+            </div>
 
-            <div className={c.side}>
-              {/* the tasks, each with a person and a due day */}
-              <ul className={c.tasks}>
-                {TASKS.map((t, i) => (
-                  <li
-                    key={t.id}
-                    className={c.task}
-                    data-show={i < tasks}
-                    data-placed={placed.includes(t.id)}
-                    data-hot={hot === t.id}
-                    onPointerEnter={() => setHot(t.id)}
-                    onPointerLeave={() => setHot(null)}
-                  >
-                    <i className={c.box} aria-hidden="true" />
-                    <span className={c.taskTitle}>{t.title}</span>
-                    <Avatar id={t.to} />
-                    <span className={c.due}>
-                      {dayName(t.due)} {dayNum(t.due)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              {/* the note */}
-              <div
-                className={c.note}
-                data-show={f.note > 0}
-                data-placed={placed.includes(note.id)}
-                data-hot={hot === note.id}
-                onPointerEnter={() => setHot(note.id)}
-                onPointerLeave={() => setHot(null)}
-              >
-                <span className={c.noteHead}>
-                  <b>
-                    {note.title.slice(0, typed)}
-                    {f.note > 0 && f.note < 0.56 && <i className={c.caret} aria-hidden="true" />}
-                  </b>
-                  <span className={c.due}>
-                    {dayName(note.day)} {dayNum(note.day)}
-                  </span>
+            <div className={c.node} data-kind="task" data-show={f.task > 0.25} data-landed={landed} {...link(TASK.id)}>
+              <span className={c.cap}>
+                Task <i className={c.box} aria-hidden="true" />
+              </span>
+              <p className={c.body}>{TASK.title}</p>
+              <span className={c.foot} data-show={f.task > 0.5}>
+                <Avatar id={TASK.to} />
+                <span className={c.due}>
+                  {dayName(TASK.due)} {dayNum(TASK.due)}
                 </span>
-                {note.lines.map((l, i) => (
-                  <span key={l} className={c.noteLine} data-show={i < noteLines}>
-                    {l}
-                  </span>
-                ))}
-              </div>
+              </span>
+            </div>
+
+            <div className={c.node} data-kind="note" data-show={f.note > 0} data-landed={landed} {...link(NOTE.id)}>
+              <span className={c.cap}>Note</span>
+              <p className={c.body}>
+                {NOTE.title.slice(0, typed)}
+                {f.note > 0 && f.note < 0.7 && <i className={c.caret} aria-hidden="true" />}
+              </p>
+              <span className={c.foot} data-show={f.note > 0.7}>
+                <span className={c.due}>
+                  {dayName(NOTE.day)} {dayNum(NOTE.day)}
+                </span>
+              </span>
             </div>
           </div>
 
-          {/* the week: meetings, then what the office just put on it */}
+          {/* the week they land on */}
           <div className={c.week}>
             {WEEK.map((day) => (
               <div key={day} className={c.day} data-today={day === TODAY}>
                 <span className={c.dayHead}>
                   {dayName(day)} <b>{dayNum(day)}</b>
                 </span>
-                {onDay(day, TASKS, NOTES).map((it) => (
-                  <span
-                    key={it.id}
-                    className={c.chip}
-                    data-kind={it.kind}
-                    data-show={it.kind === "meeting" || placed.includes(it.id)}
-                    data-hot={hot === it.id}
-                    onPointerEnter={() => it.kind !== "meeting" && setHot(it.id)}
-                    onPointerLeave={() => setHot(null)}
-                  >
-                    {it.title}
+                {day === TASK.due && (
+                  <span className={c.chip} data-kind="task" data-show={landed} {...link(TASK.id)}>
+                    <Avatar id={TASK.to} />
+                    {TASK.title}
                   </span>
-                ))}
+                )}
+                {day === NOTE.day && (
+                  <span className={c.chip} data-kind="note" data-show={landed} {...link(NOTE.id)}>
+                    {NOTE.title}
+                  </span>
+                )}
               </div>
             ))}
           </div>
-
-          {/* before the result: what is in the office */}
-          <p className={c.legend} style={{ opacity: 1 - res }} aria-hidden={res > 0.5}>
-            <span data-kind="message">
-              <i />
-              Messages
-            </span>
-            <span data-kind="task">
-              <i />
-              Tasks
-            </span>
-            <span data-kind="note">
-              <i />
-              Notes
-            </span>
-            <span data-kind="meeting">
-              <i />
-              Meetings
-            </span>
-          </p>
-
-          {/* the result */}
-          <dl className={c.result} style={{ opacity: res, transform: `translate3d(0, ${(1 - res) * 8}px, 0)` }}>
-            <div>
-              <dt>Messages</dt>
-              <dd className="num">{MESSAGES.length}</dd>
-            </div>
-            <div>
-              <dt>Tasks assigned</dt>
-              <dd className="num">
-                {TASKS.length}
-                <em>to {people} people</em>
-              </dd>
-            </div>
-            <div>
-              <dt>On the calendar</dt>
-              <dd className={`num ${c.ok}`}>
-                {CALENDAR_ORDER.length}
-                <em>
-                  {TASKS.length} due days · {NOTES.length} note
-                </em>
-              </dd>
-            </div>
-          </dl>
         </div>
       </div>
       <PreviewBar
@@ -223,7 +135,7 @@ export default function OfcPreview({ title }: { title: string }) {
         durations={PHASES.map((p) => p.ms)}
         phase={phase}
         held={held}
-        hint={f.task >= 1 ? "Point at a task" : undefined}
+        hint={f.task >= 1 ? "Point at the task" : undefined}
         onSeek={(i) => {
           setHot(null);
           seek(i);
