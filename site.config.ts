@@ -7,54 +7,6 @@
  * Anything marked TODO is a placeholder you should replace.
  */
 
-/**
- * The photos in the homepage About section (files in /public/images/), in order.
- * One shows at a time, with "Fig. 01", "Fig. 02"… tabs above the frame to switch.
- * To add one: put the file in /public/images/ and add an entry here.
- *   focus   which part stays in the frame when the photo is cropped (CSS object-position)
- *   aspect  a frame in another shape than the default 4 / 5 (e.g. "4 / 3" for a wide photo)
- */
-const aboutPhotos = [
-  {
-    src: "/images/about-coast.jpg",
-    alt: "Alp Yesilkaya sitting on a rock by the sea, with a small island behind",
-    caption: "", // the tab above the frame already says which figure it is
-    focus: "50% 38%",
-    width: 1137,
-    height: 1567,
-    isPlaceholder: false,
-  },
-  {
-    src: "/images/about-mountain.jpg",
-    alt: "Alp Yesilkaya standing on a rock in front of a mountain, under a dark sky",
-    caption: "",
-    // the frame is a little shorter than the photo: keep the bottom (Alp), trim the sky
-    focus: "50% 100%",
-    width: 1400,
-    height: 2100,
-    isPlaceholder: false,
-  },
-  {
-    src: "/images/about-seaside.jpg",
-    alt: "Alp Yesilkaya sitting on a stone wall above the sea, between two bicycles, with a small island behind",
-    caption: "",
-    // a landscape frame in the photo's own shape, so nothing is cropped: the island stays in
-    aspect: "4 / 3",
-    width: 1760,
-    height: 1320,
-    isPlaceholder: false,
-  },
-  {
-    src: "/images/about-climb.jpg",
-    alt: "Alp Yesilkaya in a climbing harness, looking up, among bare trees",
-    caption: "",
-    focus: "50% 30%",
-    width: 771,
-    height: 961,
-    isPlaceholder: false,
-  },
-] as const;
-
 export const site = {
   name: "Alp Yesilkaya",
   shortName: "A. Yesilkaya",
@@ -80,10 +32,17 @@ export const site = {
     linkedin: "https://www.linkedin.com/in/alpyesilkaya/",
   },
 
-  /** The first About photo: also the picture given to search engines. */
-  portrait: aboutPhotos[0],
-  /** All the About photos, in order (see aboutPhotos at the top of this file). */
-  aboutPhotos,
+  /** The photo in the homepage About section (in /public/images/). Also the picture given to search engines. */
+  portrait: {
+    src: "/images/about-mountain.jpg",
+    alt: "Alp Yesilkaya standing on a rock in front of a mountain, under a dark sky",
+    caption: "Fig. 01",
+    // the frame is a little shorter than the photo: the bottom (Alp, the peak) stays, some sky is trimmed
+    focus: "50% 100%",
+    width: 1400,
+    height: 2100,
+    isPlaceholder: false,
+  },
 
   /** Revision shown in the footer title block. Bump it when you publish changes. */
   revision: { code: "A", date: "2026-09" },
