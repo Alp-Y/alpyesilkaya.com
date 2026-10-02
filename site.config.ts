@@ -15,7 +15,7 @@ export const site = {
 
   role: "Civil Engineer",
   /** The line under the name in the hero, read left to right. */
-  process: ["Civil Engineering", "Automation", "PMP®"],
+  process: ["Civil Engineering", "Design", "Automation", "PMP®"],
 
   /** One-sentence positioning statement shown in the hero. */
   statement: "I’m a civil engineer building engineering software tools.",

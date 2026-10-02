@@ -1,0 +1,351 @@
+/* ==================================================================
+   DRAFTER: the green cursor that builds the page (lib/workspace/drafter.ts).
+   Sits under the visitor's own cursor (z 60) and never takes the pointer.
+   ================================================================== */
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-ui) var(--ease-out);
+}
+.root[data-on="true"] {
+  opacity: 1;
+}
+
+/* ---------- The cursor: crosshair + pickbox, in the accent ---------- */
+.cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+.plus::before,
+.plus::after {
+  content: "";
+  position: absolute;
+  --arm: var(--accent);
+}
+.plus::before {
+  left: -13px;
+  top: 0;
+  width: 27px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--arm) 0 9px, transparent 9px 18px, var(--arm) 18px);
+}
+.plus::after {
+  left: 0;
+  top: -13px;
+  width: 1px;
+  height: 27px;
+  background: linear-gradient(180deg, var(--arm) 0 9px, transparent 9px 18px, var(--arm) 18px);
+}
+.box {
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--accent);
+}
+/* MTEXT: the crosshair becomes a text caret as tall as the line */
+.caret {
+  position: absolute;
+  left: 0;
+  top: calc(var(--caret, 24px) / -2);
+  width: 2px;
+  height: var(--caret, 24px);
+  background: var(--accent);
+  display: none;
+}
+.root[data-tool="text"] .plus,
+.root[data-tool="text"] .box {
+  display: none;
+}
+.root[data-tool="text"] .caret {
+  display: block;
+}
+
+/* Command tag, like dynamic input beside the crosshair */
+.tag {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  display: flex;
+  gap: 8px;
+  padding: 3px 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  background: rgba(7, 9, 11, 0.86);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.tag b {
+  font-weight: 500;
+  color: var(--accent);
+}
+.tag span:empty {
+  display: none;
+}
+.cursor[data-flip-x="true"] .tag {
+  left: auto;
+  right: 16px;
+}
+.cursor[data-flip-y="true"] .tag {
+  top: auto;
+  bottom: 16px;
+}
+
+/* ---------- Rubber band while a rectangle is dragged ---------- */
+.band {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border: 1px dashed rgba(62, 224, 143, 0.85);
+  background: rgba(62, 224, 143, 0.045);
+  opacity: 0;
+  will-change: transform, width, height;
+}
+.band[data-on="true"] {
+  opacity: 1;
+}
+
+/* ---------- Marks left on the sheet: outline, grips, pick points ---------- */
+.marks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 55;
+  pointer-events: none;
+}
+.marks [data-m] {
+  position: absolute;
+  animation: markOut 800ms var(--ease-out) forwards;
+}
+.marks [data-m="box"] {
+  outline: 1px solid rgba(62, 224, 143, 0.7);
+}
+/* selection grips, the same blue as CAD */
+.marks [data-m="grip"]::before,
+.marks [data-m] i {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px;
+  background: var(--grip);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+}
+.marks [data-m] i:nth-child(1) {
+  left: 0;
+  top: 0;
+}
+.marks [data-m] i:nth-child(2) {
+  left: 100%;
+  top: 0;
+}
+.marks [data-m] i:nth-child(3) {
+  left: 0;
+  top: 100%;
+}
+.marks [data-m] i:nth-child(4) {
+  left: 100%;
+  top: 100%;
+}
+/* a pick: the pickbox pulses where the cursor clicked */
+.marks [data-m="ping"] {
+  width: 9px !important;
+  height: 9px !important;
+  margin: -4.5px;
+  border: 1px solid var(--accent);
+  animation: ping 380ms var(--ease-out) forwards;
+}
+@keyframes markOut {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes ping {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+/* ---------- Sketch layer: geometry a component's script draws (hero model) ---------- */
+.sketch {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.sketch path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* a surveyed point: a small cross with its level */
+.sketch [data-s="pt"] path {
+  stroke: var(--accent);
+  stroke-width: 1.25;
+}
+.sketch [data-s="pt"] text {
+  fill: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-anchor: middle;
+}
+.sketch [data-s="pt"] {
+  animation: ptIn 260ms var(--ease-out) backwards;
+}
+/* existing ground profile */
+.sketch [data-s="eg"] {
+  stroke: #c9d1da;
+  stroke-width: 1.25;
+}
+/* design (finished) level */
+.sketch [data-s="dg"] {
+  stroke: var(--accent);
+  stroke-width: 1.25;
+  stroke-dasharray: 7 4;
+}
+@keyframes ptIn {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- Extras left on the sheet after a block is drawn ---------- */
+/* dimension lines: the line extends from its middle, ticks at both ends, the size in the middle */
+.marks [data-m="dimw"],
+.marks [data-m="dimh"] {
+  animation: markOut 2100ms var(--ease-out) forwards;
+}
+.marks [data-m="dimw"]::before,
+.marks [data-m="dimh"]::before {
+  content: "";
+  position: absolute;
+  background: var(--text-3);
+}
+.marks [data-m="dimw"]::before {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  animation: dimX 520ms var(--ease-draw) backwards;
+}
+.marks [data-m="dimh"]::before {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  animation: dimY 520ms var(--ease-draw) backwards;
+}
+/* end ticks (the slanted "architectural" tick) */
+.marks [data-m="dimw"]::after,
+.marks [data-m="dimh"]::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  animation: ptIn 200ms linear 420ms backwards;
+}
+.marks [data-m="dimw"]::after {
+  background:
+    linear-gradient(135deg, transparent 46%, var(--text-2) 46% 54%, transparent 54%) left center / 9px 9px no-repeat,
+    linear-gradient(135deg, transparent 46%, var(--text-2) 46% 54%, transparent 54%) right center / 9px 9px no-repeat;
+}
+.marks [data-m="dimh"]::after {
+  background:
+    linear-gradient(135deg, transparent 46%, var(--text-2) 46% 54%, transparent 54%) center top / 9px 9px no-repeat,
+    linear-gradient(135deg, transparent 46%, var(--text-2) 46% 54%, transparent 54%) center bottom / 9px 9px no-repeat;
+}
+.marks [data-m="dimw"] b,
+.marks [data-m="dimh"] b {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 1px 6px;
+  background: var(--bg-0);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 450;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  animation: ptIn 240ms linear 300ms backwards;
+}
+.marks [data-m="dimh"] b {
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+/* hatch: sweeps across the block, then clears */
+.marks [data-m="hatch"] {
+  background: repeating-linear-gradient(45deg, rgba(62, 224, 143, 0.22) 0 1px, transparent 1px 9px);
+  animation: hatch 1000ms var(--ease-draw) forwards;
+}
+/* station ticks along a drawn rule */
+.marks [data-m="ticks"] {
+  background: repeating-linear-gradient(90deg, var(--line-strong) 0 1px, transparent 1px 24px);
+  animation: ticks 1250ms var(--ease-draw) forwards;
+}
+@keyframes dimX {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes dimY {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes hatch {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 1;
+  }
+  55% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+}
+@keyframes ticks {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 1;
+  }
+  50% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+}

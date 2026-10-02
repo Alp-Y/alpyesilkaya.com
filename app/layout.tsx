@@ -6,6 +6,7 @@ import StatusBar from "@/components/StatusBar";
 import SiteFooter from "@/components/SiteFooter";
 import SiteEffects from "@/components/SiteEffects";
 import CadCursor from "@/components/CadCursor";
+import Drafter from "@/components/Drafter";
 import "./globals.css";
 
 /*
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main">{children}</main>
         <SiteFooter />
         <StatusBar />
+        <Drafter />
         <CadCursor />
         <SiteEffects />
       </body>

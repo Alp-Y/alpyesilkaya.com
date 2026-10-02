@@ -5,7 +5,8 @@
  * It works by looking for data-* attributes in the HTML, so components
  * stay simple server-rendered markup.
  *
- *   [data-reveal] / [data-observe]  scroll reveals (adds .is-in)
+ *   [data-reveal] / [data-observe]  scroll reveals (adds .is-in), drawn into place
+ *                                   by the drafter cursor (workspace/drafter)
  *   [data-stagger]                  gives children a --i index
  *   [data-header]                   frosted / hide-on-scroll header, mobile menu
  *   [data-section][data-layer]      active nav tab + status-bar layer
@@ -31,6 +32,7 @@ import { initWorkspaceDom } from "./workspace/dom";
 import { initUcs } from "./workspace/ucs";
 import { initProximity } from "./workspace/proximity";
 import { initLight } from "./workspace/light";
+import { initDrafter } from "./workspace/drafter";
 
 type Cleanup = () => void;
 
@@ -99,21 +101,31 @@ function initReveal(): Cleanup {
     targets.forEach((el) => el.classList.add("is-in"));
     return () => {};
   }
+  // The drafter draws each element into place (lib/workspace/drafter.ts).
+  // With reduced motion it is off and elements use their plain CSS reveal.
+  const drafter = initDrafter();
   const observer = new IntersectionObserver(
     (entries) => {
+      const shown: HTMLElement[] = [];
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          entry.target.classList.add("is-in");
+          shown.push(entry.target as HTMLElement);
           observer.unobserve(entry.target);
         }
       }
+      if (!shown.length) return;
+      if (drafter) drafter.enqueue(shown);
+      else shown.forEach((el) => el.classList.add("is-in"));
     },
     { rootMargin: "0px 0px -10% 0px", threshold: 0 },
   );
   targets.forEach((el) => {
     if (!el.classList.contains("is-in")) observer.observe(el);
   });
-  return () => observer.disconnect();
+  return () => {
+    observer.disconnect();
+    drafter?.stop();
+  };
 }
 
 /**
