@@ -34,15 +34,13 @@ export const site = {
 
   /** The portrait in the homepage About section (in /public/images/). */
   portrait: {
-    // cut out (transparent background), cropped above the open shirt, edges fading into the grid
-    src: "/images/alp.png",
-    alt: "Portrait of Alp Yesilkaya",
-    caption: "alp.png",
-    selected: "Engineer · 1 selected",
-    // the frame takes the photo's own shape: nothing is cropped
-    aspect: "741 / 801",
-    width: 741,
-    height: 801,
+    src: "/images/about-at-work.jpg",
+    alt: "Alp Yesilkaya explaining a project on a laptop to a visitor",
+    caption: "Fig. 01 / At work",
+    // which part of the photo stays in the frame when it is cropped: Alp, on the right
+    focus: "88% 40%",
+    width: 1280,
+    height: 1010,
     isPlaceholder: false,
   },
 
