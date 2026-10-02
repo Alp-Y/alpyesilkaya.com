@@ -142,8 +142,8 @@ export default function HeroModels() {
   const ready = PLATFORMS.filter((p) => p.ready && scenesOf(p.short).length > 0);
   const later = PLATFORMS.filter((p) => !p.ready);
 
-  // data-draft-kind: the drafter types the label, sets the tabs down one by one and
-  // draws the sentence (lib/workspace/drafter.ts); the delays give their order.
+  // data-draft-kind: the drafter types the label, copies the tabs into place one by one
+  // and writes the sentence line by line (lib/workspace/drafter.ts); the delays give their order.
   return (
     <div className={styles.panel}>
       <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-overlay data-reveal="fade" data-draft-kind="type" style={{ "--delay": "1021ms" } as React.CSSProperties}>
@@ -240,7 +240,7 @@ export default function HeroModels() {
         data-hero-exit
         data-overlay
         data-reveal="fade"
-        data-draft-kind="rect"
+        data-draft-kind="para"
         style={{ "--delay": "1026ms" } as React.CSSProperties}
       >
         <p key={m.id} className={styles.storyLine}>

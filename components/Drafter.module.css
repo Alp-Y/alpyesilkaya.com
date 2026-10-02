@@ -418,3 +418,18 @@
   letter-spacing: 0.08em;
   line-height: 1.4;
 }
+
+/* ---------- A label being typed: the copy laid over it (drafter "type") ---------- */
+.root [data-ghost] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  line-height: normal;
+  will-change: transform;
+}
+/* the characters still decoding */
+.root [data-ghost] i {
+  font-style: normal;
+  color: var(--accent);
+}

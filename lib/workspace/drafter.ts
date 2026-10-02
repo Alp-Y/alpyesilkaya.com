@@ -23,9 +23,14 @@
  *   instead (REGEN): a scan line sweeps down and everything appears behind it.
  *
  * Special pieces
- *   data-draft-kind       "type"  a label typed out character by character
- *                         "array" its children are inserted one after another
+ *   data-draft-kind       "type"  a label typed out, its last characters still decoding
+ *                         "para"  a paragraph written line by line behind a caret
+ *                         "array" its children are copied into place one after another
  *                         "rect"  drawn as a block whatever its reveal type
+ *   data-draft-id / data-draft-with
+ *                         pieces marked data-draft-with="x" wait for the piece with
+ *                         data-draft-id="x", then drop in around it one by one with
+ *                         grips (the hero viewport and the blocks that sit in it)
  *   data-draft            a component supplies its own drawing script with
  *                         registerDraft() (the hero model: survey points, the
  *                         ground profile, the design line, then the 3D volumes)
@@ -57,7 +62,7 @@ const MIN_SPEED = 0.6;
 /** How long the cursor stays after its last command, in ms. */
 const LINGER = 700;
 /** The pause after a piece is finished, before the cursor moves on, in ms. */
-const DWELL = 180;
+const DWELL = 130;
 /** Scrolling faster than this (px per ms) regenerates the screen instead of drawing it. */
 const RUSH_SPEED = 2.4;
 /** How long the regeneration sweep takes, top to bottom, in ms. */
@@ -65,11 +70,11 @@ const REGEN_MS = 420;
 /** Opacity of a block while its rubber band is still being dragged. */
 const GHOST = 0.4;
 
-type Kind = "rect" | "frame" | "line" | "text" | "place" | "insert" | "script" | "type" | "array";
+type Kind = "rect" | "frame" | "line" | "text" | "place" | "insert" | "script" | "type" | "array" | "para";
 /** Time each command takes at normal speed, in ms. */
-const OP: Record<Kind, number> = { rect: 540, frame: 620, line: 480, text: 540, place: 120, insert: 120, script: 0, type: 700, array: 700 };
+const OP: Record<Kind, number> = { rect: 540, frame: 620, line: 480, text: 540, place: 120, insert: 120, script: 0, type: 700, array: 700, para: 800 };
 /** The kinds the cursor draws itself. The rest appear on their own. */
-const DRAWN: ReadonlySet<Kind> = new Set<Kind>(["rect", "line", "text", "script", "type", "array"]);
+const DRAWN: ReadonlySet<Kind> = new Set<Kind>(["rect", "frame", "line", "text", "script", "type", "array", "para"]);
 
 /** The opening plays once per page load, not on every navigation. */
 let booted = false;
@@ -145,7 +150,7 @@ const onScreen = (p: Pt): Pt => ({
 function kindOf(el: HTMLElement): Kind {
   if (el.hasAttribute("data-draft")) return "script";
   const forced = el.dataset.draftKind;
-  if (forced === "type" || forced === "array" || forced === "rect") return forced;
+  if (forced === "type" || forced === "array" || forced === "rect" || forced === "para") return forced;
   const reveal = el.dataset.reveal;
   if (reveal === "draw") return "line";
   if (reveal === "lines") return el.querySelector(".line > span") ? "text" : "insert";
@@ -184,6 +189,12 @@ function reveal(el: HTMLElement, immediate: boolean) {
   }
   el.classList.add("is-in");
   releaseChildren(el);
+  announce(el);
+}
+
+/** Tells the drafter a piece is in, so anything waiting for it ([data-draft-with]) can follow. */
+function announce(el: HTMLElement) {
+  if (el.dataset.draftId) document.dispatchEvent(new CustomEvent("draft:done", { detail: el.dataset.draftId }));
 }
 
 /**
@@ -208,6 +219,7 @@ function commit(el: HTMLElement) {
   if (el.matches("[data-play]")) el.classList.add("play");
   nodes.forEach((n) => (n.style.transition = ""));
   releaseChildren(el);
+  announce(el);
 }
 
 export function initDrafter(): Drafter | null {
@@ -246,6 +258,26 @@ export function initDrafter(): Drafter | null {
   let lastScrollAt = 0;
   let lastRegen = 0;
   let calmUntil = 0;
+
+  // Pieces that wait for another piece ([data-draft-with] → [data-draft-id])
+  const doneIds = new Set<string>();
+  const held = new Map<string, HTMLElement[]>();
+  const release = (id: string) => {
+    doneIds.add(id);
+    const els = held.get(id) ?? [];
+    held.delete(id);
+    // they drop in one after another, each picked out with grips as it lands
+    els
+      .filter((el) => el.isConnected && !el.classList.contains("is-in"))
+      .forEach((el, i) => {
+        later(() => {
+          if (el.offsetWidth || el.offsetHeight) markRect("grips", el.getBoundingClientRect());
+          reveal(el, true);
+        }, 140 + i * 170);
+      });
+  };
+  const onDone = (e: Event) => release((e as CustomEvent<string>).detail);
+  document.addEventListener("draft:done", onDone);
   const onAnchor = (e: MouseEvent) => {
     if ((e.target as Element | null)?.closest?.('a[href*="#"]')) calmUntil = performance.now() + 1600;
   };
@@ -473,43 +505,135 @@ export function initDrafter(): Drafter | null {
     }
 
     if (kind === "type") {
-      // typed out like a command: the text is uncovered one character at a time
-      const chars = Math.max(1, (el.textContent ?? "").trim().length);
-      let m: { l: number; r: number; w: number } | null = null;
-      const measure = () => {
-        if (m) return m;
-        const er = box();
+      // Typed out like a command, the last characters still decoding as it goes.
+      // The typing happens in a copy laid over the label (its own text is never
+      // touched); the real label takes over when the line is complete.
+      const text = (el.textContent ?? "").trim();
+      const chars = Math.max(1, text.length);
+      const GLYPHS = "/\\<>#=+01";
+      let ghost: HTMLElement | null = null;
+      const textBox = () => {
         const range = document.createRange();
         range.selectNodeContents(el);
         const rr = range.getBoundingClientRect();
-        m = rr.width > 0 ? { l: rr.left - er.left, r: rr.right - er.left, w: er.width } : { l: 0, r: er.width, w: er.width };
-        return m;
+        return rr.width > 0 ? rr : box();
       };
       const at = (t: number): Pt => {
-        const r = box();
-        const { l, r: right } = measure();
-        const n = Math.round(chars * t);
-        return { x: r.left + l + ((right - l) * n) / chars, y: r.top + r.height / 2 };
+        const r = textBox();
+        return { x: r.left + (r.width * Math.round(chars * t)) / chars, y: r.top + r.height / 2 };
       };
       return [
         {
           cmd: "TEXT",
           tool: "text",
           linear: true,
-          ms: clamp(chars * 42, 320, 1000),
+          ms: clamp(chars * 34, 360, 900),
           begin: () => {
             st.transition = "none";
             st.transform = "none";
-            st.opacity = "1";
-            st.clipPath = "inset(0 100% 0 0)";
-            cursor!.style.setProperty("--caret", `${Math.round(box().height * 1.1)}px`);
+            const cs = getComputedStyle(el);
+            ghost = document.createElement("span");
+            ghost.dataset.ghost = "";
+            ghost.style.fontFamily = cs.fontFamily;
+            ghost.style.fontSize = cs.fontSize;
+            ghost.style.fontWeight = cs.fontWeight;
+            ghost.style.letterSpacing = cs.letterSpacing;
+            ghost.style.textTransform = cs.textTransform;
+            ghost.style.color = cs.color;
+            root!.appendChild(ghost);
+            cursor!.style.setProperty("--caret", `${Math.round(textBox().height * 1.1)}px`);
           },
           from: () => at(0),
           path: at,
           draw: (t) => {
-            const { l, r, w } = measure();
-            const x = l + ((r - l) * Math.round(chars * t)) / chars;
-            st.clipPath = `inset(-0.3em ${(w - x).toFixed(1)}px -0.3em -0.3em)`;
+            if (!ghost) return;
+            const r = textBox();
+            const n = Math.round(chars * t);
+            let tail = "";
+            for (let i = 0; i < Math.min(3, chars - n); i++) tail += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+            ghost.textContent = text.slice(0, n);
+            const live = document.createElement("i");
+            live.textContent = tail;
+            ghost.appendChild(live);
+            ghost.style.transform = `translate3d(${r.left.toFixed(1)}px, ${r.top.toFixed(1)}px, 0)`;
+          },
+          end: () => {
+            ghost?.remove();
+            ghost = null;
+            const r = textBox();
+            mark("ticks", r.left, r.bottom + 3, r.width, 5, 1300); // a rule of ticks runs under it
+            commit(el);
+          },
+        },
+      ];
+    }
+
+    if (kind === "para") {
+      // A paragraph written line by line: the caret runs along each line and the
+      // words appear behind it (the text is uncovered, never changed).
+      type Line = { top: number; bottom: number; left: number; right: number };
+      let lines: Line[] | null = null;
+      let total = 0;
+      const measure = () => {
+        if (lines) return lines;
+        const er = box();
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const out: Line[] = [];
+        for (const r of Array.from(range.getClientRects())) {
+          if (r.width < 1) continue;
+          const last = out[out.length - 1];
+          const mid = (r.top + r.bottom) / 2 - er.top;
+          if (last && mid > last.top && mid < last.bottom) {
+            last.left = Math.min(last.left, r.left - er.left);
+            last.right = Math.max(last.right, r.right - er.left);
+          } else {
+            out.push({ top: r.top - er.top, bottom: r.bottom - er.top, left: r.left - er.left, right: r.right - er.left });
+          }
+        }
+        if (!out.length) out.push({ top: 0, bottom: er.height, left: 0, right: er.width });
+        total = out.reduce((sum, l) => sum + (l.right - l.left), 0);
+        lines = out;
+        return out;
+      };
+      /** Which line the caret is on at t, and how far along it. */
+      const where = (t: number) => {
+        const ls = measure();
+        let d = total * t;
+        for (let k = 0; k < ls.length; k++) {
+          const w = ls[k].right - ls[k].left;
+          if (d <= w || k === ls.length - 1) return { k, x: ls[k].left + Math.min(d, w) };
+          d -= w;
+        }
+        return { k: 0, x: 0 };
+      };
+      const at = (t: number): Pt => {
+        const r = box();
+        const { k, x } = where(t);
+        const l = measure()[k];
+        return { x: r.left + x, y: r.top + (l.top + l.bottom) / 2 };
+      };
+      return [
+        {
+          cmd: "MTEXT",
+          tool: "text",
+          ms: clamp((el.textContent ?? "").length * 12, 480, 1000),
+          begin: () => {
+            st.transition = "none";
+            st.transform = "none";
+            st.opacity = "1";
+            st.clipPath = "inset(0 100% 100% 0)";
+            const l = measure()[0];
+            cursor!.style.setProperty("--caret", `${Math.round((l.bottom - l.top) * 0.9)}px`);
+          },
+          from: () => at(0),
+          path: at,
+          draw: (t) => {
+            const { k, x } = where(t);
+            const l = measure()[k];
+            const W = box().width + 8;
+            // everything above the caret's line, plus that line up to the caret
+            st.clipPath = `polygon(-8px -8px, ${W}px -8px, ${W}px ${l.top.toFixed(1)}px, ${x.toFixed(1)}px ${l.top.toFixed(1)}px, ${x.toFixed(1)}px ${l.bottom.toFixed(1)}px, -8px ${l.bottom.toFixed(1)}px)`;
           },
           end: () => commit(el),
         },
@@ -522,7 +646,7 @@ export function initDrafter(): Drafter | null {
       if (!kids.length) return [];
       return kids.map(
         (kid, i): Step => ({
-          cmd: "INSERT",
+          cmd: i === 0 ? "INSERT" : "COPY",
           ms: 90,
           begin: () => {
             if (i > 0) return;
@@ -538,12 +662,15 @@ export function initDrafter(): Drafter | null {
           draw: () => `${i + 1} / ${kids.length}`,
           end: () => {
             kid.style.opacity = "";
+            // copied across from the one before it (the first simply lands)
+            const prev = kids[i - 1];
+            const dx = prev ? prev.getBoundingClientRect().left - kid.getBoundingClientRect().left : 0;
             kid.animate(
               [
-                { opacity: 0, transform: "translateY(5px)" },
+                { opacity: prev ? 0.35 : 0, transform: prev ? `translateX(${dx.toFixed(1)}px)` : "translateY(6px)" },
                 { opacity: 1, transform: "none" },
               ],
-              { duration: 260, easing: "ease-out" },
+              { duration: 320, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
             );
             markRect("box", kid.getBoundingClientRect());
             if (i === kids.length - 1) commit(el);
@@ -592,6 +719,7 @@ export function initDrafter(): Drafter | null {
       if (el.hasAttribute("data-draft")) el.dispatchEvent(new CustomEvent("draft:skipped"));
       el.classList.add("is-in");
       releaseChildren(el);
+      announce(el);
     }
     if (!any || now - lastRegen < REGEN_MS + 200) return;
     lastRegen = now;
@@ -617,6 +745,7 @@ export function initDrafter(): Drafter | null {
     endIntro();
     setBand(null);
     sketch!.replaceChildren();
+    root!.querySelectorAll("[data-ghost]").forEach((g) => g.remove());
     job = null;
     steps = [];
     step = null;
@@ -635,7 +764,7 @@ export function initDrafter(): Drafter | null {
     return [
       {
         cmd: "OPEN",
-        ms: 800,
+        ms: 650,
         fixed: true,
         begin: () => {
           root!.dataset.intro = "true"; // the crosshair spans the whole screen
@@ -804,6 +933,13 @@ export function initDrafter(): Drafter | null {
         // (in 40 px rows), so a heading is always drawn before what sits under it.
         const row = Math.round((el.getBoundingClientRect().top + window.scrollY) / 40);
         const key = el.closest("[data-hero]") ? staged : 1e6 + row * 2000 + staged;
+        // it sits in a piece that is still to be drawn (the hero viewport): wait for that
+        const waitsFor = el.dataset.draftWith;
+        if (waitsFor && !doneIds.has(waitsFor) && performance.now() >= rushUntil) {
+          held.set(waitsFor, [...(held.get(waitsFor) ?? []), el]);
+          later(() => el.classList.add("is-in"), 12000); // safety net
+          continue;
+        }
         const kind = kindOf(el);
         if (!DRAWN.has(kind)) {
           // a small piece: it fades in by itself, on its usual staged timing
@@ -837,6 +973,7 @@ export function initDrafter(): Drafter | null {
       stopped = true;
       stopFrames();
       document.removeEventListener("click", onAnchor, true);
+      document.removeEventListener("draft:done", onDone);
       if (root.dataset.intro === "true") root.dataset.intro = "false";
       if (html.dataset.boot === "wait") delete html.dataset.boot;
       timers.forEach((id) => window.clearTimeout(id));

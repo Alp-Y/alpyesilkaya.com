@@ -33,7 +33,7 @@ export default function Hero() {
       <div className={styles.light} aria-hidden="true" />
 
       {/* Navigation cube — interactive 3D (falls back to the static drawing) */}
-      <div className={styles.viewcubeWrap} data-overlay data-reveal="fade" style={{ "--delay": "1040ms" } as React.CSSProperties}>
+      <div className={styles.viewcubeWrap} data-overlay data-reveal="fade" data-draft-with="viewport" style={{ "--delay": "1040ms" } as React.CSSProperties}>
         <InteractiveViewCube className={styles.viewcube} />
       </div>
 
@@ -59,11 +59,17 @@ export default function Hero() {
         </h1>
 
         {/* What I work across: a quiet annotation under the name, not a set of tabs */}
-        <ul className={styles.disciplines} aria-label="Disciplines" data-cursor="text">
-          {site.process.map((d, i) => (
-            <li key={d} data-reveal="rise" style={{ "--delay": `${650 + i * 90}ms` } as React.CSSProperties}>
-              {withMarks(d)}
-            </li>
+        {/* the drafter sets these down one by one, each copied across from the one before */}
+        <ul
+          className={styles.disciplines}
+          aria-label="Disciplines"
+          data-cursor="text"
+          data-reveal="rise"
+          data-draft-kind="array"
+          style={{ "--delay": "650ms" } as React.CSSProperties}
+        >
+          {site.process.map((d) => (
+            <li key={d}>{withMarks(d)}</li>
           ))}
         </ul>
 
@@ -72,12 +78,13 @@ export default function Hero() {
             className={styles.statement}
             data-cursor="text"
             data-reveal="rise"
+            data-draft-kind="para"
             style={{ "--delay": "900ms" } as React.CSSProperties}
           >
             {site.statement}
           </p>
 
-          <div className={styles.actions} data-reveal="rise" style={{ "--delay": "1020ms" } as React.CSSProperties}>
+          <div className={styles.actions} data-reveal="rise" data-draft-kind="rect" data-draft-fx="hatch" style={{ "--delay": "1020ms" } as React.CSSProperties}>
             <a href="#tools" className={styles.primary} data-hud="GO TO|02 · TOOLS">
               View my work <span className="arrow arrow-down" aria-hidden="true">↓</span>
             </a>
@@ -88,8 +95,18 @@ export default function Hero() {
       {/* Desktop: the model sits in a drawn viewport, like model space in CAD. Its
           controls, model tabs and the line on what the tool does there (top left),
           ViewCube (top right), UCS icon and scale bar (bottom corners) all sit
-          inside it. The frame draws itself first, then its contents fade in. */}
-      <div className={styles.viewport} data-hero-exit data-overlay data-reveal="frame" aria-hidden="true">
+          inside it. The drafter drags the frame out after the text column is in
+          (data-draft-id); the ViewCube, UCS icon and scale bar wait for it
+          (data-draft-with) and then drop in one by one. */}
+      <div
+        className={styles.viewport}
+        data-hero-exit
+        data-overlay
+        data-reveal="frame"
+        data-draft-id="viewport"
+        style={{ "--delay": "1020.5ms" } as React.CSSProperties}
+        aria-hidden="true"
+      >
         <i className={styles.corner} data-c="tl" />
         <i className={styles.corner} data-c="tr" />
         <i className={styles.corner} data-c="bl" />
@@ -110,7 +127,7 @@ export default function Hero() {
       {/* UCS icon (the origin of the hero's drawing coordinates) + command line */}
       <div className={`container ${styles.base}`} data-hero-exit>
         {/* Scale bar: bottom-right corner of the sheet, measured from the model (EarthworksModel sets it) */}
-        <div className={styles.scaleBar} data-scale-bar data-overlay data-reveal="fade" style={{ "--delay": "1200ms" } as React.CSSProperties} aria-hidden="true">
+        <div className={styles.scaleBar} data-scale-bar data-overlay data-reveal="fade" data-draft-with="viewport" style={{ "--delay": "1200ms" } as React.CSSProperties} aria-hidden="true">
           <span className={styles.sbBar}>
             <i />
             <i />
@@ -123,7 +140,7 @@ export default function Hero() {
         </div>
 
         {/* Builds itself with the rest of the interface: origin, then the X, Y, Z axes */}
-        <div className={styles.ucsWrap} data-overlay data-reveal="ucs" style={{ "--delay": "1120ms" } as React.CSSProperties}>
+        <div className={styles.ucsWrap} data-overlay data-reveal="ucs" data-draft-with="viewport" style={{ "--delay": "1120ms" } as React.CSSProperties}>
           <UcsIcon className={styles.ucs} />
           <span className={styles.origin} data-cad-origin aria-hidden="true" />
         </div>
