@@ -4,11 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * Drives a looping preview: which phase is showing and how far into it
- * (0 → 1). A preview plays by itself while it is in the middle band of the
- * screen (or while the visitor points at it or has focus in it), and rests on
- * its finished picture otherwise. So scrolling down a page of tools, the one
- * you are looking at is alive and the rest are still. With reduced motion it
- * holds its last phase and does not move.
+ * (0 → 1). A preview waits at the start of its story, plays by itself once it
+ * is properly on screen (or while the visitor points at it or has focus in
+ * it), and simply pauses where it is when it scrolls away. Coming back, it
+ * carries on from there. It never jumps to another point of its story, so
+ * scrolling past a page of tools is seamless. With reduced motion it holds
+ * its last phase and does not move.
  */
 export function usePreviewLoop(
   ref: React.RefObject<HTMLElement | null>,
@@ -64,36 +65,32 @@ export function usePreviewLoop(
       setPhase(p);
       kick();
     };
-    /** Back to rest: the finished picture. */
-    const rest = () => {
-      clock = total - 1;
-      shown = durations.length - 1;
-      setPhase(shown);
-      tickRef.current?.(shown, 1, 0, false);
-    };
-    // "On screen" means in the middle band of the screen, so only the preview the
-    // visitor is looking at plays (two short ones can share the band).
+    // "On screen" leaves out a strip at the top and bottom edge, so a preview starts
+    // just after it has come into view and pauses just before it leaves.
+    let primed = false;
     const io = new IntersectionObserver(
       ([e]) => {
-        const was = visible;
+        if (!primed) {
+          // before it has ever played it waits at the start of its story, so the
+          // first thing the visitor sees is the beginning, not the end
+          primed = true;
+          shown = 0;
+          setPhase(0);
+          tickRef.current?.(0, 0, 0, false);
+        }
         visible = e.isIntersecting;
         setRunning(visible);
-        if (visible && !was && !engaged) clock = 0; // it tells its story from the start as it arrives
-        if (!visible && was && !engaged) rest();
         kick();
       },
-      { rootMargin: "-28% 0px -28% 0px" },
+      { rootMargin: "-10% 0px -10% 0px" },
     );
     io.observe(el);
     const engage = () => {
-      if (engaged) return;
       engaged = true;
-      if (!visible) clock = 0; // pointed at while resting: start its story
       kick();
     };
     const release = () => {
       engaged = el.matches(":hover") || el.contains(document.activeElement);
-      if (!engaged && !visible) rest();
     };
     el.addEventListener("pointerenter", engage);
     el.addEventListener("pointerleave", release);
