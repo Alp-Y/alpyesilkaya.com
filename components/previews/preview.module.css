@@ -799,3 +799,19 @@
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------
+   Calm view: a preview rests on its finished picture, and its step
+   row only shows while the visitor points at it or has focus in it
+   (touch screens keep it, since there is no pointing there).
+   ------------------------------------------------------------------ */
+@media (hover: hover) and (pointer: fine) {
+  .bar {
+    opacity: 0;
+    transition: opacity var(--motion-medium) var(--ease-out);
+  }
+  .card:hover .bar,
+  .card:focus-within .bar {
+    opacity: 1;
+  }
+}

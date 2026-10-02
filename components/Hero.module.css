@@ -855,4 +855,15 @@
   }
 }
 
-
+/* ------------------------------------------------------------------
+   Calm view: secondary annotations are hidden so the sheet has a clear
+   order (name, statement, button, then the model). The viewport toolbar,
+   the sheet number and the scale bar are still in the markup; remove
+   this rule to show them again. Views are still reachable from the
+   ViewCube and the command line.
+   ------------------------------------------------------------------ */
+.toolbar,
+.sheet,
+.scaleBar {
+  display: none !important;
+}

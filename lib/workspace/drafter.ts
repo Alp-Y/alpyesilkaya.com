@@ -1,37 +1,22 @@
 /**
  * DRAFTER
  * ------------------------------------------------------------------
- * Two quiet CAD cursors (green and teal) that draw the page into place as it
- * scrolls into view. lib/effects.ts hands over every [data-reveal] /
- * [data-observe] element that enters the screen.
+ * One quiet CAD cursor and one moment: when the homepage opens it writes the
+ * name, then builds the hero model. That is all it draws. Everything else, on
+ * every page, fades in by itself with the plain staged reveals (lib/effects.ts
+ * still hands every [data-reveal] / [data-observe] element over, and this
+ * module adds .is-in for the ones it does not draw).
  *
- * Kept deliberately simple: a handful of gestures, one word in the tag, no
- * running numbers, nothing left behind on the sheet.
+ *   the name   (hero "lines")   MTEXT   a caret runs along each line, the words follow
+ *   the model  ([data-draft])   the component's own script (survey points, then the
+ *                               model: components/earthworks/buildScript.ts)
  *
- *   headings   ("lines")  MTEXT    a caret runs along each line, the words follow
- *   paragraphs ("para")   MTEXT    the same, line by line
- *   blocks     ("rise")   RECTANG  dragged out corner to corner
- *   rules      ("draw")   LINE     pulled from start to end
- *   rows       ("array")  ARRAY    laid out in one sweep
- *   everything small      appears on its own with its usual staged fade
+ * Scroll away quickly while it is drawing and it stops: what it was working on
+ * simply appears.
  *
- * In the hero (wide screens) one cursor takes the text column and the other
- * the viewport; whichever finishes first helps the other. Everywhere else
- * they share one queue, and each prefers something different from what the
- * other is doing.
- *
- * Attributes
- *   data-draft-kind="para|array|rect"   draw it this way whatever its reveal type
- *   data-draft-id / data-draft-with     pieces marked data-draft-with="x" wait for
- *                                       the piece with data-draft-id="x", then fade
- *                                       in one after another (the hero viewport)
- *   data-draft                          a component supplies its own drawing script
- *                                       with registerDraft() (the hero model)
- *
- * Fast scrolling
- *   Nobody waits for the cursors. The first time a scan line sweeps down and
- *   everything appears behind it; after that each piece is plotted in from its
- *   left edge, with no line.
+ * The other gestures (blocks dragged out, rules pulled, rows laid out, a second
+ * cursor) are still in this file but switched off: DRAWN lists what the cursor
+ * draws, and components/Drafter.tsx decides how many cursors there are.
  *
  * How it works
  *   Everything is driven per frame with inline styles, then handed back to
@@ -56,6 +41,8 @@ const DWELL = 120;
 const RUSH_SPEED = 2.4;
 /** How long the regeneration sweep takes, top to bottom, in ms. */
 const REGEN_MS = 420;
+/** How long the rest of the hero waits for the name to be written, in ms. */
+const NAME_LEAD = 700;
 /** Opacity of a block while its rubber band is still being dragged. */
 const GHOST = 0.4;
 
@@ -63,12 +50,9 @@ type Kind = "rect" | "frame" | "line" | "text" | "place" | "insert" | "script" |
 /** Time each command takes at normal speed, in ms. */
 const OP: Record<Kind, number> = { rect: 620, frame: 720, line: 540, text: 620, place: 120, insert: 120, script: 0, type: 700, array: 700, para: 800 };
 /** The kinds the cursor draws itself. The rest appear on their own. */
-const DRAWN: ReadonlySet<Kind> = new Set<Kind>(["rect", "frame", "line", "text", "script", "type", "array", "para"]);
+const DRAWN: ReadonlySet<Kind> = new Set<Kind>(["text", "script"]);
 /** Rough time to travel between two elements, used only for the pace estimate. */
 const TRAVEL = 480;
-
-/** The regeneration scan line plays once per page load. */
-let scanned = false;
 
 const PENDING = "[data-reveal]:not(.is-in), [data-observe]:not(.is-in)";
 
@@ -282,7 +266,6 @@ export function initDrafter(): Drafter | null {
   let rushUntil = 0;
   let lastY = window.scrollY;
   let lastScrollAt = 0;
-  let lastRegen = 0;
   let calmUntil = 0;
 
   // Pieces that wait for another piece ([data-draft-with] → [data-draft-id])
@@ -662,13 +645,11 @@ export function initDrafter(): Drafter | null {
   }
 
   /* ---------- fast scrolling: regenerate instead of drawing ---------- */
-  /** Everything given appears behind a scan line that sweeps down the screen. */
-  function regen(els: HTMLElement[], now: number) {
+  /** Everything given simply appears, top of the screen first. */
+  function regen(els: HTMLElement[]) {
     const H = window.innerHeight;
-    let any = false;
     for (const el of els) {
       if (!el.isConnected || el.classList.contains("is-in")) continue;
-      any = true;
       const top = clamp(el.getBoundingClientRect().top / H, 0, 1);
       el.style.setProperty("--delay", `${Math.round(top * REGEN_MS)}ms`);
       el.style.setProperty("--i", "0");
@@ -676,34 +657,11 @@ export function initDrafter(): Drafter | null {
       el.classList.add("is-in");
       releaseChildren(el);
       announce(el);
-      // after the first time there is no scan line: each piece is plotted in, drawn
-      // across from its left edge like a plotter laying it down, top of the screen first
-      if (scanned) {
-        el.animate([{ clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 -2% 0 0)" }], {
-          duration: 340,
-          delay: Math.round(top * REGEN_MS),
-          easing: "cubic-bezier(0.33, 0.1, 0.25, 1)",
-          fill: "backwards",
-        });
-      }
     }
-    if (!any || now - lastRegen < REGEN_MS + 200) return;
-    lastRegen = now;
-    if (scanned) return; // the scan line is a one-off
-    scanned = true;
-    regenLine!.animate(
-      [
-        { transform: "translate3d(0, 0, 0)", opacity: 0 },
-        { opacity: 1, offset: 0.12 },
-        { opacity: 1, offset: 0.8 },
-        { transform: `translate3d(0, ${H}px, 0)`, opacity: 0 },
-      ],
-      { duration: REGEN_MS + 180, easing: "linear" },
-    );
   }
 
   /** Drop what is being drawn and what is waiting: all of it is regenerated at once. */
-  function flush(now: number) {
+  function flush() {
     const els = queue.map((q) => q.el);
     queue.length = 0;
     for (const w of workers) {
@@ -720,7 +678,7 @@ export function initDrafter(): Drafter | null {
     }
     sketch!.replaceChildren();
     root!.querySelectorAll("[data-ghost]").forEach((g) => g.remove());
-    regen(els, now);
+    regen(els);
   }
 
   /* ---------- the queue ---------- */
@@ -873,7 +831,7 @@ export function initDrafter(): Drafter | null {
       // section is where they want to be, so it is drawn for them when they arrive
       if (v > RUSH_SPEED && performance.now() > calmUntil) rushUntil = now + 250;
     }
-    if (now < rushUntil && (queue.length || workers.some((w) => w.step || w.steps.length))) flush(now);
+    if (now < rushUntil && (queue.length || workers.some((w) => w.step || w.steps.length))) flush();
     let more = false;
     for (const w of workers) {
       W = w;
@@ -885,6 +843,8 @@ export function initDrafter(): Drafter | null {
   return {
     enqueue(els) {
       const batch: Job[] = [];
+      // is the hero's name among these (the page has just opened at the top)?
+      const leads = els.some((el) => el.dataset.reveal === "lines" && !!el.closest("[data-hero]") && !el.classList.contains("is-in"));
       for (const el of els) {
         if (el.classList.contains("is-in")) continue;
         // inside something that is still to be drawn: it appears with its parent
@@ -906,8 +866,13 @@ export function initDrafter(): Drafter | null {
           continue;
         }
         const kind = kindOf(el);
-        if (!DRAWN.has(kind)) {
-          // a small piece: it fades in by itself, on its usual staged timing
+        // Only the hero's name and its model are drawn by the cursor. Everything
+        // else, on every page, fades in by itself on its usual staged timing.
+        const inHero = !!el.closest("[data-hero]");
+        if (!DRAWN.has(kind) || !inHero) {
+          // In the hero the name leads: the rest of the sheet follows once it is
+          // (nearly) written, in its staged order, so there is one clear sequence.
+          if (inHero && leads) el.style.setProperty("--delay", `${Math.round(staged + NAME_LEAD)}ms`);
           reveal(el, false);
           continue;
         }
@@ -926,7 +891,7 @@ export function initDrafter(): Drafter | null {
         (a, b) => a.key - b.key || (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1),
       );
       if (performance.now() < rushUntil) {
-        regen(batch.map((b) => b.el), performance.now());
+        regen(batch.map((b) => b.el));
         return;
       }
       queue.push(...batch);

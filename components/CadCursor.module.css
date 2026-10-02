@@ -328,3 +328,9 @@
 .inner :global(.hud-label) {
   color: var(--text-2);
 }
+
+/* The long crosshair lines across the sheet are switched off: the small "+" at the
+   pointer is the cursor. (Fewer lines on screen; remove this rule to bring them back.) */
+.frame {
+  display: none;
+}

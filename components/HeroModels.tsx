@@ -16,7 +16,7 @@ import styles from "./Hero.module.css";
  * restarts that wait; resting the pointer on the tabs or the line pauses it.
  * Off with reduced motion, while the hero is off screen or the tab is hidden.
  */
-const ADVANCE_MS = 5000;
+const ADVANCE_MS = 9000;
 
 /** The countdown line goes straight back to empty (no shrinking) — before a switch or on interaction. */
 function resetLine(...rows: (HTMLElement | null)[]) {
@@ -142,15 +142,13 @@ export default function HeroModels() {
   const ready = PLATFORMS.filter((p) => p.ready && scenesOf(p.short).length > 0);
   const later = PLATFORMS.filter((p) => !p.ready);
 
-  // data-draft-with: these wait for the viewport frame to be drawn, then fade in one
-  // after another (lib/workspace/drafter.ts).
   return (
     <div className={styles.panel}>
-      <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-overlay data-reveal="fade" data-draft-with="viewport" style={{ "--delay": "1021ms" } as React.CSSProperties}>
+      <p id="hero-use-cases" className={`mono ${styles.useCases}`} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "1021ms" } as React.CSSProperties}>
         Tools in development
       </p>
       {/* the platforms with tools: each shows its scenes (Civil 3D's open one by one); the rest are on the way */}
-      <div ref={tabsRef} className={styles.models} data-hero-exit data-overlay data-reveal="fade" data-draft-with="viewport" style={{ "--delay": "1023ms" } as React.CSSProperties}>
+      <div ref={tabsRef} className={styles.models} data-hero-exit data-overlay data-reveal="fade" style={{ "--delay": "1023ms" } as React.CSSProperties}>
         {ready.map((p) => {
           const on = p.short === platform;
           const scenes = scenesOf(p.short);
@@ -240,11 +238,11 @@ export default function HeroModels() {
         data-hero-exit
         data-overlay
         data-reveal="fade"
-        data-draft-with="viewport"
         style={{ "--delay": "1040ms" } as React.CSSProperties}
       >
         <p key={m.id} className={styles.storyLine}>
-          <strong>{m.title}</strong> {m.line}{" "}
+          {/* kept to the title and the tool: the full sentence (m.line) is on the tool's page */}
+          <strong>{m.title}</strong>{" "}
           <Link href={m.tool.href} className={styles.storyTool}>
             {m.tool.name} <span aria-hidden="true">→</span>
           </Link>
