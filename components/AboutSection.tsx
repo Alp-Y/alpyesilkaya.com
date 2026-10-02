@@ -25,8 +25,8 @@ export default function AboutSection() {
 
         <div className={styles.grid}>
           <div className={styles.media}>
-            {/* one frame, with "Fig. 01 / Fig. 02" tabs to switch (the photos are set in site.config.ts) */}
-            <PhotoSwitcher photos={[site.portrait, site.portraitSecond]} />
+            {/* one frame, with "Fig. 01", "Fig. 02"… tabs to switch (the photos are set in site.config.ts) */}
+            <PhotoSwitcher photos={site.aboutPhotos} />
           </div>
 
           <div className={styles.text}>
