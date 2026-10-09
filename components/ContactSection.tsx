@@ -29,6 +29,11 @@ export default function ContactSection() {
               </span>
             </h2>
 
+            {/* Who should write, in one line */}
+            <p className={styles.ask} data-cursor="text" data-reveal="rise" style={{ "--delay": "180ms" } as React.CSSProperties}>
+              Want to try one of the tools, or working where engineering and tool building meet? Write to me.
+            </p>
+
             <div className={styles.emailRow} data-reveal="rise" style={{ "--delay": "250ms" } as React.CSSProperties}>
               <a href={`mailto:${site.email}`} className={styles.email} data-copy-email={site.email}>
                 <span className={styles.emailText} data-copy-label>

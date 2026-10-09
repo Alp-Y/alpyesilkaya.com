@@ -6,21 +6,24 @@
 # ─────────────────────────────────────────────────────────────
 # The Properties panel. "Label | Value" rows; a "[Group]" row starts a new
 # foldable group. Empty groups are hidden.
+# A group can say how it is drawn, "[Group | style]":
+#   tags      Label | a · b · c            → the label, then each part as a small tag
+#   cards     Label | what · where · year  → one card per row, side by side
+#   timeline  Years | who · role · place   → entries down a line, newest first (the first is lit as current)
+#   (no style)                             → a plain label / value table
 properties:
+  - "[General | tags]"
   - Background | Civil Engineering · Project Management
-  - Experience | Infrastructure · Energy · Construction
-  - Working with | Civil 3D · AutoCAD · Excel VBA · Data · Automation
-  - Currently | Technical office engineer
-  - "[Tools]"
-  - AI assistants | ChatGPT Codex · Claude Code
-  - Languages | TypeScript · Python · CSS
-  - Built on | Next.js · React · Three.js
-# Shown when a visitor clicks EXPAND EXPERIENCE. Newest first, one line each:
-# Company | Role | Location | Years | One-sentence summary
-experience:
-  - Yüksel İnşaat | Technical Office Engineer | Riyadh | Since 2026 | Major road infrastructure project covering technical-office engineering, quantities, progress measurement and digital engineering workflows.
-  - Otuken Construction | Founder | Ukraine | 2025 → 2026 | Explored residential development opportunities in western Ukraine through market research, feasibility, cost modelling and local partnerships.
-  - Mormaír | Project Manager / Engineer | Glasgow | 2023 → 2025 | Managed £1M in Innovate UK funding and contributed to industrial decarbonization concepts for major UK energy facilities with project values up to £65M.
-  - Nu Static Engineering | Civil Engineer | İzmir | 2022 → 2023 | Worked on wind-energy infrastructure, including structural analysis and foundation design development for the Dren Wind Farm project.
-  - Dokuz Eylül University | Research Associate | İzmir | 2021 | Led experimental work on earth-fill dam failure and sediment transport for a TÜBİTAK-funded hydraulic engineering research project.
+  - Works with | Civil 3D · AutoCAD · Excel VBA
+  - Builds with | Claude Code · ChatGPT Codex · TypeScript · Python
+  - "[Qualifications | cards]"
+  - MSc | Construction Project Management · Heriot-Watt · 2024
+  - BSc | Civil Engineering · Dokuz Eylül · 2022
+  - PMP® | Project Management Professional · PMI · 2024
+  - "[Experience | timeline]"
+  - 2026 → Now | Yüksel İnşaat · Technical Office Engineer · Riyadh
+  - 2025 → 2026 | Otuken Construction · Founder · Ivano-Frankivsk
+  - 2023 → 2025 | Mormaír · Project Manager / Engineer · Glasgow
+  - 2022 → 2023 | Nu Static Engineering · Civil Engineer · İzmir
+  - 2021 | Dokuz Eylül University · Research Associate · İzmir
 ---

@@ -15,7 +15,7 @@ export const site = {
 
   role: "Civil Engineer",
   /** The line under the name in the hero, read left to right. */
-  process: ["Civil Engineering", "Design", "Automation", "PMP®"],
+  process: ["Civil Engineering", "Design", "Automation"],
 
   /** One-sentence positioning statement shown in the hero. */
   statement: "I’m a civil engineer building engineering software tools.",
@@ -55,8 +55,8 @@ export const site = {
  * Main navigation. `href` values starting with "/#" scroll to a homepage section.
  * The numbers shown beside them come from lib/sections.ts, so they always match
  * the "02 / Tools" labels on the page and run in order. Case Studies only
- * appears once there is a real (non-placeholder) case study, so the menu never
- * sends a visitor to an empty "coming soon".
+ * appears (in the menu and on the homepage) once there is a real
+ * (non-placeholder) case study. Until then the site shows nothing about them.
  */
 export const nav = [
   { label: "How I work", href: "/#approach", section: "approach" },

@@ -2,6 +2,7 @@ export const dynamic = "force-static";
 
 import type { MetadataRoute } from "next";
 import { getCaseStudies, getTools } from "@/lib/content";
+import { hasCaseStudies } from "@/lib/sections";
 import { site } from "@/site.config";
 
 /**
@@ -13,7 +14,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     page("", 1),
     page("/tools", 0.8),
-    page("/case-studies", 0.8),
+    // The case studies page is listed only once it has something real on it
+    ...(hasCaseStudies() ? [page("/case-studies", 0.8)] : []),
     ...getTools().map((t) => page(`/tools/${t.slug}`, 0.7)),
     // Placeholder case studies stay out of search results until they are real
     ...getCaseStudies()

@@ -110,6 +110,167 @@
   color: var(--text-1);
 }
 
+/* ---------- Group styles: tags, cards, timeline (see PropertiesPalette.tsx) ---------- */
+
+/* small mono labels, the same voice as the annotations around the site */
+.tagRow dt,
+.cardNote,
+.when {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* TAGS: a label, then its values as tags */
+.tagRows {
+  margin: 0;
+  padding: 2px 12px 12px;
+  display: grid;
+  gap: 10px;
+}
+.tagRow {
+  display: grid;
+  grid-template-columns: minmax(88px, 22%) 1fr;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.tagRow dt,
+.tagRow dd {
+  margin: 0;
+}
+.tagRow dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tag {
+  padding: 3px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  background: var(--surface);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+
+/* CARDS: side by side, divided by hairlines. When they wrap, the last one takes the rest of the row. */
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+}
+.card {
+  flex: 1 1 150px;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 14px 12px;
+  /* a hairline above and to the left of every card; the palette's edge hides the outer ones */
+  box-shadow:
+    -1px 0 0 var(--line),
+    0 -1px 0 var(--line);
+}
+.cardKey {
+  font-size: 1.25rem;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-1);
+}
+.reg {
+  position: relative;
+  top: -0.1em;
+  margin-left: 0.06em;
+  font-size: 0.5em;
+  font-weight: 400;
+  color: var(--text-3);
+}
+.cardWhat {
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--text-2);
+}
+.cardNote {
+  margin-top: 6px;
+}
+
+/* TIMELINE: entries down a line, a grip on each */
+.timeline {
+  margin: 0;
+  padding: 2px 12px 8px;
+  list-style: none;
+}
+.stop {
+  position: relative;
+  display: grid;
+  grid-template-columns: 7px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 14px;
+  padding: 8px 0;
+}
+/* the line through the grips: it starts at the first grip and ends at the last */
+.stop::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line-strong);
+}
+.stop:first-child::before {
+  top: 50%;
+}
+.stop:last-child::before {
+  bottom: 50%;
+}
+.grip {
+  position: relative;
+  align-self: center;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--text-3);
+  background: var(--bg-2);
+}
+.stop[data-current="true"] .grip {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.stopMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+  min-width: 0;
+}
+.who {
+  font-weight: 540;
+  letter-spacing: -0.005em;
+  color: var(--text-1);
+}
+.what {
+  font-size: 0.8125rem;
+  color: var(--text-2);
+}
+.when {
+  white-space: nowrap;
+}
+.stop[data-current="true"] .when {
+  color: var(--accent);
+}
+
+@media (max-width: 520px) {
+  .tagRow {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- Experience (foldable, grows the palette downward) ---------- */
 
 .drawer {

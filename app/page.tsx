@@ -11,14 +11,13 @@ import styles from "./page.module.css";
 
 /**
  * HOMEPAGE
- * Sections, in order: Hero → Disciplines → Tools → Case studies → About → Contact.
+ * Sections, in order: Hero → Disciplines → Tools → Case studies (once one is real) → About → Contact.
  * Tools and case studies come from the Markdown files in /content.
  */
 export default function HomePage() {
   const tools = getTools();
   const cases = getCaseStudies();
   const realCases = cases.filter((c) => !c.placeholder);
-  const upcoming = cases.find((c) => c.placeholder);
 
   return (
     <>
@@ -36,18 +35,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {realCases.length === 0 ? (
-        /* Nothing written yet: a slim note in the page's flow, not a whole section to scroll through */
-        /* It takes a section number (and a place in the menu) once there is a real one — lib/sections.ts */
-        <section className={`${styles.cases} ${styles.casesSoon}`} id="case-studies" data-section="case-studies" data-layer="CASE-STUDIES" aria-label="Case studies">
-          <div className={`container ${styles.soon}`} data-reveal="rise">
-            <span className="mono">Case studies</span>
-            <p>
-              <b>Coming soon.</b> {upcoming?.summary}
-            </p>
-          </div>
-        </section>
-      ) : (
+      {/* Case studies: nothing is shown until there is a real one (no "coming soon").
+          The section, its number and its menu entry appear by themselves then — lib/sections.ts */}
+      {realCases.length > 0 && (
       <section className={styles.cases} id="case-studies" data-section="case-studies" data-layer="03-CASE-STUDIES">
         <div className="container">
           <SectionHeader
