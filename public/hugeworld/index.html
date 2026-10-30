@@ -281,10 +281,11 @@ button.row:hover { background: var(--paper-deep); }
 .people { display: flex; flex-wrap: wrap; gap: 8px; }
 .person { background: #fff6dc; border: 2px solid var(--ink); border-radius: 12px 14px 11px 15px; padding: 6px 12px 6px 6px; display: inline-flex; align-items: center; gap: 7px; font-weight: 800; }
 .person[aria-pressed="true"] { background: var(--been); box-shadow: 2px 2px 0 var(--ink); }
-.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; max-height: 172px; overflow-y: auto; padding: 3px; }
 .swatches button { background: var(--c, #fff6dc); border: 2px solid var(--ink); border-radius: 10px; padding: 2px; width: 44px; height: 44px; }
 .swatches button[aria-pressed="true"] { outline: 3px solid var(--dream); outline-offset: 1px; }
 .swatches img { width: 100%; height: 100%; }
+.swatches.col { max-height: none; }
 .swatches.col button { width: 30px; height: 30px; border-radius: 50%; }
 .feed { display: grid; gap: 6px; }
 .feed div { display: flex; align-items: center; gap: 8px; font-size: 14.5px; min-width: 0; }
@@ -312,6 +313,19 @@ button, a, input, select, textarea { touch-action: manipulation; }
 body { -webkit-user-select: none; user-select: none; }
 input, textarea { -webkit-user-select: text; user-select: text; }
 input.text, textarea { font-size: 16px; }
+.pal { position: fixed; left: 0; top: 0; z-index: 4; cursor: pointer; will-change: transform; -webkit-tap-highlight-color: transparent; }
+.pal.cast { z-index: 31; pointer-events: none; }
+.pal img { width: 100%; height: 100%; display: block; }
+.palheart { position: fixed; z-index: 8; color: var(--dream); font-size: 26px; pointer-events: none; animation: floatup .9s ease-out both; }
+@keyframes floatup { to { transform: translateY(-46px) scale(1.4); opacity: 0; } }
+.daily { display: grid; gap: 7px; margin-bottom: 8px; background: #fff6dc; border: 2px solid var(--ink); border-radius: 12px 14px 11px 15px; padding: 8px 10px; box-shadow: 2px 2px 0 var(--ink); }
+.dailypick { display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 9px; align-items: center; background: none; border: 0; padding: 0; text-align: left; }
+.dailypick img { width: 46px; height: 46px; transition: transform .18s; }
+.dailypick:hover img { transform: rotate(-5deg) scale(1.08); }
+.daily small { display: block; font-size: 11.5px; font-weight: 800; color: var(--ink-faint); }
+.dailypick strong { display: block; font-weight: 800; line-height: 1.2; }
+.dailypick em { display: block; font-style: normal; font-size: 12.5px; color: var(--ink-soft); }
+.dailyword { border-top: 2px dashed color-mix(in srgb, var(--ink) 18%, transparent); padding-top: 6px; font-size: 14px; }
 .btn.mini { padding: 3px 10px; font-size: 12.5px; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
 .fine { margin: 0; font-size: 12.5px; color: var(--ink-faint); }
 .notes h3 { margin: 0; font: 400 16px/1.2 var(--font-display); }
@@ -443,6 +457,7 @@ textarea { resize: vertical; min-height: 66px; }
 <script src="home-countries.js"></script>
 <script src="spots.js"></script>
 <script src="boost.js"></script>
+<script src="final.js"></script>
 <script>
 "use strict";
 const BLACK_SEA = { lat: 43.4, lon: 34 };
@@ -588,7 +603,10 @@ items = readLocal();
 
 /* ---------- people ---------- */
 const COLOURS = ["#f2ae14", "#ef9a9a", "#8cc06a", "#9fdce0", "#c9a7e8"];
-const AVATARS = ["lion", "elephant", "giraffe", "panda", "penguin", "koala", "camel", "puffin"];
+const AVATARS = ["siamese", "tabby", "ginger", "blackCat", "whiteCat", "persian", "tuxedo",
+  "shiba", "corgi", "husky", "golden", "dachshund", "pug", "dalmatian",
+  "owl", "snowyOwl", "barnOwl", "parrot", "toucan", "budgie", "canary", "blueBird", "robin", "peacock", "puffin", "penguin",
+  "cheetah", "lion", "panda", "koala", "camel", "elephant"];
 const profile = (id) => profiles.find((p) => p.id === id);
 const personName = (id) => profile(id)?.name || "Someone";
 function avatar(id, size = 24) {
@@ -634,6 +652,12 @@ function renderWho() {
     } }, avatar(p.id, 30), p.name))),
     createForm,
     h("button", { class: "btn quiet", onclick: close }, "Not now"),
+    h("button", { class: "btn quiet", onclick: () => {
+      palsOn = !palsOn;
+      try { localStorage.setItem(PALS_KEY, palsOn ? "on" : "off"); } catch {}
+      toast(palsOn ? "Animal visitors are back" : "Animal visitors are resting");
+      renderWho();
+    } }, palsOn ? "Turn off animal visitors" : "Turn on animal visitors"),
     h("button", { class: "btn quiet", onclick: downloadBackup }, "Download a backup"),
     authClient && h("button", { class: "link", onclick: () => authClient.auth.signOut().then(() => location.reload()) }, "Sign out")));
   box.hidden = false;
@@ -1062,6 +1086,7 @@ function renderBucket() {
     } },
       h("input", { class: "text", id: "bucketText", name: "bucketText", maxlength: 200, placeholder: "Write anything…", "aria-label": "Add to the bucket list", autocomplete: "off" }),
       h("button", { class: "btn", type: "submit" }, "Add")),
+    dailyCard(),
     places.map(row),
     notes.map((b) => h("div", { class: "bk" + (b.done ? " done" : "") },
       h("button", { class: "tick", "aria-pressed": String(!!b.done), "aria-label": b.done ? `Mark ${b.text} as not done` : `Mark ${b.text} as done`, disabled: !canWrite, onclick: () => toggle(b) }, b.done ? "✓" : ""),
@@ -2139,19 +2164,118 @@ function logoSvg(size) {
   <g class="orbit"><ellipse cx="60" cy="60" rx="55" ry="15" fill="none" stroke="#f2ae14" stroke-width="3" stroke-dasharray="6 5" transform="rotate(-18 60 60)"/>
   <path d="M106 34l8-12-16 6 5 2z" fill="#fff6dc"/></g></g></svg>`;
 }
+function sprite(kind, size) {
+  const el = h("div", { class: "pal", style: `width:${size}px;height:${size}px` }, h("img", { src: STICKER_IMG[kind].src, alt: "" }));
+  document.body.append(el);
+  return el;
+}
+/* from one side of the screen to the other; art faces left, so flip it when heading right */
+function travel(el, { from, to, y, bob = 0, duration, delay = 0, easing = "linear" }) {
+  const flip = to > from ? -1 : 1, steps = [];
+  for (let i = 0; i <= 8; i++) {
+    const t = i / 8, x = from + (to - from) * t, lift = y + Math.sin(t * Math.PI * 3) * bob;
+    steps.push({ transform: `translate(${x}px, ${lift}px) scaleX(${flip})` });
+  }
+  return el.animate(steps, { duration, delay, easing, fill: "both" });
+}
 function openingScreen() {
   const box = $("splash");
   let seen = false;
   try { seen = sessionStorage.getItem("hw-opened") === "1"; sessionStorage.setItem("hw-opened", "1"); } catch {}
   if (seen || reduced) { box.remove(); return; }
-  box.querySelector(".splashlogo").innerHTML = logoSvg(190);
-  box.querySelector(".splashname").replaceChildren(...[..."HugeWorld"].map((c, i) => h("span", { style: `animation-delay:${.55 + i * .05}s` }, c)));
+  box.querySelector(".splashlogo").innerHTML = logoSvg(170);
+  box.querySelector(".splashname").replaceChildren(...[..."HugeWorld"].map((c, i) => h("span", { style: `animation-delay:${.45 + i * .05}s` }, c)));
   const stars = box.querySelector(".splashstars");
   for (let i = 0; i < 46; i++) stars.append(h("i", { style: `left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-delay:${Math.random() * 2}s` }));
-  const leave = () => { box.classList.add("out"); setTimeout(() => box.remove(), 480); };
-  box.addEventListener("pointerdown", leave, { once: true });
-  setTimeout(leave, 2300);
+  const W_ = innerWidth, H_ = innerHeight, cast = [];
+  const add = (kind, size, opts) => { const el = sprite(kind, size); el.classList.add("cast"); cast.push(el); travel(el, opts); };
+  add("flyRed", 74, { from: -90, to: W_ + 90, y: H_ * .17, bob: 26, duration: 1900, delay: 150 });
+  add("flyBlue", 62, { from: W_ + 90, to: -90, y: H_ * .27, bob: 20, duration: 2000, delay: 420 });
+  add("flyGreen", 54, { from: -80, to: W_ + 80, y: H_ * .1, bob: 16, duration: 1750, delay: 750 });
+  add("flyGold", 34, { from: W_ + 50, to: -50, y: H_ * .36, bob: 12, duration: 1500, delay: 900 });
+  add("walkGinger", 70, { from: W_ + 90, to: -90, y: H_ * .78, bob: 5, duration: 2100, delay: 300 });
+  add("walkSiamese", 62, { from: -90, to: W_ + 90, y: H_ * .84, bob: 5, duration: 1900, delay: 700 });
+  add("walkBlack", 56, { from: W_ + 90, to: -90, y: H_ * .7, bob: 5, duration: 1700, delay: 1000 });
+  let gone = false;
+  const finish = () => { if (gone) return; gone = true; box.remove(); cast.forEach((c) => c.remove()); };
+  /* the cheetah sprints through and pulls the night away behind it */
+  let revealing = false;
+  const reveal = (delay) => {
+    if (revealing) return;
+    revealing = true;
+    const dash = sprite("cheetah", 128);
+    dash.classList.add("cast"); cast.push(dash);
+    travel(dash, { from: W_ + 30, to: -160, y: H_ * .46, bob: 8, duration: 900, delay, easing: "cubic-bezier(.3, 0, .6, 1)" });
+    box.animate([{ clipPath: "inset(0 0 0 0)" }, { clipPath: "inset(0 100% 0 0)" }], { duration: 900, delay, easing: "cubic-bezier(.3, 0, .6, 1)", fill: "both" }).onfinish = finish;
+  };
+  const timer = setTimeout(() => reveal(0), 2100);
+  box.addEventListener("pointerdown", () => { clearTimeout(timer); reveal(0); }, { once: true });
 }
+
+/* ---------- animal visitors ---------- */
+const PALS_KEY = "hw-visitors", FOUND_KEY = "hw-found";
+let palsOn = true, palsFound = 0, palBusy = false;
+try { palsOn = localStorage.getItem(PALS_KEY) !== "off"; palsFound = +localStorage.getItem(FOUND_KEY) || 0; } catch {}
+const PAL_LINES = { walkGinger: "Mrrp!", walkSiamese: "Meow?", walkBlack: "Purrr…", cheetah: "Too fast!", flyRed: "Squawk!", flyBlue: "Hello hello!", flyGreen: "Pretty bird!", flyPink: "Tweet!", flyGold: "Cheep!", flyTeal: "Chirp!" };
+function palTapped(el, kind) {
+  buzz();
+  palsFound++;
+  try { localStorage.setItem(FOUND_KEY, String(palsFound)); } catch {}
+  toast(`${PAL_LINES[kind] || "Hi!"} Visitors found: ${palsFound}`);
+  const r = el.getBoundingClientRect();
+  const heart = h("div", { class: "palheart", style: `left:${r.left + r.width / 2}px;top:${r.top}px` }, "♥");
+  document.body.append(heart);
+  setTimeout(() => heart.remove(), 900);
+}
+function visit() {
+  const blocked = !palsOn || palBusy || reduced || document.hidden || $("splash") || !$("who").hidden || !$("login").hidden || state.mode === "form";
+  if (blocked || document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
+  const W_ = innerWidth, H_ = innerHeight;
+  const leftEdge = -80, rightEdge = W_ + 80, leftward = Math.random() < .5;
+  const [a, b] = leftward ? [rightEdge, leftEdge] : [leftEdge, rightEdge];
+  const flyers = ["flyRed", "flyBlue", "flyGreen", "flyPink", "flyGold", "flyTeal"], walkers = ["walkGinger", "walkSiamese", "walkBlack"];
+  const pick = (l) => l[Math.floor(Math.random() * l.length)];
+  const roll = Math.random();
+  palBusy = true;
+  const done = (el) => { el.remove(); palBusy = false; };
+  if (roll < .4) {
+    const kind = pick(flyers), el = sprite(kind, 46);
+    el.onclick = () => palTapped(el, kind);
+    travel(el, { from: a, to: b, y: H_ * (.15 + Math.random() * .4), bob: 26, duration: 7000 }).onfinish = () => done(el);
+  } else if (roll < .75) {
+    const kind = pick(walkers), el = sprite(kind, 52);
+    el.onclick = () => palTapped(el, kind);
+    const floor = H_ - (innerWidth <= 760 ? 122 : 60);
+    travel(el, { from: a, to: b, y: floor, bob: 3, duration: 11000 }).onfinish = () => done(el);
+  } else if (roll < .88) {
+    const el = sprite("cheetah", 72);
+    el.onclick = () => palTapped(el, "cheetah");
+    travel(el, { from: a, to: b, y: H_ - (innerWidth <= 760 ? 150 : 90), bob: 5, duration: 1800 }).onfinish = () => done(el);
+  } else {
+    /* a small bird stops for a rest on a button */
+    const perches = ["surpriseBtn", "homeBtn", "musicBtn", "meBtn"].map($).filter((n) => n && n.offsetParent);
+    const spot = pick(perches).getBoundingClientRect(), kind = pick(flyers.slice(3)), el = sprite(kind, 32);
+    el.onclick = () => palTapped(el, kind);
+    const x = spot.left + spot.width / 2 - 16, y = spot.top - 26;
+    const here = `translate(${x}px, ${y}px)`;
+    el.animate([{ transform: `translate(${a}px, ${y - 90}px)` }, { transform: here, offset: .14 }, { transform: here, offset: .86 }, { transform: `translate(${b}px, ${y - 110}px)` }], { duration: 9000, easing: "ease-in-out", fill: "both" }).onfinish = () => done(el);
+  }
+}
+function scheduleVisit() { setTimeout(() => { visit(); scheduleVisit(); }, 30000 + Math.random() * 45000); }
+
+/* ---------- the daily card ---------- */
+const dayNumber = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 6e4) / 864e5);
+function dailyCard() {
+  const word = window.DAILY_WORDS[dayNumber() % window.DAILY_WORDS.length];
+  const pool = SURPRISE_POOL();
+  const pick = pool[(dayNumber() * 7) % pool.length];
+  return h("div", { class: "daily" },
+    pick && h("button", { class: "dailypick", onclick: () => openSuggestion(pick) },
+      h("img", { src: STICKER_IMG[pick.kind].src, alt: "" }),
+      h("span", {}, h("small", {}, "Today's daydream"), h("strong", {}, pick.title), h("em", {}, pick.place))),
+    h("div", { class: "dailyword" }, h("small", {}, `Word of the day: ${word[2]}`), h("b", {}, word[0]), h("span", {}, " · "), h("b", {}, word[1])));
+}
+
 const buzz = () => { try { navigator.vibrate?.(9); } catch {} };
 
 /* ---------- backup ---------- */
@@ -2281,7 +2405,7 @@ function stampList(rows, byCountry) {
     ["First steps", cities >= 1, "Mark your first city"], ["City hoppers", cities >= 10, "10 cities"], ["Globetrotters", cities >= 50, "50 cities"],
     ["Passport filling", byCountry.size >= 5, "5 countries"], ["World citizens", byCountry.size >= 20, "20 countries"],
     ["Two shores", has("Turkey") && has("Ukraine"), "Türkiye and Ukraine"], ["Home turf", rows.find((r) => r.name === "Saudi Arabia")?.cityDone >= 5, "5 Saudi cities"],
-    ["Dreamers", items.filter((i) => i.status === "dream").length + bucket.length >= 10, "10 on the bucket list"], ["Ticked off", bucket.filter((b) => b.done).length >= 5, "Tick off 5"],
+    ["Dreamers", items.filter((i) => i.status === "dream").length + bucket.length >= 10, "10 on the bucket list"], ["Ticked off", bucket.filter((b) => b.done).length >= 5, "Tick off 5"], ["Animal friend", palsFound >= 5, "Tap 5 visitors"],
   ];
   return [...[...byCountry.keys()].map((n) => h("div", { class: "stamp on country" }, h("b", {}, countryInfo(n).label), h("span", {}, "Visited"))),
     ...badges.map(([name, won, how]) => h("div", { class: "stamp" + (won ? " on" : "") }, h("b", {}, name), h("span", {}, how)))];
@@ -2334,6 +2458,7 @@ async function renderStatsPage() {
 refreshThreads();
 $("mark").innerHTML = logoSvg(38);
 openingScreen();
+scheduleVisit();
 renderSections();
 renderMapFilters();
 renderPanel();

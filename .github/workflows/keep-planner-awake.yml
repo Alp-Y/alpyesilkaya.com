@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Ping
         run: |
-          url=$(sed -n 's/.*supabaseUrl: "\([^"]*\)".*/\1/p' public/planner/config.js)
-          key=$(sed -n 's/.*supabaseKey: "\([^"]*\)".*/\1/p' public/planner/config.js)
+          url=$(sed -n 's/.*supabaseUrl: "\([^"]*\)".*/\1/p' public/hugeworld/config.js)
+          key=$(sed -n 's/.*supabaseKey: "\([^"]*\)".*/\1/p' public/hugeworld/config.js)
           if [ -z "$url" ]; then echo "Not configured yet"; exit 0; fi
           curl -fsS -o /dev/null "$url/rest/v1/docs?select=id&limit=1" -H "apikey: $key" -H "Authorization: Bearer $key"
