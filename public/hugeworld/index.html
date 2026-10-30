@@ -593,6 +593,12 @@ html.calm *, html.calm *::before { animation-duration: .01s !important; transiti
 .seggroup.wide { display: flex; width: fit-content; }
 .cal { max-width: 460px; margin: 0 auto; width: 100%; }
 .lesson { max-width: 620px; }
+.gametabs { position: sticky; top: -22px; z-index: 2; display: grid; grid-template-columns: repeat(3, 1fr); background: var(--card); border: 2px solid var(--edge); border-radius: 14px; overflow: hidden; box-shadow: 2px 2px 0 var(--edge); }
+.gametabs .seg { min-height: 46px; font-size: 15px; }
+.minimap { width: 100%; max-width: 340px; height: auto; display: block; margin: 0 auto; border-radius: 12px; border: 2px solid var(--edge); }
+.factcard .minimap { grid-column: 1 / -1; }
+.pick .vis, .card .vis { width: 100%; }
+.pick { align-items: stretch; }
 .chapters { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 .reader { max-width: 620px; justify-items: center; text-align: center; }
 .reader .gamehead { width: 100%; }
@@ -1732,7 +1738,8 @@ let quality = lowEnd ? 1.5 : 2, slowFrames = 0, lightDrag = false;
 function noteFrame(ms, moving) {
   if (!moving) return;
   slowFrames = ms > 45 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
-  if (slowFrames > 12) { slowFrames = 0; if (quality > 1) { quality = quality > 1.5 ? 1.5 : 1; resize(); } else lightDrag = true; }
+  if (slowFrames > 12) { slowFrames = 0; const next = quality > 1.5 ? 1.5 : 1;
+    if (quality > 1 && (devicePixelRatio || 1) > next) { quality = next; resize(); } else lightDrag = true; }
 }
 let resizeQueued = false;
 function queueResize() {
@@ -1972,8 +1979,8 @@ function paintBase(detailed, moving) {
     if (d - c.rad < seen) { land.push(allLand[i]); infos.push(allInfos[i]); }
   }
   const open = state.country?.name, greyMap = state.view === "been";
-  projection.precision(moving ? 2.5 : .9);
-  flatProjection.precision(moving ? 2.5 : .9);
+  const curve = moving && lightDrag ? 2.5 : .9;
+  if (projection.precision() !== curve) { projection.precision(curve); flatProjection.precision(curve); }
   if (moving && !open) {
     const byColour = new Map();
     for (let i = 0; i < land.length; i++) {
@@ -1997,11 +2004,9 @@ function paintBase(detailed, moving) {
     pen.fill();
     if (name === hoverName && name !== open) { pen.fillStyle = "rgba(255,246,220,.4)"; pen.fill(); }
   }
-  if (!(moving && lightDrag)) {
-    pen.beginPath();
-    for (const f of land) painter(f);
-    pen.strokeStyle = INK; pen.lineWidth = view.zoom > 5 ? .9 : 1; pen.stroke();
-  }
+  pen.beginPath();
+  for (const f of land) painter(f);
+  pen.strokeStyle = INK; pen.lineWidth = view.zoom > 5 ? .9 : 1; pen.stroke();
 
   if (WATER && view.zoom > 2.4 && !moving) {
     pen.beginPath();
@@ -2087,8 +2092,8 @@ function draw(now) {
     view.lat = flight.lat0 + (flight.lat - flight.lat0) * e;
     view.zoom = flight.zoom0 * Math.pow(flight.zoom / flight.zoom0, e);
     if (t >= 1) flight = null;
-  } else if (!dragging && Math.abs(velocity) > .002) {
-    view.lon -= velocity; velocity *= .92; moving = true;
+  } else if (!dragging && Math.abs(velocity) > .03) {
+    view.lon -= velocity; velocity *= .88; moving = true;
   }
   /* make room for the sheet: the globe glides aside rather than the page resizing */
   const sheetOpen = !$("app").classList.contains("mapfull") && state.section === "globe";
@@ -2112,8 +2117,9 @@ function draw(now) {
   if (flatMap) setFlat();
   sinO = Math.sin(view.lon * RAD); cosO = Math.cos(view.lon * RAD); sinP = Math.sin(view.lat * RAD); cosP = Math.cos(view.lat * RAD);
 
-  const detailed = view.zoom > 4.5 || !moving;
-  const key = [flatMap, state.view, view.cx, view.cy, view.lon, view.lat, view.zoom, detailed, threadVersion, state.country?.name, state.region?.name, state.regions?.length, hoverName, hoverRegion?.name].join();
+  const simplified = moving && view.zoom < 4.5;
+  const detailed = !simplified;
+  const key = [simplified, flatMap, state.view, view.cx, view.cy, view.lon, view.lat, view.zoom, detailed, threadVersion, state.country?.name, state.region?.name, state.regions?.length, hoverName, hoverRegion?.name].join();
   /* up close the map is nearly flat, so a drag can slide the last painting and only
      repaint now and then; the sea colour fills any gap at the edges */
   const R_ = view.r * view.zoom;
@@ -2663,7 +2669,7 @@ function geoRounds(rnd) {
   return [...Array(7)].map(() => {
     const scene = known[Math.floor(rnd() * known.length)], right = countryInfo(W.names[scene.country]).label, opts = new Set([right]);
     while (opts.size < 4) opts.add(countryInfo(W.names[known[Math.floor(rnd() * known.length)].country]).label);
-    return { q: scene.name, kind: scene.kind, right, opts: shuffled([...opts], rnd) };
+    return { q: scene.name, kind: scene.kind, right, at: [scene.lat, scene.lon], opts: shuffled([...opts], rnd) };
   });
 }
 function capitalRounds(rnd) {
@@ -2672,7 +2678,8 @@ function capitalRounds(rnd) {
   return shuffled(list, rnd).slice(0, 7).map(([c, cap]) => {
     const opts = new Set([cap]);
     while (opts.size < 4) opts.add(list[Math.floor(rnd() * list.length)][1]);
-    return { q: `Capital of ${countryInfo(c).label}?`, kind: "gate", right: cap, opts: shuffled([...opts], rnd) };
+    const fit = FIT.get(c);
+    return { q: `Capital of ${countryInfo(c).label}?`, kind: "gate", right: cap, at: fit && [fit.lat, fit.lon], opts: shuffled([...opts], rnd) };
   });
 }
 const bankRounds = (bank, kind) => (rnd) => shuffled(bank, rnd).slice(0, 7).map(([q, right, x, y]) => ({ q, kind, right, opts: shuffled([right, x, y], rnd) }));
@@ -2690,7 +2697,7 @@ function quizGame(g, rounds) {
     line: `${personName(me)} ${score[me]} · ${score[rival(g)]} ${personName(rival(g))}`,
     view: () => { const r = rounds[n], mine = movesOf(g, me)[`r${n}`]; return [
       h("p", { class: "fine" }, `Round ${n + 1} of ${rounds.length}`),
-      h("div", { class: "quiz" }, h("img", { src: STICKER_IMG[r.kind].src, alt: "" }), h("strong", {}, r.q),
+      h("div", { class: "quiz" }, r.at ? miniMap(r.at[0], r.at[1]) : h("img", { src: STICKER_IMG[r.kind].src, alt: "" }), h("strong", {}, r.q),
         h("div", { class: "answers" }, r.opts.map((o) => h("button", { class: "btn quiet" + (mine?.c === o ? " wrong" : ""), disabled: !!mine, onclick: () => saveMove(`r${n}`, { c: o, at: Date.now() }) }, o))),
         mine && h("p", { class: "fine" }, "Not that one. Waiting for your rival…")),
     ]; } };
@@ -2978,6 +2985,7 @@ function lessonView() {
     LEVELS[prefs.level].seconds && !learn.picked && h("div", { class: "bar" }, h("i", { style: `animation-duration:${LEVELS[prefs.level].seconds}s` })),
     h("div", { class: "quiz" },
       h("strong", { class: "question" }, question),
+      learn.track === "geography" && lat !== undefined && miniMap(lat, lon, "Where this place is, broadly"),
       h("div", { class: "answers" }, item.opts.map((o) => h("button", {
         class: "btn quiet" + (learn.picked ? (o === right ? " right" : o === learn.picked ? " wrong" : "") : ""), disabled: !!learn.picked,
         onclick: () => { clearTimeout(learn.timer); learn.picked = o; if (o === right) { learn.score++; buzz(); } renderPlay(); },
@@ -2985,6 +2993,7 @@ function lessonView() {
       learn.picked && h("div", { class: "factcard" },
         kind && h("img", { src: STICKER_IMG[kind].src, alt: "" }),
         h("p", {}, fact),
+        learn.track !== "geography" && lat !== undefined && miniMap(lat, lon),
         place && canWrite && h("button", { class: "btn quiet mini", disabled: added, onclick: () => {
           persist({ id: newId(), title: place, place: where, lat, lon, cat: "sights", status: "dream", blurb: fact, by: myId, createdAt: Date.now(), notes: [] }, "Added to our bucket list").then(() => { refreshThreads(); renderPlay(); });
         } }, added ? "On our bucket list" : `+ ${place}`)),
@@ -3023,25 +3032,17 @@ function renderPlay() {
   if (!duel.a) nextDuel();
   if (!quiz.scene) nextQuiz();
   const winner = duel.a, t = games.find((x) => x.id === "tally") || {}, wins = t.wins || {}, two = profiles.slice(0, 2);
+  const tab = prefs.gameTab || "learn";
   $("page").replaceChildren(h("div", { class: "wrap" },
-    h("h2", {}, "Learn"),
+    h("div", { class: "gametabs", role: "tablist" }, [["learn", "Learn"], ["solo", "Solo"], ["together", "Together"]].map(([k, label]) =>
+      h("button", { class: "seg", role: "tab", "aria-selected": String(tab === k), "aria-pressed": String(tab === k), onclick: () => { prefs.gameTab = k; savePrefs(); renderPlay(); $("page").scrollTop = 0; } }, label))),
+    tab === "learn" && [
     h("p", { class: "fine", style: "margin:-12px 0 0" }, "Stories and quizzes for one. Works with no signal, so it's perfect for a flight."),
     h("div", { class: "gamegrid" }, Object.entries(window.LESSONS).map(([id, l]) => h("button", { class: "gamecard", onclick: () => { learn.topic = id; learn.chapter = null; renderPlay(); } },
-      h("img", { src: STICKER_IMG[l.icon].src, alt: "" }), h("span", {}, h("b", {}, l.name), h("small", {}, `${l.stories.length} stories · ${l.questions.length} questions`))))),
-    h("h2", {}, "Solo challenges"),
+      h("img", { src: STICKER_IMG[l.icon].src, alt: "" }), h("span", {}, h("b", {}, l.name), h("small", {}, `${l.stories.length} stories · ${l.questions.length} questions`)))))],
+    tab === "solo" && [
     h("div", { class: "gamegrid" }, Object.entries(SOLO).map(([id, g]) => h("button", { class: "gamecard", onclick: () => startSolo(id) },
       h("img", { src: STICKER_IMG[g.icon].src, alt: "" }), h("span", {}, h("b", {}, g.name), h("small", {}, learnBest[id] ? `Best ${learnBest[id]}` : g.about))))),
-    h("h2", {}, "Play together"),
-    two.length === 2 && h("section", { class: "score" },
-      h("div", { class: "scoretop" }, two.map((p, i) => [i === 1 && h("b", { class: "vs" }, "vs"), h("div", { class: "scoreside" }, avatar(p.id, 48), h("b", { class: "num" }, String(wins[p.id] || 0)), h("span", {}, p.name))])),
-      h("details", {}, h("summary", {}, "Scoreboard by game"),
-        h("table", {}, h("thead", {}, h("tr", {}, h("th", { scope: "col" }, "Game"), two.map((p) => h("th", { scope: "col" }, p.name)))),
-          h("tbody", {}, Object.entries(GAMES).filter(([k]) => k !== "sync").map(([k, info]) => h("tr", {}, h("td", {}, info.name), two.map((p) => h("td", {}, String(t.byGame?.[k]?.[p.id] || 0)))))))),
-      t.bestSync > 0 && h("p", { class: "fine" }, `Best In Sync score: ${t.bestSync} of 8`)),
-    [...new Set(Object.values(GAMES).map((g) => g.theme))].map((theme) => [h("h2", { class: "theme" }, theme),
-      h("div", { class: "gamegrid" }, Object.entries(GAMES).filter(([, i]) => i.theme === theme).map(([type, info]) => h("button", { class: "gamecard", onclick: () => startGame(type) },
-        h("img", { src: STICKER_IMG[info.icon].src, alt: "" }), h("span", {}, h("b", {}, info.name), h("small", {}, info.about)))))]),
-    h("h2", { class: "theme" }, "Solo"),
     h("div", { class: "games" },
       h("section", { class: "game" },
         h("h3", {}, "This or that"),
@@ -3065,7 +3066,17 @@ function renderPlay() {
             },
           }, o))),
           quiz.answered && h("p", { class: "fine" }, window.STICKERS.NOTES[quiz.scene.kind] || ""),
-          quiz.answered && h("button", { class: "btn", onclick: () => { nextQuiz(); renderPlay(); } }, "Next"))))));
+          quiz.answered && h("button", { class: "btn", onclick: () => { nextQuiz(); renderPlay(); } }, "Next"))))],
+    tab === "together" && [
+    two.length === 2 && h("section", { class: "score" },
+      h("div", { class: "scoretop" }, two.map((p, i) => [i === 1 && h("b", { class: "vs" }, "vs"), h("div", { class: "scoreside" }, avatar(p.id, 48), h("b", { class: "num" }, String(wins[p.id] || 0)), h("span", {}, p.name))])),
+      h("details", {}, h("summary", {}, "Scoreboard by game"),
+        h("table", {}, h("thead", {}, h("tr", {}, h("th", { scope: "col" }, "Game"), two.map((p) => h("th", { scope: "col" }, p.name)))),
+          h("tbody", {}, Object.entries(GAMES).filter(([k]) => k !== "sync").map(([k, info]) => h("tr", {}, h("td", {}, info.name), two.map((p) => h("td", {}, String(t.byGame?.[k]?.[p.id] || 0)))))))),
+      t.bestSync > 0 && h("p", { class: "fine" }, `Best In Sync score: ${t.bestSync} of 8`)),
+    [...new Set(Object.values(GAMES).map((g) => g.theme))].map((theme) => [h("h2", { class: "theme" }, theme),
+      h("div", { class: "gamegrid" }, Object.entries(GAMES).filter(([, i]) => i.theme === theme).map(([type, info]) => h("button", { class: "gamecard", onclick: () => startGame(type) },
+        h("img", { src: STICKER_IMG[info.icon].src, alt: "" }), h("span", {}, h("b", {}, info.name), h("small", {}, info.about)))))])]));
 }
 /* a challenge reaches you wherever you are in the app */
 let announcedGame = null;
@@ -3090,7 +3101,7 @@ function gamesChanged() {
 
 /* ---------- preferences ---------- */
 const PREFS_KEY = "hw-prefs";
-const prefs = { font: "rounded", size: 1, motion: "normal", labels: 1, units: "km", level: "normal", depth: "deep", haptics: true, sort: "new" };
+const prefs = { font: "rounded", size: 1, motion: "normal", labels: 1, units: "km", level: "normal", depth: "deep", haptics: true, sort: "new", gameTab: "learn" };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY)) || {}); } catch {}
 const FONTS = { rounded: ["Rounded", '"Nunito", system-ui, sans-serif'], clean: ["Clean", 'system-ui, -apple-system, "Segoe UI", sans-serif'], book: ["Book", 'Georgia, "Times New Roman", serif'], easy: ["Easy read", '"Atkinson Hyperlegible", system-ui, sans-serif'] };
 function savePrefs() {
@@ -3123,15 +3134,14 @@ applyPrefs();
 
 /* ---------- opening ---------- */
 function logoSvg(size) {
-  return `<svg width="${size}" height="${size}" viewBox="0 0 120 120" aria-hidden="true"><g stroke="#2b1d18" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
-  <circle class="lg" cx="60" cy="60" r="38" fill="#2c9c98"/>
-  <path d="M33 42c8-11 21-17 35-15 5 5-3 11-9 12-1 6 9 6 11 12-4 8-11 4-17 9-8 2-14-2-16-9-3 0-4-5-4-9z" fill="#ecd59c"/>
-  <path d="M73 52c6-4 15-1 21 8 2 11-4 21-12 27-9 0-14-11-11-21 0-5-1-10 2-14z" fill="#c5cf8e"/>
-  <path d="M37 79c5-3 13 0 16 6-1 6-4 10-7 12-5-4-10-11-9-18z" fill="#e9b98f"/>
-  <path d="M49 60c2-2 5-2 7 0M64 60c2-2 5-2 7 0" fill="none"/><path d="M53 67c3 3 9 3 12 0" fill="none"/>
-  <ellipse cx="46" cy="66" rx="4" ry="2.500" fill="#ef9a9a" stroke="none"/><ellipse cx="74" cy="66" rx="4" ry="2.500" fill="#ef9a9a" stroke="none"/>
-  <g class="orbit"><ellipse cx="60" cy="60" rx="55" ry="15" fill="none" stroke="#f2ae14" stroke-width="3" stroke-dasharray="6 5" transform="rotate(-18 60 60)"/>
-  <path d="M106 34l8-12-16 6 5 2z" fill="#fff6dc"/></g></g></svg>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 120 120" aria-hidden="true"><g stroke="#26214a" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+  <circle cx="60" cy="60" r="50" fill="#1fa8a0"/>
+  <path d="M28 34c10-13 28-20 42-16 6 6-4 13-12 14-2 7-14 5-20 12-6 2-13-3-10-10z" fill="#8fd16f"/>
+  <path d="M83 37c9 4 18 16 19 30-3 11-11 21-20 25-7-3-9-14-5-23-5-6-2-22 6-32z" fill="#8fd16f"/>
+  <path d="M26 74c6-3 15 0 18 8-1 7-4 12-8 15-6-5-11-14-10-23z" fill="#8fd16f"/></g>
+  <circle cx="47" cy="58" r="4.500" fill="#26214a"/><circle cx="73" cy="58" r="4.500" fill="#26214a"/>
+  <path d="M51 68c5 6 13 6 18 0" fill="none" stroke="#26214a" stroke-width="4.500" stroke-linecap="round"/>
+  <ellipse cx="38" cy="67" rx="6" ry="3.600" fill="#ff9a8a"/><ellipse cx="82" cy="67" rx="6" ry="3.600" fill="#ff9a8a"/></svg>`;
 }
 function sprite(kind, size) {
   const el = h("div", { class: "pal", style: `width:${size}px;height:${size}px` }, h("img", { src: STICKER_IMG[kind].src, alt: "" }));
@@ -3366,6 +3376,31 @@ function renderWidgetView() {
   $("page").replaceChildren(h("a", { class: "widget", href: "./?go=plans" },
     h("div", { class: "widgethead" }, h("span", { html: logoSvg(34) }), h("b", {}, "Our bucket list"), h("em", {}, String(list.length))),
     list.length ? h("ul", {}, list.slice(0, 8).map((x) => h("li", {}, h("span", {}, "★"), x.text))) : h("p", {}, "Nothing yet. Dream something up!")));
+}
+
+/* ---------- world minimap ---------- */
+let miniBase = null;
+function miniBaseMap() {
+  if (miniBase) return miniBase;
+  const c = document.createElement("canvas");
+  c.width = 640; c.height = 320;
+  const g = c.getContext("2d"), proj = d3.geoEquirectangular().scale(640 / (2 * Math.PI)).translate([320, 160]), path = d3.geoPath(proj, g);
+  g.fillStyle = "#1fa8a0"; g.fillRect(0, 0, 640, 320);
+  g.beginPath(); for (const f of LOW) path(f);
+  g.fillStyle = "#ecd59c"; g.fill();
+  g.strokeStyle = "rgba(38,33,74,.35)"; g.lineWidth = .8; g.stroke();
+  miniBase = c;
+  return c;
+}
+function miniMap(lat, lon, label) {
+  const size = miniBaseMap(), c = document.createElement("canvas");
+  c.width = 640; c.height = 320; c.className = "minimap";
+  c.setAttribute("role", "img"); c.setAttribute("aria-label", label || "World map with the place marked");
+  const g = c.getContext("2d"), x = (lon + 180) / 360 * 640, y = (90 - lat) / 180 * 320;
+  g.drawImage(size, 0, 0);
+  g.beginPath(); g.arc(x, y, 26, 0, 7); g.fillStyle = "rgba(255,90,60,.28)"; g.fill();
+  g.beginPath(); g.arc(x, y, 9, 0, 7); g.fillStyle = "#ff5a3c"; g.fill(); g.strokeStyle = "#fff6dc"; g.lineWidth = 3; g.stroke();
+  return c;
 }
 
 /* ---------- small touches ---------- */
@@ -3609,11 +3644,12 @@ connect().then(async () => { if (user) myId = await user.id(); }).catch(() => {}
 
 <script>
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
+  navigator.serviceWorker.register("sw.js").then((r) => r.update()).catch(() => {});
   /* a new version arrived: refresh once, the next time the app is put away and reopened */
   let hadController = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (!hadController) { hadController = true; return; }
+    if (performance.now() < 8000) { location.reload(); return; }   // just opened: nothing to interrupt
     if (document.hidden) location.reload();
     else document.addEventListener("visibilitychange", () => { if (document.hidden) location.reload(); }, { once: true });
   });
