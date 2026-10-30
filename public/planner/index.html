@@ -1,0 +1,2244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="manifest" href="manifest.webmanifest">
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f5e6bf">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Fun time">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>html,body{margin:0}body{font-size:14px;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fun time planner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=Ruslan+Display&display=swap">
+<style>
+/* Layout: a sheet of story-book paper beside a painted scene where the globe rises behind cut-out hills. Stacks on phones. */
+:root {
+  color-scheme: light;
+  --sky: #161b3f;
+  --paper: #f5e6bf;
+  --paper-deep: #ecd59f;
+  --ink: #2b1d18;
+  --ink-soft: #5f4a3b;
+  --ink-faint: #806a55;
+  --line: #2b1d18;
+  --dream: #d6432c;
+  --plan: #3350b0;
+  --been: #f2ae14;
+  --idea: #47925a;
+  --sea: #2c9c98;
+  --font-display: "Ruslan Display", "Georgia", serif;
+  --font-body: "Nunito", "Avenir Next", system-ui, sans-serif;
+  --wobble: 255px 18px 225px 18px / 18px 225px 18px 255px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 500 15px/1.5 var(--font-body);
+  overflow: hidden;
+}
+/* gouache paper grain on the paper panel only: blending over the canvas is costly */
+#panel { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .15 0 0 0 .9 -.15'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 220px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--plan); outline-offset: 2px; }
+
+body { display: flex; flex-direction: column; }
+#top {
+  flex: none; display: flex; align-items: center; gap: 10px; background: var(--paper); border-bottom: 3px solid var(--ink);
+  padding-top: max(8px, env(safe-area-inset-top, 0px)); padding-bottom: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+#top h1 { margin: 0; flex: 1; min-width: 0; font: 400 20px/1.1 var(--font-display); color: var(--dream); }
+#top svg { display: block; }
+#sections { display: flex; gap: 6px; flex: none; }
+.sec { background: none; border: 2px solid transparent; border-radius: var(--wobble); padding: 4px 13px; font-weight: 800; font-size: 14.5px; color: var(--ink-soft); }
+.sec:hover { color: var(--ink); }
+#musicBtn { flex: none; white-space: nowrap; }
+#musicBtn[aria-pressed="true"] { color: var(--dream); }
+.sec[aria-current="page"] { background: var(--been); border-color: var(--ink); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+#page { flex: 1; min-height: 0; overflow-y: auto; background: var(--paper); padding-block: 22px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 20px; }
+.wrap h2 { margin: 0; font: 400 26px/1.15 var(--font-display); }
+.wrap > p { margin: 0; color: var(--ink-soft); max-width: 62ch; }
+.pickgroup { display: grid; gap: 6px; }
+.pickgroup h3 { margin: 0; font-size: 13px; font-weight: 800; color: var(--ink-soft); }
+.picks { display: flex; flex-wrap: wrap; gap: 6px; }
+.picks .chip { padding: 4px 12px; font-size: 14px; }
+.resulthead { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.resulthead b { font-weight: 800; flex: 1; min-width: 140px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.card { background: #fff6dc; border: 2px solid var(--ink); border-radius: 14px 18px 13px 19px; box-shadow: 3px 3px 0 var(--ink); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.vis { height: 120px; position: relative; display: grid; place-items: center; border-bottom: 2px solid var(--ink); background: var(--bg); overflow: hidden; }
+.vis::after { content: ""; position: absolute; left: -10%; right: -10%; bottom: -36px; height: 66px; border-radius: 50%; background: var(--ground); border-top: 2px solid var(--ink); }
+.vis img { position: relative; z-index: 1; width: 92px; height: 92px; margin-top: 8px; }
+.cardbody { padding: 11px 12px 12px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
+.card h3 { margin: 0; font-size: 16.5px; font-weight: 800; line-height: 1.25; }
+.card .sub { font-size: 13px; color: var(--ink-soft); }
+.card p { margin: 0; font-size: 14px; line-height: 1.45; flex: 1; }
+.cardact { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.cardact a { font-size: 13px; font-weight: 800; color: var(--ink); }
+.games { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; align-items: start; }
+.game { display: grid; gap: 12px; min-width: 0; }
+.game h3 { margin: 0; font: 400 20px/1.15 var(--font-display); }
+.game > p { margin: 0; color: var(--ink-soft); font-size: 14.5px; }
+.duel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.pick { background: #fff6dc; border: 2px solid var(--ink); border-radius: 14px 18px 13px 19px; box-shadow: 3px 3px 0 var(--ink); padding: 0; overflow: hidden; text-align: left; display: flex; flex-direction: column; min-width: 0; transition: transform .14s, box-shadow .14s; }
+.pick:hover { transform: translate(-2px, -2px) rotate(-.6deg); box-shadow: 5px 5px 0 var(--ink); }
+.pick .vis { height: 96px; }
+.pick .vis img { width: 74px; height: 74px; }
+.pick b { padding: 8px 10px 2px; font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; }
+.pick span.sub { padding: 0 10px 10px; font-size: 12.5px; color: var(--ink-soft); }
+.quiz { background: #fff6dc; border: 2px solid var(--ink); border-radius: 14px 18px 13px 19px; padding: 12px; display: grid; gap: 10px; justify-items: center; text-align: center; }
+.quiz img { width: 110px; height: 110px; }
+.quiz .answers { display: grid; gap: 6px; width: 100%; }
+.quiz .btn.right { background: #8cc06a; } .quiz .btn.wrong { background: var(--dream); color: #fff6dc; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.tile { background: #fff6dc; border: 2px solid var(--ink); border-radius: 12px 15px 11px 16px; padding: 10px 14px; }
+.tile b { display: block; font: 400 30px/1.1 var(--font-display); font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13.5px; color: var(--ink-soft); font-weight: 700; }
+.rings { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.ring { background: #fff6dc; border: 2px solid var(--ink); border-radius: 14px 18px 13px 19px; padding: 12px; display: grid; justify-items: center; gap: 2px; text-align: center; min-width: 0; }
+.ring svg { width: 110px; height: 110px; }
+.ring strong { font-weight: 800; font-size: 16px; }
+.ring span { font-size: 13px; color: var(--ink-soft); }
+.citychips { display: flex; flex-wrap: wrap; gap: 6px; }
+.citychips .chip[aria-pressed="true"] { background: var(--been); color: var(--ink); }
+#app {
+  flex: 1; min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(340px, 400px) minmax(0, 1fr);
+}
+#panel {
+  grid-column: 1; grid-row: 1;
+  min-height: 0; min-width: 0;
+  display: flex; flex-direction: column;
+  background: var(--paper);
+  border-right: 3px solid var(--ink);
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: 20px;
+  padding-block: 18px 14px;
+  gap: 12px;
+}
+#stage {
+  grid-column: 2; grid-row: 1;
+  position: relative; min-width: 0; min-height: 0;
+  background: radial-gradient(60% 50% at 18% 22%, #252b5c 0, transparent 100%), radial-gradient(50% 45% at 85% 80%, #2b2356 0, transparent 100%), var(--sky);
+  overflow: hidden;
+}
+#globe { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+#globe.dragging { cursor: grabbing; }
+#globe.placing { cursor: crosshair; }
+
+
+#stats { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 13.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+#stats b { color: var(--ink); font-weight: 800; }
+
+#tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.tab {
+  background: none; border: 2px solid transparent; border-radius: var(--wobble);
+  padding: 6px 0 5px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.link { background: none; border: 0; padding: 0 0 0 6px; font-weight: 800; color: var(--dream); text-decoration: underline; font-size: 13px; }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { background: var(--paper-deep); border-color: var(--ink); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+
+#filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  background: none; border: 2px solid var(--ink); border-radius: var(--wobble);
+  padding: 2px 10px; font-size: 13px; font-weight: 700; color: var(--ink);
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.chip svg { width: 14px; height: 14px; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+#body { flex: 1; min-height: 0; overflow-y: auto; margin-inline: -8px; padding-inline: 8px; scrollbar-width: thin; scrollbar-color: var(--ink-faint) transparent; }
+
+.row {
+  width: 100%; text-align: left; background: none; border: 0;
+  border-bottom: 2px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  padding: 9px 6px; display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: center;
+}
+button.row:hover { background: var(--paper-deep); }
+.row > span:first-child { width: 26px; height: 26px; border-radius: 50% 46% 52% 48%; background: var(--thread); border: 2px solid var(--ink); display: grid; place-items: center; color: #fff6dc; }
+.row svg { width: 16px; height: 16px; }
+.row > img { width: 32px; height: 32px; margin-left: -3px; }
+.row strong { display: block; font-weight: 800; line-height: 1.25; }
+.row span.sub { display: block; font-size: 13px; color: var(--ink-soft); }
+.row em { font-style: normal; font-size: 12.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.empty { padding: 24px 6px; color: var(--ink-soft); }
+.empty h3 { margin: 0 0 4px; font: 400 21px/1.2 var(--font-display); color: var(--ink); }
+.empty p { margin: 0; font-size: 14.5px; }
+
+#foot { display: flex; gap: 8px; align-items: center; flex: none; }
+.btn {
+  border: 2px solid var(--ink); border-radius: var(--wobble); padding: 8px 14px; font-weight: 800; font-size: 14.5px;
+  background: var(--been); color: var(--ink); box-shadow: 3px 3px 0 var(--ink);
+}
+.btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+.btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.btn.quiet { background: var(--paper); }
+.btn.danger { background: var(--dream); color: #fff6dc; }
+.btn:disabled { opacity: .6; cursor: default; transform: none; box-shadow: 1px 1px 0 var(--ink); }
+#foot .btn:first-child { flex: 1; }
+
+.detail { display: grid; gap: 12px; padding: 2px 4px 12px 2px; }
+.back { background: none; border: 0; padding: 0; color: var(--ink-soft); font-size: 13.5px; font-weight: 700; justify-self: start; }
+.back:hover { color: var(--ink); }
+.detail h2 { margin: 0; font: 400 25px/1.18 var(--font-display); text-wrap: balance; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { font-size: 12.5px; font-weight: 800; padding: 1px 9px; border-radius: var(--wobble); border: 2px solid var(--ink); background: var(--thread, var(--paper-deep)); color: #fff6dc; display: inline-flex; align-items: center; gap: 5px; }
+.pill.plain { background: none; color: var(--ink); }
+.pill svg { width: 13px; height: 13px; }
+.place { font-size: 14px; color: var(--ink-soft); }
+.place b { font-weight: 800; color: var(--ink); }
+.blurb { margin: 0; line-height: 1.55; max-width: 62ch; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.notes { display: grid; gap: 8px; }
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 0; }
+.facts dt { font-size: 12px; font-weight: 700; color: var(--ink-faint); }
+.facts dd { margin: 0; font-weight: 800; font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; }
+.cal { display: grid; gap: 12px; padding: 2px 4px 12px 2px; }
+.calhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.calhead h3 { margin: 0; font: 400 19px/1.1 var(--font-display); text-align: center; }
+.grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.grid.dow span { text-align: center; font-size: 12px; font-weight: 800; color: var(--ink-faint); }
+.day {
+  aspect-ratio: 1 / .92; background: #fff6dc; border: 2px solid var(--ink); border-radius: 9px 11px 8px 12px;
+  font-size: 13.5px; font-weight: 800; padding: 1px 0 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 0;
+}
+.day.blank { background: none; border: 0; }
+.day:hover { background: var(--paper-deep); }
+.day.today { background: var(--been); }
+.day.picked { box-shadow: 2px 2px 0 var(--ink); outline: 2px solid var(--dream); outline-offset: 0; }
+.day i { display: flex; gap: 2px; height: 7px; }
+.day b { width: 7px; height: 7px; border-radius: 50%; background: var(--thread); border: 1px solid var(--ink); }
+.bucket { display: grid; gap: 4px; padding: 2px 2px 12px; }
+.bucketadd { display: flex; gap: 8px; padding-bottom: 8px; }
+.bk { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto 24px; gap: 10px; align-items: center; padding: 7px 2px; border-bottom: 2px solid color-mix(in srgb, var(--ink) 16%, transparent); }
+.bk span { overflow-wrap: anywhere; font-weight: 700; }
+.bk.done span { text-decoration: line-through; color: var(--ink-faint); }
+.tick { width: 24px; height: 24px; padding: 0; border: 2px solid var(--ink); border-radius: 7px 9px 6px 10px; background: #fff6dc; font-weight: 800; line-height: 1; }
+.bk.done .tick { background: var(--been); }
+.x { background: none; border: 0; padding: 0; font-size: 18px; color: var(--ink-faint); }
+.x:hover { color: var(--dream); }
+.results { display: grid; gap: 2px; padding-bottom: 10px; }
+.results .fine { padding-bottom: 4px; }
+.result { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 2px solid color-mix(in srgb, var(--ink) 16%, transparent); }
+.result .open { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 9px; align-items: center; background: none; border: 0; padding: 0; text-align: left; min-width: 0; }
+.result .open:hover strong { text-decoration: underline; }
+.result img { width: 42px; height: 42px; }
+.result strong { display: block; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
+.result .sub { display: block; font-size: 12.5px; color: var(--ink-soft); }
+.resultact { display: grid; gap: 4px; }
+#find { position: relative; flex: none; }
+#findList { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 6; background: var(--paper); border: 2px solid var(--ink); border-radius: 10px 12px 9px 13px; box-shadow: 3px 3px 0 var(--ink); overflow: hidden; }
+#findList button { display: flex; justify-content: space-between; gap: 10px; width: 100%; background: none; border: 0; padding: 7px 10px; text-align: left; }
+#findList button:hover { background: var(--paper-deep); }
+#findList strong { font-weight: 800; min-width: 0; overflow-wrap: anywhere; }
+#findList span { font-size: 12.5px; color: var(--ink-soft); flex: none; }
+#findList .fine { padding: 8px 10px; }
+.strip { display: flex; gap: 4px; flex-wrap: wrap; }
+.strip button { background: none; border: 0; padding: 0; transition: transform .15s; }
+.strip button:hover { transform: translateY(-3px) rotate(-3deg); }
+.strip img { width: 50px; height: 50px; display: block; }
+.stamps { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
+.stamp { border: 2px dashed var(--ink-faint); border-radius: 50% 46% 52% 48%; aspect-ratio: 1 / 1; max-width: 150px; display: grid; place-content: center; text-align: center; padding: 10px; color: var(--ink-faint); opacity: .75; }
+.stamp b { font: 400 14px/1.15 var(--font-display); }
+.stamp span { font-size: 11.5px; }
+.stamp.on { border: 3px double var(--dream); color: var(--dream); opacity: 1; transform: rotate(-4deg); background: #fff6dc; }
+.stamp.on.country { border-color: var(--plan); color: var(--plan); transform: rotate(3deg); }
+.card { transition: transform .16s, box-shadow .16s; }
+.card:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); }
+.vis img { transition: transform .22s; }
+.card:hover .vis img { transform: translateY(-5px) scale(1.06); }
+.chip, .tab, .sec, .btn, .tool { transition: transform .1s, box-shadow .1s, background-color .12s, color .12s; }
+.chip:hover { transform: translateY(-1px); }
+.tool:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+#toast { animation: pop .22s ease-out; }
+.fresh { animation: rise .24s ease-out; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes pop { from { opacity: 0; transform: translate(-50%, -8px); } }
+#meBtn { flex: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.av { display: inline-grid; place-items: center; border-radius: 50%; border: 2px solid var(--ink); background: var(--c, var(--paper-deep)); flex: none; overflow: hidden; }
+.av img { width: 88%; height: 88%; }
+#who, #login { position: fixed; inset: 0; z-index: 7; display: grid; place-items: center; background: rgba(22, 27, 63, .55); padding: 16px; }
+.whobox { background: var(--paper); border: 3px solid var(--ink); border-radius: 16px 20px 15px 21px; box-shadow: 5px 5px 0 var(--ink); padding: 18px; width: min(420px, 100%); max-height: 100%; overflow-y: auto; display: grid; gap: 12px; }
+.whobox h2 { margin: 0; font: 400 22px/1.15 var(--font-display); }
+.people { display: flex; flex-wrap: wrap; gap: 8px; }
+.person { background: #fff6dc; border: 2px solid var(--ink); border-radius: 12px 14px 11px 15px; padding: 6px 12px 6px 6px; display: inline-flex; align-items: center; gap: 7px; font-weight: 800; }
+.person[aria-pressed="true"] { background: var(--been); box-shadow: 2px 2px 0 var(--ink); }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.swatches button { background: var(--c, #fff6dc); border: 2px solid var(--ink); border-radius: 10px; padding: 2px; width: 44px; height: 44px; }
+.swatches button[aria-pressed="true"] { outline: 3px solid var(--dream); outline-offset: 1px; }
+.swatches img { width: 100%; height: 100%; }
+.swatches.col button { width: 30px; height: 30px; border-radius: 50%; }
+.feed { display: grid; gap: 6px; }
+.feed div { display: flex; align-items: center; gap: 8px; font-size: 14.5px; min-width: 0; }
+.feed span.t { overflow-wrap: anywhere; min-width: 0; }
+.feed time { margin-left: auto; font-size: 12.5px; color: var(--ink-faint); white-space: nowrap; }
+.chip i.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c); border: 1px solid var(--ink); }
+.btn.mini { padding: 3px 10px; font-size: 12.5px; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+.fine { margin: 0; font-size: 12.5px; color: var(--ink-faint); }
+.notes h3 { margin: 0; font: 400 16px/1.2 var(--font-display); }
+.note { border-left: 4px solid var(--thread, var(--ink)); padding-left: 10px; font-size: 14.5px; overflow-wrap: anywhere; }
+.note small { display: block; font-size: 12px; color: var(--ink-faint); }
+
+label.field { display: grid; gap: 3px; font-size: 13.5px; font-weight: 700; color: var(--ink-soft); }
+input.text, textarea, select {
+  width: 100%; background: #fff6dc; border: 2px solid var(--ink); border-radius: 10px 12px 9px 13px;
+  padding: 7px 10px; color: var(--ink); min-width: 0; font-weight: 500;
+}
+textarea { resize: vertical; min-height: 66px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
+#tools {
+  position: absolute; display: flex; gap: 6px;
+  top: max(14px, env(safe-area-inset-top, 0px));
+  right: max(14px, env(safe-area-inset-right, 0px));
+}
+.tool {
+  min-width: 36px; height: 36px; padding: 0 11px; border-radius: var(--wobble);
+  background: var(--paper); border: 2px solid var(--ink); color: var(--ink); font-size: 14px; font-weight: 800; box-shadow: 2px 2px 0 var(--ink);
+}
+#mapfilters { position: absolute; top: 14px; left: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; z-index: 2; }
+#mapfilters .chip { background: var(--paper); box-shadow: 2px 2px 0 var(--ink); padding: 3px 10px; white-space: nowrap; }
+#mapfilters .chip[aria-pressed="true"] { background: var(--been); color: var(--ink); }
+#mapfilters .clear { background: none; border: 0; color: var(--paper); font-size: 12.5px; font-weight: 800; padding: 2px 4px; text-decoration: underline; }
+.tool.hot { background: var(--been); }
+#hint {
+  position: absolute; left: 50%; top: 62px; transform: translateX(-50%);
+  background: var(--dream); color: #fff6dc; font-weight: 800; font-size: 14px; border: 2px solid var(--ink);
+  padding: 5px 14px; border-radius: var(--wobble); white-space: nowrap;
+}
+#tip {
+  position: absolute; pointer-events: none; transform: translate(-50%, calc(-100% - 14px));
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 8px 10px 7px 11px; font-weight: 800;
+  padding: 2px 9px; font-size: 13px; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis;
+}
+#toast {
+  position: fixed; left: 50%; top: max(14px, env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 8;
+  background: var(--ink); color: var(--paper); padding: 6px 14px; border-radius: var(--wobble); font-size: 14px; font-weight: 700;
+  max-width: calc(100% - 32px);
+}
+
+@media (max-width: 760px) {
+  #mapfilters { top: 58px; left: 0; right: 0; flex-direction: row; overflow-x: auto; padding: 0 10px 4px; scrollbar-width: none; }
+  #mapfilters .chip { flex: none; }
+  #app { grid-template-columns: minmax(0, 1fr); grid-template-rows: 43% minmax(0, 1fr); }
+  #stage { grid-column: 1; grid-row: 1; }
+  #panel {
+    grid-column: 1; grid-row: 2; border-right: 0; border-top: 3px solid var(--ink);
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-block: 10px max(10px, env(safe-area-inset-bottom, 0px)); gap: 9px;
+  }
+  #top h1 { display: none; }
+  #mark { display: none; }
+  .sec { padding: 4px 6px; font-size: 13px; white-space: nowrap; }
+  #sections { gap: 2px; }
+  #meBtn { font-size: 0; gap: 0; } #musicBtn { font-size: 0; } #musicBtn::before { content: "♪"; font-size: 16px; }
+  #sections { flex: 1; justify-content: space-between; }
+  .tab { font-size: 11.5px; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header id="top">
+  <span id="mark"></span>
+  <h1>Fun time planner</h1>
+  <button id="meBtn" class="sec" aria-label="Choose your profile"></button>
+  <button id="musicBtn" class="sec" aria-pressed="false">♪ Music</button>
+  <nav id="sections" aria-label="Sections"></nav>
+</header>
+<div id="app">
+  <section id="panel" aria-label="Our places">
+    <div id="stats"></div>
+    <div id="find"><input class="text" id="findBox" type="search" placeholder="Search a country, city or place" aria-label="Search the map" autocomplete="off"><div id="findList" hidden></div></div>
+    <nav id="tabs" role="tablist" aria-label="Globe views"></nav>
+    <div id="filters"></div>
+    <div id="body"></div>
+    <div id="foot"></div>
+      </section>
+  <main id="stage">
+    <canvas id="globe" aria-label="Hand-painted globe. Drag to turn it, scroll to zoom, click a country for things to do there. Everything on it is also listed in the panel."></canvas>
+    <div id="mapfilters" role="group" aria-label="Show on the map"></div>
+    <div id="tools">
+      <button class="tool hot" id="surpriseBtn">Surprise us</button>
+      <button class="tool" id="homeBtn">Our base</button>
+      <button class="tool" id="zoomOut" aria-label="Zoom out">−</button>
+      <button class="tool" id="zoomIn" aria-label="Zoom in">+</button>
+    </div>
+    <div id="hint" hidden>Tap the globe where it belongs</div>
+    <div id="tip" hidden></div>
+  </main>
+  </div>
+<section id="page" hidden></section>
+<div id="login" role="dialog" aria-modal="true" aria-label="Sign in" hidden></div>
+<div id="who" role="dialog" aria-modal="true" aria-label="Profiles" hidden></div>
+<div id="toast" role="status" hidden></div>
+
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script src="cloud.js"></script>
+<script src="world.js"></script>
+<script src="land.js"></script>
+<script src="country.js"></script>
+<script src="facts.js"></script>
+<script src="cities.js"></script>
+<script src="stickers.js"></script>
+<script src="more-scenes.js"></script>
+<script src="home-countries.js"></script>
+<script src="spots.js"></script>
+<script src="boost.js"></script>
+<script>
+"use strict";
+const BLACK_SEA = { lat: 43.4, lon: 34 };
+let HOME = { lat: 30, lon: 20, name: "Not set yet" };
+const SHARE_OF_WORLD = 195;
+
+const CATS = {
+  wild:  { label: "Wildlife",   icon: '<circle cx="4" cy="7" r="1.4"/><circle cx="7" cy="4" r="1.4"/><circle cx="11" cy="4.6" r="1.4"/><circle cx="13" cy="8" r="1.4"/><path d="M8.5 7.5c2 0 3.5 2.4 3.5 4 0 1-.9 1.5-1.8 1.2-1.1-.4-2.3-.4-3.4 0C5.9 13 5 12.5 5 11.5c0-1.6 1.5-4 3.5-4z"/>' },
+  water: { label: "Underwater", icon: '<path d="M1.5 6c2-2 3.5-2 5 0s3.500 2 5 0 2-1.500 3-1"/><path d="M1.500 11c2-2 3.500-2 5 0s3.500 2 5 0 2-1.500 3-1"/>' },
+  sky:   { label: "Sky",        icon: '<path d="M2 8a6 6 0 0 1 12 0"/><path d="M2 8l6 6 6-6M8 2v12M5.200 8 8 14l2.800-6"/>' },
+  trail: { label: "Trails",     icon: '<path d="M1.500 13.500 6 5l3 5 1.800-2.800 3.700 6.300z"/>' },
+  table: { label: "Table",      icon: '<path d="M2 8h12a6 6 0 0 1-12 0zM6 5.500c0-1.200 1-1.200 1-2.400M9.500 5.500c0-1.200 1-1.200 1-2.400"/>' },
+  sights: { label: "Sights",    icon: '<path d="M2 14h12M3.500 14V7l4.500-4 4.500 4v7M6.500 14v-4h3v4"/>' },
+  still: { label: "Stillness",  icon: '<path d="M12.500 10.500A5.500 5.500 0 1 1 6.500 3a4.500 4.500 0 0 0 6 7.500z"/>' },
+};
+
+// The curated dream library. It is editorial content that ships with the page;
+// everything the two of you add lives in the shared store.
+const IDEAS = [
+  ["i01", "Cheetahs at golden hour", "Masai Mara, Kenya", -1.5, 35.1, "wild", "Open grass and long sightlines make the Mara one of the best places to watch a cheetah hunt. Stay in a conservancy for off-road tracking."],
+  ["i02", "The Great Migration", "Serengeti, Tanzania", -2.3, 34.8, "wild", "Over a million wildebeest move in a loop that never fully stops. The river crossings usually fall between July and October."],
+  ["i03", "Mokoro through the Okavango", "Okavango Delta, Botswana", -19.3, 22.9, "wild", "A dugout canoe, a guide with a pole, and elephants wading past. A safari with no engine noise."],
+  ["i04", "Mountain gorillas", "Volcanoes National Park, Rwanda", -1.47, 29.5, "wild", "One hour with a gorilla family in the bamboo. Permits are limited, so this one gets planned early."],
+  ["i05", "Swim with whale sharks", "Ningaloo Reef, Australia", -22.6, 113.7, "wild", "The reef sits close to shore, and the sharks pass by from about March to July."],
+  ["i06", "Northern lights by boat", "Tromsø, Norway", 69.65, 18.96, "still", "Dark fjords, a thermos of tea, and the aurora overhead between September and March."],
+  ["i07", "Diving the Coral Triangle", "Raja Ampat, Indonesia", -0.23, 130.5, "water", "Often named the richest reef system on Earth. Manta rays, pygmy seahorses and limestone islands."],
+  ["i08", "Sipadan's turtle wall", "Sipadan, Malaysia", 4.11, 118.63, "water", "A column of ocean rising from deep water, with turtles and barracuda swirling around it. Daily dive permits are capped."],
+  ["i09", "The Great Blue Hole", "Lighthouse Reef, Belize", 17.32, -87.53, "water", "A perfect circle in the Caribbean, seen best from a small plane and then from the inside."],
+  ["i10", "Red Sea reefs", "Dahab, Egypt", 28.57, 34.54, "water", "Warm water, easy shore dives, and a short hop from home waters."],
+  ["i11", "Manta night dive", "Kona, Hawaiʻi", 19.6, -156, "water", "Divers set lights on the seabed, and the mantas come in to feed on the plankton above them."],
+  ["i12", "Skydive over the Alps", "Interlaken, Switzerland", 46.69, 7.86, "sky", "Tandem jumps with the Eiger, Mönch and Jungfrau on the horizon."],
+  ["i13", "Skydive past a glacier", "Franz Josef, New Zealand", -43.39, 170.18, "sky", "Sea, rainforest and ice all in the same view on the way down."],
+  ["i14", "Dawn balloons", "Cappadocia, Türkiye", 38.64, 34.83, "sky", "Drifting between fairy chimneys at sunrise with a hundred other balloons."],
+  ["i15", "Paraglide the blue lagoon", "Ölüdeniz, Türkiye", 36.55, 29.12, "sky", "A launch from Babadağ and a long, slow descent over the turquoise bay."],
+  ["i16", "The W Trek", "Torres del Paine, Chile", -51, -73, "trail", "Five days of granite towers, glaciers and refuges with hot soup at the end of the day."],
+  ["i17", "The Lycian Way", "Fethiye to Antalya, Türkiye", 36.4, 30.1, "trail", "Mediterranean coast and ancient ruins, walked in sections for as long as you like."],
+  ["i18", "Up Hoverla", "Carpathians, Ukraine", 48.16, 24.5, "trail", "The highest peak in Ukraine, with long Carpathian views."],
+  ["i19", "Everest Base Camp", "Khumbu, Nepal", 28, 86.85, "trail", "Teahouse to teahouse for around twelve days. Tea tastes better at 5,000 metres."],
+  ["i20", "Baklava in its hometown", "Gaziantep, Türkiye", 37.07, 37.38, "table", "Pistachios, copper trays, and a kitchen class that ruins all other baklava forever."],
+  ["i21", "Pintxos crawl", "San Sebastián, Spain", 43.32, -1.98, "table", "One bite and one glass at each bar, all the way through the old town."],
+  ["i22", "Ramen and tiny bars", "Tokyo, Japan", 35.68, 139.76, "table", "Eight-seat counters, late trains, and a different neighbourhood every night."],
+  ["i23", "Lviv coffee mornings", "Lviv, Ukraine", 49.84, 24.03, "table", "Old-town cafés, cobbled lanes and very serious chocolate."],
+  ["i24", "A night in the dunes", "Merzouga, Morocco", 31.1, -4, "still", "Walk into Erg Chebbi at sunset and sleep under a sky with no light in it."],
+  ["i25", "The mirror of the sky", "Salar de Uyuni, Bolivia", -20.13, -67.49, "still", "In the rainy season a thin layer of water turns the salt flat into a mirror."],
+].map(([id, title, place, lat, lon, cat, blurb]) => ({ id, title, place, lat, lon, cat, blurb, status: "idea" }));
+
+const VIEWS = {
+  all:  { tab: "Bucket list", thread: "var(--dream)" },
+  cal:  { tab: "Calendar",    thread: "var(--plan)" },
+  been: { tab: "Been to",     thread: "var(--been)" },
+};
+const STATUS_VIEW = { dream: "all", plan: "cal", been: "been", idea: "all" };
+const KINDS = { w: "wild", u: "water", s: "sky", t: "trail", f: "table", q: "still", c: "sights" };
+const STATUS_LABEL = { idea: "Idea", dream: "Bucket list", plan: "Plan", been: "Been to" };
+
+const $ = (id) => document.getElementById(id);
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k === "style") el.style.cssText = v;
+    else if (k === "html") el.innerHTML = v;
+    else if (v !== undefined && v !== null && v !== false) el.setAttribute(k, v === true ? "" : v);
+  }
+  el.append(...kids.flat().filter((c) => c !== null && c !== undefined && c !== false));
+  return el;
+}
+const glyph = (cat) => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${(CATS[cat] || CATS.still).icon}</svg>`;
+const threadVar = (s) => VIEWS[STATUS_VIEW[s]]?.thread || "var(--ink)";
+
+/* A folk sun for the mark, and a cut-paper border. */
+{
+  let rays = "";
+  for (let i = 0; i < 12; i++) rays += `<path d="M21 2l3.500 8h-7z" transform="rotate(${i * 30} 21 21)" fill="${i % 2 ? "#f2ae14" : "#d6432c"}" stroke="#2b1d18" stroke-width="1.500" stroke-linejoin="round"/>`;
+  $("mark").innerHTML = `<svg width="34" height="34" viewBox="0 0 42 42" aria-hidden="true">${rays}<circle cx="21" cy="21" r="11" fill="#f2ae14" stroke="#2b1d18" stroke-width="2"/><path d="M15 19h3M24 19h3M16 25c3 3 7 3 10 0" fill="none" stroke="#2b1d18" stroke-width="1.800" stroke-linecap="round"/></svg>`;
+}
+
+/* ---------- geometry ---------- */
+const RAD = Math.PI / 180;
+function haversineKm(a, b) {
+  const dLat = (b.lat - a.lat) * RAD, dLon = (b.lon - a.lon) * RAD;
+  const s = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * RAD) * Math.cos(b.lat * RAD) * Math.sin(dLon / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(s));
+}
+const toXYZ = (lat, lon) => [Math.cos(lat * RAD) * Math.sin(lon * RAD), Math.sin(lat * RAD), Math.cos(lat * RAD) * Math.cos(lon * RAD)];
+
+const W = window.WORLD;
+const N = W.points.length / 3;
+const P = new Float32Array(N * 3);
+const COUNTRY = new Uint16Array(N);
+for (let i = 0; i < N; i++) {
+  const lat = W.points[i * 3] / 10, lon = W.points[i * 3 + 1] / 10;
+  COUNTRY[i] = W.points[i * 3 + 2];
+  P.set(toXYZ(lat, lon), i * 3);
+}
+function nearestCountry(lat, lon) {
+  const [x, y, z] = toXYZ(lat, lon);
+  let best = -1, bestD = -2;
+  for (let i = 0; i < N; i++) {
+    const d = P[i * 3] * x + P[i * 3 + 1] * y + P[i * 3 + 2] * z;
+    if (d > bestD) { bestD = d; best = i; }
+  }
+  return { index: COUNTRY[best], name: W.names[COUNTRY[best]], dist: Math.acos(Math.min(1, bestD)) / RAD };
+}
+const pinCountry = new Map();
+function countryOf(p) {
+  const key = p.lat + "," + p.lon;
+  if (!pinCountry.has(key)) pinCountry.set(key, nearestCountry(p.lat, p.lon).index);
+  return pinCountry.get(key);
+}
+
+/* ---------- state ---------- */
+const state = { view: "all", cat: null, mode: "list", sel: null, draft: null, section: "globe", person: "all", kinds: new Set(), confirmDelete: false, country: null, regions: null, region: null, spot: null,
+  calYear: new Date().getFullYear(), calMonth: new Date().getMonth(), calDay: null };
+let items = [];
+let store = null;   // { save, remove, shared }
+let user = null;
+let canWrite = true;
+
+const STORE_KEY = "two-shores-local";
+const BASE_KEY = "two-shores-base";
+const BUCKET_KEY = "two-shores-bucket";
+const ME_KEY = "two-shores-me", PROFILES_KEY = "two-shores-profiles";
+let profiles = [], me = null;
+try { me = localStorage.getItem(ME_KEY); profiles = JSON.parse(localStorage.getItem(PROFILES_KEY)) || []; } catch {}
+let bucket = [];
+try { bucket = JSON.parse(localStorage.getItem(BUCKET_KEY)) || []; } catch {}
+try { HOME = JSON.parse(localStorage.getItem(BASE_KEY)) || HOME; } catch {}
+function readLocal() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch { return []; } }
+function writeLocal() { try { localStorage.setItem(STORE_KEY, JSON.stringify(items)); } catch {} }
+
+const localStore = {
+  shared: false,
+  async save(item) { items = items.filter((i) => i.id !== item.id).concat(item); writeLocal(); changed(); },
+  async remove(id) { items = items.filter((i) => i.id !== id); writeLocal(); changed(); },
+  async saveProfile(p) { profiles = profiles.filter((x) => x.id !== p.id).concat(p); try { localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles)); } catch {} changed(); },
+  async saveBucket(b) { bucket = bucket.filter((x) => x.id !== b.id).concat(b); try { localStorage.setItem(BUCKET_KEY, JSON.stringify(bucket)); } catch {} changed(); },
+  async removeBucket(id) { bucket = bucket.filter((x) => x.id !== id); try { localStorage.setItem(BUCKET_KEY, JSON.stringify(bucket)); } catch {} changed(); },
+  async saveBase(base) { try { localStorage.setItem(BASE_KEY, JSON.stringify(base)); } catch {} HOME = base; changed(); },
+};
+store = localStore;
+items = readLocal();
+
+/* ---------- people ---------- */
+const COLOURS = ["#f2ae14", "#ef9a9a", "#8cc06a", "#9fdce0", "#c9a7e8"];
+const AVATARS = ["lion", "elephant", "giraffe", "panda", "penguin", "koala", "camel", "puffin"];
+const profile = (id) => profiles.find((p) => p.id === id);
+const personName = (id) => profile(id)?.name || "Someone";
+function avatar(id, size = 24) {
+  const p = profile(id);
+  if (!p) return null;
+  return h("span", { class: "av", title: p.name, style: `width:${size}px;height:${size}px;--c:${p.colour}` }, h("img", { src: STICKER_IMG[p.animal]?.src || "", alt: p.name }));
+}
+const verb = (i) => i.status === "been" ? "has been to" : i.status === "plan" ? "planned" : "added";
+const tail = (i) => i.status === "dream" || i.text ? " to the bucket list" : "";
+function announce(i, note) {
+  if (!i.who || i.who === me) return;
+  toast(`${personName(i.who)} ${note ? "added" : verb(i)} ${note ? i.text : i.title}${tail(i)}`);
+}
+function renderMe() {
+  const btn = $("meBtn"), p = profile(me);
+  btn.replaceChildren(...(p ? [avatar(me, 24), p.name] : ["Who are you?"]));
+}
+const newProfile = { name: "", animal: AVATARS[0], colour: COLOURS[0] };
+function renderWho() {
+  const box = $("who");
+  const close = () => { box.hidden = true; };
+  const createForm = h("form", { class: "whobox-form", style: "display:grid;gap:10px", onsubmit: (e) => {
+    e.preventDefault();
+    const name = e.target.elements.profileName.value.trim();
+    if (!name) return;
+    const id = newId();
+    store.saveProfile({ id, name, animal: newProfile.animal, colour: newProfile.colour, createdAt: Date.now() }).then(() => {
+      me = id;
+      try { localStorage.setItem(ME_KEY, id); } catch {}
+      renderMe(); close(); toast(`Hi ${name}!`);
+    }, () => toast("That didn't save. You may need Editor access."));
+  } },
+    h("label", { class: "field" }, "Your name", h("input", { class: "text", id: "profileName", name: "profileName", maxlength: 24, required: true, autocomplete: "off", value: newProfile.name, oninput: (e) => { newProfile.name = e.target.value; } })),
+    h("div", { class: "swatches" }, AVATARS.map((a) => h("button", { type: "button", "aria-label": a, "aria-pressed": String(newProfile.animal === a), style: `--c:${newProfile.colour}`, onclick: () => { newProfile.animal = a; renderWho(); } }, h("img", { src: STICKER_IMG[a].src, alt: "" })))),
+    h("div", { class: "swatches col" }, COLOURS.map((c) => h("button", { type: "button", "aria-label": `Colour ${c}`, "aria-pressed": String(newProfile.colour === c), style: `--c:${c}`, onclick: () => { newProfile.colour = c; renderWho(); } }))),
+    h("button", { class: "btn", type: "submit" }, "Create my profile"));
+  box.replaceChildren(h("div", { class: "whobox" },
+    h("h2", {}, "Who's here?"),
+    profiles.length > 0 && h("div", { class: "people" }, profiles.map((p) => h("button", { class: "person", "aria-pressed": String(p.id === me), onclick: () => {
+      me = p.id;
+      try { localStorage.setItem(ME_KEY, p.id); } catch {}
+      renderMe(); close(); changed();
+    } }, avatar(p.id, 30), p.name))),
+    createForm,
+    h("button", { class: "btn quiet", onclick: close }, "Not now"),
+    authClient && h("button", { class: "link", onclick: () => authClient.auth.signOut().then(() => location.reload()) }, "Sign out")));
+  box.hidden = false;
+}
+function personBar() {
+  if (profiles.length < 2) return null;
+  const pick = (id, label, av) => h("button", { class: "person", "aria-pressed": String(state.person === id), onclick: () => { state.person = id; refreshThreads(); renderPanel(); if (state.section === "stats") renderStatsPage(); } }, av, label);
+  return h("div", { class: "people" }, pick("all", "Both", null), profiles.map((p) => pick(p.id, p.name, avatar(p.id, 22))));
+}
+const beenItems = () => items.filter((i) => i.status === "been" && (state.person === "all" || i.who === state.person));
+
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 3200);
+}
+async function persist(item, okMsg) {
+  try { await store.save({ who: me, ...item }); if (okMsg) toast(okMsg); }
+  catch (e) {
+    toast(e?.code === "invalid_argument" ? "You have view-only access, so this wasn't saved." : "That didn't save. Check your connection and try again.");
+  }
+}
+
+/* the installed app: sign in, then share everything through Supabase */
+let authClient = null, authUid = null;
+function askToSignIn(client) {
+  return new Promise((resolve) => {
+    const box = $("login"), note = h("p", { class: "fine", role: "status" });
+    const submit = async (e, mode) => {
+      e.preventDefault();
+      const form = $("loginForm"), email = form.elements.loginEmail.value.trim(), password = form.elements.loginPass.value;
+      if (!form.reportValidity()) return;
+      note.textContent = "One moment…";
+      const { data, error } = await (mode === "new" ? client.auth.signUp({ email, password }) : client.auth.signInWithPassword({ email, password }));
+      if (error) { note.textContent = error.message; return; }
+      if (!data.session) { note.textContent = "Check your email to confirm, then sign in."; return; }
+      box.hidden = true;
+      resolve(data.session);
+    };
+    box.replaceChildren(h("div", { class: "whobox" },
+      h("h2", {}, "Welcome back"),
+      h("form", { id: "loginForm", style: "display:grid;gap:10px", onsubmit: (e) => submit(e, "in") },
+        h("label", { class: "field" }, "Email", h("input", { class: "text", id: "loginEmail", name: "loginEmail", type: "email", required: true, autocomplete: "username" })),
+        h("label", { class: "field" }, "Password", h("input", { class: "text", id: "loginPass", name: "loginPass", type: "password", required: true, minlength: 6, autocomplete: "current-password" })),
+        h("button", { class: "btn", type: "submit" }, "Sign in"),
+        h("button", { class: "btn quiet", type: "button", onclick: (e) => submit(e, "new") }, "First time? Create my account")),
+      note));
+    box.hidden = false;
+  });
+}
+/* personal touches live in the private database, not in the public site files */
+function applyPrivate(settings) {
+  const app = settings.find((d) => d.id === "app"), heart = settings.find((d) => d.id === "heart");
+  if (app?.name) { document.title = app.name; document.querySelector("#top h1").textContent = app.name; }
+  if (heart && !SCENES.some((s) => s.kind === "heart")) {
+    SCENES.unshift({ name: heart.name, lat: heart.lat, lon: heart.lon, kind: "heart", zoom: 4.5, xyz: toXYZ(heart.lat, heart.lon), phase: 0, country: nearestCountry(heart.lat, heart.lon).index });
+    chosenKey = "";
+  }
+}
+async function connectCloud() {
+  const { supabaseUrl, supabaseKey } = window.PLANNER_CONFIG;
+  const client = (authClient = window.supabase.createClient(supabaseUrl, supabaseKey));
+  let { data: { session } } = await client.auth.getSession();
+  if (!session) session = await askToSignIn(client);
+  authUid = session.user.id;
+  const cloud = window.createCloud(client);
+  const apply = () => {
+    items = cloud.rows("places"); bucket = cloud.rows("bucket"); profiles = cloud.rows("profiles");
+    const base = cloud.rows("settings").find((d) => d.id === "base");
+    if (base) { const { id, ...home } = base; HOME = home; }
+    applyPrivate(cloud.rows("settings"));
+    const mine = profiles.find((p) => p.owner === authUid);
+    if (mine) me = mine.id;
+    renderMe(); changed();
+  };
+  apply();
+  store = {
+    shared: true,
+    save: (item) => cloud.save("places", item).then(apply),
+    remove: (id) => cloud.remove("places", id).then(apply),
+    saveBase: (base) => cloud.save("settings", { id: "base", ...base }).then(apply),
+    saveProfile: (p) => cloud.save("profiles", { ...p, owner: authUid }).then(apply),
+    saveBucket: (b) => cloud.save("bucket", b).then(apply),
+    removeBucket: (id) => cloud.remove("bucket", id).then(apply),
+  };
+  if (!(await cloud.load())) toast("You're offline, showing your saved copy.");
+  apply();
+  cloud.subscribe((type, collection, doc) => {
+    if (type === "INSERT" && collection === "places") announce(doc);
+    if (type === "INSERT" && collection === "bucket") announce(doc, true);
+    apply();
+  });
+  if (!profile(me)) renderWho();
+}
+async function connect() {
+  if (window.PLANNER_CONFIG?.supabaseUrl) return connectCloud();
+  if (!window.claude?.use) return;
+  const db = await claude.use("db");
+  user = await claude.use("user");
+  if (!db) return;
+  if (user && (await user.can("data.write")) === false) canWrite = false;
+  const col = db.collection("places");
+  store = {
+    shared: true,
+    save: (item) => { const { id, ...data } = item; return col.doc(id).set(data); },
+    remove: (id) => col.doc(id).delete(),
+    saveBase: (base) => db.doc("settings/base").set(base),
+    saveProfile: ({ id, ...data }) => db.collection("profiles").doc(id).set(data),
+    saveBucket: ({ id, ...data }) => db.collection("bucket").doc(id).set(data),
+    removeBucket: (id) => db.collection("bucket").doc(id).delete(),
+  };
+  profiles = [];
+  db.collection("profiles").onSnapshot((snap) => { profiles = snap.docs.map((d) => ({ id: d.id, ...d.data() })); renderMe(); changed(); }, () => {});
+  let bucketReady = false;
+  db.collection("bucket").onSnapshot((snap) => {
+    if (bucketReady) for (const c of snap.docChanges()) if (c.type === "added") announce({ id: c.doc.id, ...c.doc.data() }, true);
+    bucketReady = true;
+    bucket = snap.docs.map((d) => ({ id: d.id, ...d.data() })); changed();
+  }, () => {});
+  db.doc("settings/base").onSnapshot((snap) => { if (snap.exists) { HOME = snap.data(); changed(); } }, () => {});
+  let placesReady = false;
+  col.onSnapshot((snap) => {
+    if (placesReady) for (const c of snap.docChanges()) if (c.type === "added") announce({ id: c.doc.id, ...c.doc.data() });
+    placesReady = true;
+    items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    changed();
+  }, () => toast("The live connection dropped. Reload to reconnect."));
+}
+
+/* ---------- derived ---------- */
+const newId = () => "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const findAny = (id) => items.find((i) => i.id === id) || IDEAS.find((i) => i.id === id);
+function currentPins() {
+  const pins = viewPins().filter((p) => state.view !== "been" || state.person === "all" || p.who === state.person);
+  return state.kinds.size ? pins.filter((p) => state.kinds.has(CAT_FILTER[p.cat])) : pins;
+}
+function viewPins() {
+  if (state.view === "all") return items;
+  if (state.view === "bucket") return [];
+  if (state.view === "idea") return IDEAS.filter((i) => !state.cat || i.cat === state.cat);
+  if (state.view === "cal") return items.filter((i) => i.status === "plan");
+  return items.filter((i) => i.status === state.view);
+}
+const RANK = { dream: 1, plan: 2, been: 3, idea: 4 };
+let threadOf = new Uint8Array(W.names.length);
+function refreshThreads() {
+  const next = new Uint8Array(W.names.length);
+  const source = state.view === "idea" ? currentPins() : state.view === "all" ? items : currentPins();
+  for (const p of source) {
+    const c = countryOf(p);
+    next[c] = Math.max(next[c] === 4 ? 0 : next[c], RANK[p.status] || 0);
+  }
+  threadOf = next;
+  threadVersion++;
+}
+
+/* ---------- panel ---------- */
+function renderStats() {
+  const been = beenItems().length;
+  const next = items.filter((i) => i.status === "plan" && i.date && i.date >= ymd(new Date())).sort(byDate)[0];
+  $("stats").replaceChildren(
+    h("span", {}, h("b", {}, String(been)), been === 1 ? " city been to" : " cities been to"),
+    h("span", {}, "Base: ", h("b", {}, HOME.name),
+      canWrite && h("button", { class: "link", onclick: () => startPlacing("base") }, "Change")),
+    ...(next ? [h("span", {}, h("b", {}, String(Math.ceil((new Date(next.date + "T12:00:00") - Date.now()) / 864e5))), ` days to ${next.title}`)] : []),
+  );
+}
+const byDate = (a, b) => (a.date || "9999").localeCompare(b.date || "9999");
+
+function renderTabs() {
+  $("tabs").replaceChildren(...Object.entries(VIEWS).filter(([k]) => k !== "been").map(([k, v]) =>
+    h("button", { class: "tab", role: "tab", "aria-selected": String(state.view === k), style: `--thread:${v.thread}`, onclick: () => setView(k) }, v.tab)));
+  $("filters").hidden = true;
+  $("filters").replaceChildren(...Object.entries(CATS).filter(([k]) => k !== "sights").map(([k, c]) =>
+    h("button", { class: "chip", "aria-pressed": String(state.cat === k), html: glyph(k) + c.label, onclick: () => { state.cat = state.cat === k ? null : k; changed(); } })));
+}
+
+function dateText(p) {
+  if (!p.date) return "";
+  const d = new Date(p.date + "T12:00:00");
+  const label = d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+  if (p.status !== "plan") return label;
+  const days = Math.ceil((d - Date.now()) / 864e5);
+  return days > 0 ? `in ${days} day${days === 1 ? "" : "s"}` : label;
+}
+
+function row(p) {
+  const km = Math.round(haversineKm(HOME, p)).toLocaleString("en-GB");
+  return h("button", { class: "row", style: `--thread:${threadVar(p.status)}`, onclick: () => select(p.id) },
+    h("span", { html: glyph(p.cat) }),
+    h("span", {}, h("strong", {}, p.title), h("span", { class: "sub" }, p.place)),
+    h("em", { style: "display:inline-flex;gap:6px;align-items:center" }, dateText(p) || km + " km", avatar(p.who, 22)));
+}
+
+function renderList() {
+  const pins = [...currentPins()].sort(byDate);
+  const bar = state.view === "been" ? personBar() : null;
+  if (!pins.length) {
+    const copy = {
+      all: ["The map is still blank", "Open Ideas and pick something, or tap Add a place and choose a spot on the globe."],
+      dream: ["The bucket list is empty", "Browse Ideas, or add the place you keep bringing up."],
+      been: ["Nowhere yet", "Click a country on the Globe, then tap the cities you've been to."],
+    }[state.view];
+    $("body").replaceChildren(...[bar, h("div", { class: "empty" }, h("h3", {}, copy[0]), h("p", {}, copy[1]))].filter(Boolean));
+    return;
+  }
+  $("body").replaceChildren(...[bar, ...pins.map(row)].filter(Boolean));
+}
+
+function renderDetail() {
+  const p = findAny(state.sel);
+  if (!p) { state.mode = "list"; return renderPanel(); }
+  const isIdea = p.status === "idea";
+  const added = isIdea && items.some((i) => i.sourceIdea === p.id);
+  const km = Math.round(haversineKm(HOME, p)).toLocaleString("en-GB");
+  const by = h("span", {});
+  const notes = p.notes || [];
+
+  const actions = h("div", { class: "actions" });
+  if (canWrite) {
+    if (isIdea) actions.append(h("button", { class: "btn", disabled: added, onclick: () => addIdea(p) }, added ? "On our list" : "Add to our bucket list"));
+    if (p.status === "dream") actions.append(h("button", { class: "btn", onclick: () => setStatus(p, "plan") }, "Make it a plan"));
+    if (p.status === "plan") actions.append(h("button", { class: "btn", onclick: () => setStatus(p, "been") }, "We went"));
+    if (!isIdea) actions.append(state.confirmDelete
+      ? h("button", { class: "btn danger", onclick: () => removeItem(p) }, "Yes, remove it")
+      : h("button", { class: "btn quiet", onclick: () => { state.confirmDelete = true; renderPanel(); } }, "Remove"));
+  }
+
+  $("body").replaceChildren(h("article", { class: "detail", style: `--thread:${threadVar(p.status)}` },
+    h("button", { class: "back", onclick: closeDetail }, "← Back"),
+    h("h2", {}, p.title),
+    h("div", { class: "pills" },
+      h("span", { class: "pill" }, STATUS_LABEL[p.status]),
+      h("span", { class: "pill plain", html: glyph(p.cat) + (CATS[p.cat] || CATS.still).label }),
+      p.example && h("span", { class: "pill plain" }, "Example")),
+    h("div", { class: "place" }, h("b", {}, p.place), ` · ${km} km from base`, dateText(p) && ` · ${dateText(p)}`),
+    p.blurb && h("p", { class: "blurb" }, p.blurb),
+    by,
+    actions,
+    !isIdea && canWrite && (p.status === "plan" || p.status === "been") && h("label", { class: "field" }, "Date",
+      h("input", { class: "text", id: "editDate", type: "date", value: p.date || "", onchange: (e) => persist({ ...p, date: e.target.value }) })),
+    !isIdea && canWrite && (p.status === "plan" || p.status === "been") && p.date && h("label", { class: "field" }, "Until",
+      h("input", { class: "text", id: "editEnd", type: "date", min: p.date, value: p.endDate || "", onchange: (e) => persist({ ...p, endDate: e.target.value }) })),
+    !isIdea && h("section", { class: "notes" },
+      h("h3", {}, "Notes"),
+      notes.map((n) => h("div", { class: "note" }, n.text, h("small", {}, new Date(n.at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })))),
+      canWrite && h("form", { onsubmit: (e) => { e.preventDefault(); addNote(p, e.target.elements.noteText); } },
+        h("label", { class: "field" }, notes.length ? "Add another note" : "Leave the first note",
+          h("textarea", { id: "noteText", name: "noteText", rows: 2, placeholder: "The hotel with the rooftop, that thing you read…" })),
+        h("div", { style: "margin-top:8px" }, h("button", { class: "btn quiet", type: "submit" }, "Save note"))))));
+
+  if (p.who) by.textContent = `Added by ${personName(p.who)}`;
+}
+
+/* our own list first; the world list fills in the rest without doubling up a place */
+const cityCache = new Map();
+function citiesOf(name) {
+  if (cityCache.has(name)) return cityCache.get(name);
+  /* window.CITIES runs Türkiye, then Ukraine from Kyiv, then Saudi Arabia from Riyadh */
+  const at = (city) => window.CITIES.findIndex(([n]) => n === city);
+  const own = name === "Turkey" ? window.CITIES.slice(0, at("Kyiv")) : name === "Ukraine" ? window.CITIES.slice(at("Kyiv"), at("Riyadh")) : name === "Saudi Arabia" ? window.CITIES.slice(at("Riyadh")) : [];
+  const list = name === "Ukraine" ? own : [...own];
+  if (name !== "Ukraine") for (const c of window.COUNTRY_CITIES[name] || []) {
+    if (!list.some(([, lat, lon]) => haversineKm({ lat, lon }, { lat: c[1], lon: c[2] }) < 25)) list.push(c);
+  }
+  cityCache.set(name, list);
+  return list;
+}
+function cityChips(list, label, regionName) {
+  return h("div", { class: "citychips" }, list.map(([city, lat, lon]) => {
+    const visits = items.filter((i) => i.city === city && i.status === "been");
+    const mine = visits.find((i) => i.who === me || !i.who);
+    return h("button", { class: "chip", "aria-pressed": String(!!mine), disabled: !canWrite,
+      onclick: () => mine ? store.remove(mine.id) : markBeen({ title: city, place: `${city}, ${label}`, lat, lon, city, ...(regionName ? { regionName } : {}) }) },
+      city, visits.filter((i) => i.who && i.who !== me).map((i) => h("i", { class: "dot", title: personName(i.who), style: `--c:${profile(i.who)?.colour || "#999"}` })));
+  }));
+}
+function countryInfo(name) {
+  const raw = window.COUNTRIES[name] || [];
+  const label = raw[0]?.startsWith("=") ? raw[0].slice(1) : name;
+  const things = raw.filter((l) => !l.startsWith("=")).map((l) => {
+    const [kind, title, place] = l.split("|");
+    return { cat: KINDS[kind], title, place };
+  });
+  return { label, things };
+}
+function renderCountry() {
+  const c = state.country;
+  const { label, things } = countryInfo(c.name);
+  const [capital, languages, season] = (window.FACTS[c.name] || "||").split("|");
+  const index = W.names.indexOf(c.name);
+  const ours = items.filter((i) => countryOf(i) === index);
+  const whole = items.find((i) => i.wholeCountry === c.name);
+  const library = IDEAS.filter((i) => countryOf(i) === index && !things.some((t) => t.title === i.title));
+  const fact = (k, v) => v && h("div", {}, h("dt", {}, k), h("dd", {}, v));
+  const addBtn = (t) => {
+    const onList = items.some((i) => i.title === t.title);
+    return canWrite && h("button", { class: "btn quiet mini", disabled: onList, "aria-label": `Add ${t.title} to our bucket list`, onclick: () => addThing(t, label) }, onList ? "Added" : "+ Add");
+  };
+  const thing = (t) => h("div", { class: "row", style: "--thread:var(--idea)" },
+    h("span", { html: glyph(t.cat) }),
+    h("span", {}, h("strong", {}, t.title), h("span", { class: "sub" }, t.place)),
+    addBtn(t));
+
+  if (state.region) {
+    const r = state.region;
+    const inside = ({ lat, lon }) => d3.geoContains(r, [lon, lat]);
+    const key = r.name.normalize("NFD").replace(/[^\p{L}]/gu, "").toLowerCase();
+    const named = things.filter((t) => t.place.normalize("NFD").replace(/[^\p{L}]/gu, "").toLowerCase().includes(key));
+    const scenes = SCENES.filter(inside).map((s) => ({ title: s.name, place: r.name, lat: s.lat, lon: s.lon, cat: SWIMMERS.has(s.kind) ? "water" : WALKERS.has(s.kind) ? "wild" : "sights", kind: s.kind }))
+      .filter((s) => !named.some((t) => t.title === s.title));
+    const cities = citiesOf(c.name).filter(([, lat, lon]) => inside({ lat, lon }));
+    const here = ours.filter(inside);
+    const scene = (t) => h("div", { class: "row" },
+      h("img", { src: STICKER_IMG[t.kind].src, alt: "", width: 32, height: 32 }),
+      h("span", {}, h("strong", {}, t.title)),
+      addBtn(t));
+    const empty = !named.length && !scenes.length && !here.length;
+    $("body").replaceChildren(h("article", { class: "detail" },
+      h("button", { class: "back", onclick: () => { state.region = null; dirty = true; renderPanel(); } }, `← All of ${label}`),
+      h("h2", {}, r.name),
+      cities.length > 0 && h("section", { class: "notes" }, h("h3", {}, "Cities we've been to"), cityChips(cities, label, r.name)),
+      here.length > 0 && h("section", { class: "notes" }, h("h3", {}, "Ours here"), here.map(row)),
+      !empty && h("section", { class: "notes" }, h("h3", {}, "Special here"), scenes.map(scene), named.map(thing)),
+      empty && h("p", { class: "fine" }, `Nothing special marked in ${r.name} yet.`)));
+    return;
+  }
+
+  $("body").replaceChildren(h("article", { class: "detail" },
+    h("button", { class: "back", onclick: closeCountry }, "← Back"),
+    h("h2", {}, label),
+    (() => {
+      const seen = new Set();
+      const here = SCENES.filter((s) => s.country === index && !seen.has(s.kind) && seen.add(s.kind)).slice(0, 6);
+      return here.length > 0 && h("div", { class: "strip" }, here.map((s) => h("button", { title: s.name, "aria-label": s.name, onclick: () => openSuggestion(sceneSpot(s)) }, h("img", { src: STICKER_IMG[s.kind].src, alt: "" }))));
+    })(),
+    h("dl", { class: "facts" }, fact("Capital", capital), fact("Languages", languages), fact("Good time to go", season)),
+    canWrite && h("div", { class: "actions" },
+      whole ? h("button", { class: "btn quiet", onclick: () => select(whole.id) }, `On our ${STATUS_LABEL[whole.status].toLowerCase()}`)
+        : h("button", { class: "btn", onclick: () => addCountry(label, "dream") }, "Add to bucket list")),
+    citiesOf(c.name).length > 0 && h("section", { class: "notes" }, h("h3", {}, "Cities we've been to"), cityChips(citiesOf(c.name), label)),
+    state.regions?.length > 0 && h("p", { class: "fine" }, "Tap a region on the map to see what's special there."),
+    ours.length > 0 && h("section", { class: "notes" }, h("h3", {}, "Ours here"), ours.map(row)),
+    h("section", { class: "notes" }, h("h3", {}, "Things to see and do"),
+      things.length ? things.map(thing) : h("p", { class: "blurb" }, "No suggestions here."),
+      library.map(row)),
+    canWrite && h("button", { class: "link", onclick: () => setBase(label, c) }, "Make this our base")));
+}
+/* a plan stays on the calendar from its date through its end date */
+const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const onDay = (day) => items.filter((i) => i.date && i.date <= day && (i.endDate || i.date) >= day);
+const dayLabel = (day) => new Date(day + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+function renderCalendar() {
+  const first = new Date(state.calYear, state.calMonth, 1);
+  const today = ymd(new Date());
+  const lead = (first.getDay() + 6) % 7;   // weeks start on Monday
+  const total = new Date(state.calYear, state.calMonth + 1, 0).getDate();
+  const shift = (n) => { const d = new Date(state.calYear, state.calMonth + n, 1); state.calYear = d.getFullYear(); state.calMonth = d.getMonth(); renderPanel(); };
+  const cells = [...Array(lead)].map(() => h("span", { class: "day blank" }));
+  for (let n = 1; n <= total; n++) {
+    const day = ymd(new Date(state.calYear, state.calMonth, n));
+    const here = onDay(day);
+    cells.push(h("button", {
+      class: "day" + (day === today ? " today" : "") + (day === state.calDay ? " picked" : ""),
+      "aria-label": `${dayLabel(day)}, ${here.length} planned`,
+      onclick: () => { state.calDay = day; renderPanel(); },
+    }, String(n), h("i", {}, here.slice(0, 3).map((p) => h("b", { style: `--thread:${threadVar(p.status)}` })))));
+  }
+  const upcoming = items.filter((i) => i.date && (i.endDate || i.date) >= today).sort(byDate);
+  const undated = items.filter((i) => !i.date && i.status !== "been");
+  const picked = state.calDay;
+  $("body").replaceChildren(h("div", { class: "cal" },
+    h("div", { class: "calhead" },
+      h("button", { class: "btn quiet mini", "aria-label": "Previous month", onclick: () => shift(-1) }, "←"),
+      h("h3", {}, first.toLocaleDateString("en-GB", { month: "long", year: "numeric" })),
+      h("button", { class: "btn quiet mini", "aria-label": "Next month", onclick: () => shift(1) }, "→")),
+    h("div", { class: "grid dow", "aria-hidden": "true" }, ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => h("span", {}, d))),
+    h("div", { class: "grid" }, cells),
+    picked && h("section", { class: "notes" },
+      h("h3", {}, dayLabel(picked)),
+      onDay(picked).map(row),
+      canWrite && (undated.length
+        ? h("label", { class: "field" }, "Put something on this day",
+            h("select", { id: "calPick", onchange: (e) => { const p = items.find((i) => i.id === e.target.value); if (p) scheduleOn(p, picked); } },
+              h("option", { value: "" }, "Choose from our bucket list…"),
+              undated.map((p) => h("option", { value: p.id }, p.title))))
+        : h("p", { class: "fine" }, "Everything on the bucket list has a date. Add more from the globe."))),
+    h("section", { class: "notes" }, h("h3", {}, "Coming up"),
+      upcoming.length ? upcoming.map(row) : h("p", { class: "fine" }, "Nothing booked yet. Pick a day above to start."))));
+}
+function scheduleOn(p, day) {
+  persist({ ...p, date: day, status: "plan" }, `On the calendar for ${new Date(day + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`);
+}
+function renderBucket() {
+  const notes = [...bucket].sort((a, b) => (a.done === b.done ? b.createdAt - a.createdAt : a.done ? 1 : -1));
+  const places = items.filter((i) => i.status === "dream");
+  const toggle = (b) => { store.saveBucket({ ...b, done: !b.done }).catch(() => toast("That didn't save. Try again.")); if (!b.done) celebrate(); };
+  $("body").replaceChildren(h("div", { class: "bucket" },
+    canWrite && h("form", { class: "bucketadd", onsubmit: (e) => {
+      e.preventDefault();
+      const f = e.target.elements.bucketText, text = f.value.trim();
+      if (!text) return;
+      f.value = ""; f.blur();
+      store.saveBucket({ id: newId(), text, done: false, by: myId, who: me, createdAt: Date.now() })
+        .then(() => $("bucketText")?.focus(), () => toast("That didn't save. Try again."));
+    } },
+      h("input", { class: "text", id: "bucketText", name: "bucketText", maxlength: 200, placeholder: "Write anything…", "aria-label": "Add to the bucket list", autocomplete: "off" }),
+      h("button", { class: "btn", type: "submit" }, "Add")),
+    places.map(row),
+    notes.map((b) => h("div", { class: "bk" + (b.done ? " done" : "") },
+      h("button", { class: "tick", "aria-pressed": String(!!b.done), "aria-label": b.done ? `Mark ${b.text} as not done` : `Mark ${b.text} as done`, disabled: !canWrite, onclick: () => toggle(b) }, b.done ? "✓" : ""),
+      h("span", {}, b.text),
+      avatar(b.who, 22) || h("i"),
+      canWrite && h("button", { class: "x", "aria-label": `Remove ${b.text}`, onclick: () => store.removeBucket(b.id).catch(() => toast("That didn't save. Try again.")) }, "×"))),
+    !places.length && !notes.length && h("p", { class: "fine" }, "Nothing yet. Write something above, or click a country on the globe.")));
+}
+function renderForm() {
+  const d = state.draft;
+  const near = nearestCountry(d.lat, d.lon);
+  const onLand = near.dist < 3;
+  $("body").replaceChildren(h("form", { class: "detail", onsubmit: submitForm },
+    h("button", { class: "back", type: "button", onclick: cancelForm }, "← Cancel"),
+    h("h2", {}, onLand ? `Something in ${near.name}` : "Somewhere out at sea"),
+    h("label", { class: "field" }, "What is it?", h("input", { class: "text", id: "fTitle", name: "title", required: true, maxlength: 80, placeholder: "See the cherry blossoms" })),
+    h("label", { class: "field" }, "Where?", h("input", { class: "text", id: "fPlace", name: "place", required: true, maxlength: 80, value: onLand ? near.name : "" })),
+    h("div", { class: "two" },
+      h("label", { class: "field" }, "Which list?", h("select", { id: "fStatus", name: "status" },
+        ["dream", "plan"].map((s) => h("option", { value: s }, STATUS_LABEL[s])))),
+      h("label", { class: "field" }, "Kind", h("select", { id: "fCat", name: "cat" },
+        Object.entries(CATS).map(([k, c]) => h("option", { value: k }, c.label))))),
+    h("label", { class: "field" }, "Date (optional)", h("input", { class: "text", id: "fDate", name: "date", type: "date" })),
+    h("label", { class: "field" }, "Note (optional)", h("textarea", { id: "fNote", name: "note", rows: 2 })),
+    h("div", { class: "actions" }, h("button", { class: "btn", type: "submit" }, "Put it on the map"))));
+  $("fTitle").focus();
+}
+
+function renderFoot() {
+  const foot = $("foot");
+  if (!canWrite || state.mode !== "list" || state.view === "cal") { foot.replaceChildren(); return; }
+  foot.replaceChildren(
+    h("button", { class: "btn", onclick: () => startPlacing() }, placing ? "Tap the globe…" : "Add a place"));
+}
+
+let lastPanel = "";
+function renderPanel() {
+  dirty = true;
+  renderSections();
+  const panelKey = [state.view, state.mode, state.sel, state.country?.name, state.region?.name, state.spot?.title, state.kinds.size > 0].join();
+  $("body").classList.toggle("fresh", false);
+  if (panelKey !== lastPanel) { lastPanel = panelKey; void $("body").offsetWidth; $("body").classList.add("fresh"); }
+  renderTabs(); renderStats();
+  if (state.mode === "detail") renderDetail();
+  else if (state.mode === "form") renderForm();
+  else if (state.mode === "spot") renderSpot();
+  else if (state.mode === "country") renderCountry();
+  else if (state.kinds.size && state.view === "all") renderFilterResults();
+  else if (state.view === "cal") renderCalendar();
+  else if (state.view === "all") renderBucket();
+  else renderList();
+  renderFoot();
+}
+function changed() {
+  refreshThreads();
+  dirty = true;
+  if (state.section === "stats") renderStatsPage();
+  const a = document.activeElement;
+  const typing = a && $("body").contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+  if (state.mode === "form" || typing) { renderTabs(); renderStats(); return; }
+  renderPanel();
+}
+
+/* ---------- actions ---------- */
+function setView(v) {
+  state.spot = null; if (state.mode === "spot") state.draft = null;
+  state.view = v; state.mode = "list"; state.sel = null; state.country = null; state.region = null; state.regions = null; state.confirmDelete = false;
+  if (v !== "idea") state.cat = null;
+  refreshThreads();
+  renderPanel();
+}
+const regionCache = new Map();
+const regionSlug = (s) => s.normalize("NFD").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "").toLowerCase();
+async function loadRegions(name) {
+  if (regionCache.has(name)) return regionCache.get(name);
+  let list = [];
+  try {
+    const res = await fetch(`regions/${regionSlug(name)}.json`);
+    if (res.ok) list = (await res.json()).map((r) => {
+      const f = { type: "Feature", properties: { name: r.name }, geometry: r.geometry };
+      /* d3 reads ring direction: an inside-out region would cover the world */
+      if (d3.geoArea(f) > 6.2) f.geometry = rewind(f.geometry);
+      const [lon, lat] = d3.geoCentroid(f);
+      return { ...f, name: r.name, kind: r.kind, lat, lon, xyz: toXYZ(lat, lon), area: d3.geoArea(f), bounds: d3.geoBounds(f) };
+    });
+  } catch {}
+  regionCache.set(name, list);
+  return list;
+}
+/* a region counts as visited if we marked it, or a been-there place sits inside it */
+function regionIn(list, { lat, lon }) {
+  return list.find((r) => {
+    const [[w, s], [e, n]] = r.bounds;
+    if (lat < s || lat > n || (w <= e ? lon < w || lon > e : lon < w && lon > e)) return false;
+    return d3.geoContains(r, [lon, lat]);
+  }) || null;
+}
+function visitedIn(name, list) {
+  const index = W.names.indexOf(name), seen = new Set();
+  for (const i of beenItems()) {
+    if (countryOf(i) !== index) continue;
+    if (i.regionName) seen.add(i.regionName);
+    else { const r = regionIn(list, i); if (r) seen.add(r.name); }
+  }
+  return seen;
+}
+function rewind(g) {
+  const flip = (poly) => poly.map((ring) => [...ring].reverse());
+  return { type: g.type, coordinates: g.type === "Polygon" ? flip(g.coordinates) : g.coordinates.map(flip) };
+}
+function regionAt(ll) { return regionIn(state.regions || [], ll); }
+function openCountry(name, ll, keepView) {
+  state.country = { name, lat: ll.lat, lon: ll.lon };
+  state.mode = "country"; state.sel = null; state.region = null; state.regions = null;
+  renderPanel();
+  if (!keepView) { const fit = FIT.get(name); if (fit) flyTo(fit.lat, fit.lon, Math.max(1.25, Math.min(11, .6 / fit.rad))); }
+  loadRegions(name).then((list) => {
+    if (state.country?.name !== name) return;
+    state.regions = list; dirty = true; renderPanel();
+  });
+}
+function markBeen(fields) {
+  persist({ id: newId(), cat: "sights", status: "been", by: myId, createdAt: Date.now(), notes: [], ...fields }, "Another one for the map").then(changed);
+  celebrate();
+}
+function closeCountry() { state.country = null; state.region = null; state.regions = null; state.mode = "list"; flyTo(view.lat, view.lon, Math.min(view.zoom, 1.6)); renderPanel(); }
+function addThing(t, label) {
+  const c = t.lat === undefined ? state.country : t;
+  persist({ id: newId(), title: t.title, place: `${t.place}, ${label}`, lat: c.lat, lon: c.lon, cat: t.cat, status: "dream", by: myId, createdAt: Date.now(), notes: [] }, "Added to our bucket list").then(changed);
+}
+function select(id) {
+  const p = findAny(id); if (!p) return;
+  state.sel = id; state.mode = "detail"; state.country = null; state.region = null; state.regions = null; state.confirmDelete = false;
+  renderPanel(); flyTo(p.lat, p.lon);
+}
+function closeDetail() { state.sel = null; state.mode = "list"; renderPanel(); }
+function addIdea(p) {
+  const id = newId();
+  const { id: sourceIdea, status, ...rest } = p;
+  persist({ ...rest, id, sourceIdea, status: "dream", by: myId, createdAt: Date.now(), notes: [] }, "Added to our bucket list").then(() => {
+    state.view = "all"; state.sel = id; state.mode = "detail"; changed();
+  });
+}
+function setStatus(p, status) {
+  persist({ ...p, status }, status === "been" ? "Another one for the map" : "It's a plan");
+  if (status === "been") celebrate();
+  state.view = STATUS_VIEW[status]; state.sel = p.id; state.mode = "detail"; changed();
+}
+function removeItem(p) { store.remove(p.id).catch(() => toast("That didn't save. Try again.")); closeDetail(); }
+function addNote(p, field) {
+  const text = field.value.trim(); if (!text) return;
+  field.value = ""; field.blur();
+  persist({ ...p, notes: [...(p.notes || []), { text, at: Date.now(), by: myId }] });
+}
+/* Surprise skips Russia and its allies, and anywhere a six-month plan isn't realistic right now */
+const SURPRISE_SKIP = /Russia|Belarus|North Korea|Iran|Kazakhstan|Kyrgyzstan|Tajikistan|Armenia|Cuba|Nicaragua|Venezuela|Eritrea|Mali|Myanmar|Syria|Yemen|Ukraine/;
+/* expeditions and big treks are left out: everything here is a normal holiday for two */
+const SURPRISE_POOL = () => {
+  const visited = new Set(items.filter((i) => i.status === "been").map(countryOf));
+  return SPOTS.filter((p) => !SURPRISE_SKIP.test(p.place) && !p.tags.has("big") && !visited.has(countryOf(p)));
+};
+function surprise() {
+  const pool = SURPRISE_POOL().filter((p) => p !== state.spot);
+  if (!pool.length) return toast("You've been everywhere on our list!");
+  const p = pool[Math.floor(Math.random() * pool.length)];
+  setSection("globe");
+  state.view = "all"; state.cat = null; state.spot = p; state.mode = "spot"; state.sel = null;
+  state.country = null; state.region = null; state.regions = null; state.draft = { lat: p.lat, lon: p.lon };
+  refreshThreads(); renderPanel();
+  flyTo(p.lat, p.lon, 8);
+}
+function closeSpot() { state.spot = null; state.draft = null; state.mode = "list"; flyTo(view.lat, view.lon, Math.min(view.zoom, 1.6)); renderPanel(); }
+function renderSpot() {
+  const p = state.spot;
+  const added = items.some((i) => i.title === p.title);
+  const km = Math.round(haversineKm(HOME, p)).toLocaleString("en-GB");
+  const query = encodeURIComponent(`${p.title} ${p.place} travel guide`);
+  $("body").replaceChildren(h("article", { class: "detail" },
+    h("button", { class: "back", onclick: closeSpot }, "← Back"),
+    h("div", { class: "vis", style: `--bg:${p.back[0]};--ground:${p.back[1]};border:2px solid var(--ink);border-radius:12px` }, h("img", { src: STICKER_IMG[p.kind].src, alt: "" })),
+    h("h2", {}, p.title),
+    h("div", { class: "place" }, h("b", {}, p.place), ` · ${km} km from base`),
+    p.why && h("p", { class: "blurb" }, p.why),
+    h("div", { class: "actions" },
+      canWrite && h("button", { class: "btn", disabled: added, onclick: () => addSpot(p) }, added ? "Added" : "+ Add"),
+      !state.kinds.size && h("button", { class: "btn quiet", onclick: surprise }, "Another one"),
+      h("button", { class: "btn quiet", onclick: () => { const n = W.names[nearestCountry(p.lat, p.lon).index]; state.spot = null; state.draft = null; openCountry(n, { lat: p.lat, lon: p.lon }); } }, "See the country")),
+    h("a", { class: "link", style: "padding:0", href: `https://www.google.com/search?q=${query}`, target: "_blank", rel: "noopener" }, "Read more")));
+}
+let placing = false;
+let placingBase = false;
+function setBase(name, ll) {
+  store.saveBase({ lat: ll.lat, lon: ll.lon, name }).then(() => toast(`Our base is now ${name}`), () => toast("That didn't save. Try again."));
+}
+function startPlacing(kind) {
+  placing = !placing;
+  placingBase = placing && kind === "base";
+  $("hint").textContent = placingBase ? "Tap the place that's now home" : "Tap the globe where it belongs";
+  $("hint").hidden = !placing;
+  canvas.classList.toggle("placing", placing);
+  renderFoot();
+}
+function cancelForm() { state.draft = null; state.mode = "list"; renderPanel(); }
+function submitForm(e) {
+  e.preventDefault();
+  const f = e.target.elements, d = state.draft;
+  const note = f.note.value.trim();
+  const status = f.status.value;
+  const item = {
+    id: newId(), title: f.title.value.trim(), place: f.place.value.trim(), lat: d.lat, lon: d.lon,
+    cat: f.cat.value, status, by: myId, createdAt: Date.now(),
+    notes: note ? [{ text: note, at: Date.now(), by: myId }] : [],
+  };
+  if (f.date.value) item.date = f.date.value;
+  state.draft = null; state.view = STATUS_VIEW[status]; state.sel = item.id; state.mode = "detail";
+  persist(item, "It's on the map").then(changed);
+}
+let myId = null;
+
+/* ---------- globe ---------- */
+const canvas = $("globe"), ctx = canvas.getContext("2d");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const css = getComputedStyle(document.documentElement);
+const tok = (n) => css.getPropertyValue(n).trim();
+const INK = tok("--ink"), PAPER = "#fff1c9", SEA = tok("--sea"), PICK = tok("--dream");
+const PAINTS = ["#ecd59c", "#e9b98f", "#c5cf8e", "#dfa9a0", "#e3c46e"];
+let threadVersion = 0;
+/* the Been view: the world stays grey until we go, then comes alive in these */
+const VIVID = ["#f0a92e", "#e4694c", "#6fb35a", "#dc6f92", "#3f9fd0"];
+const THREAD_FILL = [null, tok("--dream"), tok("--plan"), tok("--been"), tok("--idea")];
+const STATUS_COLOR = { idea: tok("--idea"), dream: tok("--dream"), plan: tok("--plan"), been: tok("--been") };
+
+const info = (f) => ({ country: W.names.indexOf(f.properties.name), sand: PAINTS[f.properties.paint], snow: f.properties.name === "Antarctica" });
+const HIGH = window.LAND, LOW = window.LAND_LOW;
+const HIGH_INFO = HIGH.map(info), LOW_INFO = LOW.map(info);
+/* bounding boxes keep hover and click picking quick on the detailed map */
+const HIGH_BOUNDS = HIGH.map((f) => d3.geoBounds(f));
+/* each label sits on the country's biggest landmass, so France lands in France */
+const FIT = new Map();
+const LABELS = HIGH.map((f) => {
+  const polys = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
+  const main = polys.map((coordinates) => ({ type: "Polygon", coordinates })).sort((a, b) => d3.geoArea(b) - d3.geoArea(a))[0];
+  const [lon, lat] = d3.geoCentroid(main);
+  const [[w, s], [e, n]] = d3.geoBounds(main);
+  const rad = Math.max(...[[w, s], [w, n], [e, s], [e, n]].map((p) => d3.geoDistance([lon, lat], p)));
+  FIT.set(f.properties.name, { lat, lon, rad: Math.max(.03, rad) });
+  return { name: f.properties.name, xyz: toXYZ(lat, lon), area: d3.geoArea(main) };
+}).sort((a, b) => b.area - a.area);
+const labelWidth = new Map();
+const CITY_POINTS = window.CITIES.map(([name, lat, lon], i) => ({ name, xyz: toXYZ(lat, lon), zoom: i % 3 === 0 ? 3.6 : 5 }));
+/* a bounding circle per country, so only what's on screen is drawn when zoomed in */
+const reach = (f) => {
+  const [lon, lat] = d3.geoCentroid(f);
+  const [[w, s], [e, n]] = d3.geoBounds(f);
+  const rad = Math.max(...[[w, s], [w, n], [e, s], [e, n]].map((p) => d3.geoDistance([lon, lat], p)));
+  return { xyz: toXYZ(lat, lon), rad: Math.min(Math.PI, rad * 1.15) };
+};
+const HIGH_REACH = HIGH.map(reach), LOW_REACH = LOW.map(reach);
+
+/* stickers: rasterised once so dozens can be drawn each frame */
+const STICKER_IMG = {};
+for (const [name, body] of Object.entries(window.STICKERS.art)) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="-4 -4 108 108"><g stroke="${window.STICKERS.ink}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">${body}</g></svg>`;
+  const img = new Image();
+  img.onload = () => { dirty = true; };
+  img.src = "data:image/svg+xml," + encodeURIComponent(svg);
+  STICKER_IMG[name] = img;
+}
+const SWIMMERS = new Set(["whale", "turtle", "manta", "fish", "dolphin", "shark", "octopus"]);
+const WALKERS = new Set(["rhino", "hippo", "croc", "koala", "reindeer", "puffin", "seal", "monkey", "snowLeopard", "parrot", "lion", "cheetah", "elephant", "giraffe", "zebra", "gorilla", "camel", "penguin", "polar", "kangaroo", "panda", "tiger", "bear", "moose", "llama", "toucan", "lemur", "orangutan"]);
+const inRussia = (lat, lon) => nearestCountry(lat, lon).name === "Russia";   // we never suggest Russia
+const SCENES = window.STICKERS.SCENES.filter(([, lat, lon]) => !inRussia(lat, lon)).map(([name, lat, lon, kind, zoom], i) => ({ name, lat, lon, kind, zoom, xyz: toXYZ(lat, lon), phase: i % 3 }));
+for (const s of SCENES) s.country = nearestCountry(s.lat, s.lon).index;
+const SCENERY = [];
+{
+  let seed = 11;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (const [s, n, w, e, kind, count] of window.STICKERS.SCATTER) {
+    for (let i = 0; i < count; i++) {
+      if (i % 2) continue;
+      const lat = s + rnd() * (n - s), lon = w + rnd() * (e - w);
+      const near = nearestCountry(lat, lon);
+      if (near.dist < .9 && near.name !== "Russia") SCENERY.push({ kind, xyz: toXYZ(lat, lon), zoom: 4.5 + rnd() * 2 });
+    }
+  }
+}
+const projection = d3.geoOrthographic().clipAngle(90).precision(.9);
+const painter = d3.geoPath(projection, null);
+const layer = document.createElement("canvas"), bctx = layer.getContext("2d");
+painter.context(bctx);
+let pen = ctx;           // whichever canvas is being drawn on
+let baseKey = "", dirty = true, wasMoving = false;
+let sinO = 0, cosO = 1, sinP = 0, cosP = 1;
+
+const view = { lon: HOME.lon - 8, lat: HOME.lat + 8, zoom: 1, w: 0, h: 0, cx: 0, cy: 0, r: 0, dpr: 1 };
+let velocity = 0, flight = null;
+
+function resize() {
+  const b = canvas.getBoundingClientRect();
+  view.dpr = Math.min(devicePixelRatio || 1, 1.5);
+  view.w = b.width; view.h = b.height;
+  canvas.width = layer.width = b.width * view.dpr; canvas.height = layer.height = b.height * view.dpr;
+  view.cx = b.width / 2;
+  view.cy = b.height * .5;
+  baseKey = ""; dirty = true;
+}
+new ResizeObserver(resize).observe(canvas);
+
+function project(x, y, z) {
+  const x1 = x * cosO - z * sinO, z1 = x * sinO + z * cosO;
+  return [x1, y * cosP - z1 * sinP, y * sinP + z1 * cosP];
+}
+function unproject(sx, sy) {
+  const r = view.r * view.zoom;
+  const x = (sx - view.cx) / r, y = (view.cy - sy) / r, d = x * x + y * y;
+  if (d > 1) return null;
+  const z = Math.sqrt(1 - d);
+  const o = view.lon * RAD, p = view.lat * RAD, so = Math.sin(o), co = Math.cos(o), sp = Math.sin(p), cp = Math.cos(p);
+  const y1 = y * cp + z * sp, z1 = -y * sp + z * cp;
+  const wx = x * co + z1 * so, wz = -x * so + z1 * co;
+  return { lat: Math.asin(y1) / RAD, lon: Math.atan2(wx, wz) / RAD };
+}
+function flyTo(lat, lon, zoom) {
+  velocity = 0;
+  const dLon = ((lon - view.lon + 540) % 360) - 180;
+  if (reduced) { view.lon += dLon; view.lat = lat; if (zoom) view.zoom = zoom; return; }
+  flight = { t0: performance.now(), lon0: view.lon, lat0: view.lat, dLon, lat, zoom0: view.zoom, zoom: zoom || view.zoom, dur: zoom ? 1500 : 1100 };
+}
+
+/* little painted props */
+function inked(fill, width = 2) {
+  pen.fillStyle = fill; pen.fill();
+  pen.strokeStyle = INK; pen.lineWidth = width; pen.stroke();
+}
+function boat(x, y, s, tilt) {
+  pen.save(); pen.translate(x, y); pen.rotate(tilt); pen.scale(s, s);
+  pen.lineJoin = "round";
+  pen.beginPath(); pen.moveTo(-9, 0); pen.quadraticCurveTo(0, 7, 9, 0); pen.closePath(); inked("#b4382a", 1.6 / s);
+  pen.beginPath(); pen.moveTo(0, 0); pen.lineTo(0, -14); pen.lineTo(8, -3); pen.closePath(); inked(PAPER, 1.6 / s);
+  pen.beginPath(); pen.moveTo(-1.5, -1); pen.lineTo(-1.5, -11); pen.lineTo(-7, -2.500); pen.closePath(); inked("#f2ae14", 1.6 / s);
+  pen.restore();
+}
+function starPin(x, y, r, fill) {
+  pen.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, k = i % 2 ? r * .46 : r;
+    pen.lineTo(x + Math.cos(a) * k, y + Math.sin(a) * k);
+  }
+  pen.closePath(); inked(fill);
+}
+function flagPin(x, y, r, fill, frame) {
+  pen.lineCap = "round"; pen.strokeStyle = INK; pen.lineWidth = 2.2;
+  pen.beginPath(); pen.moveTo(x, y + r * .4); pen.lineTo(x, y - r * 2); pen.stroke();
+  const w = frame === 1 ? 1 : -1;
+  pen.beginPath(); pen.moveTo(x, y - r * 2);
+  pen.quadraticCurveTo(x + r, y - r * (2 + .25 * w), x + r * 1.9, y - r * 1.5);
+  pen.quadraticCurveTo(x + r, y - r * (1.25 + .25 * w), x, y - r * .9);
+  pen.closePath(); inked(fill);
+  pen.beginPath(); pen.arc(x, y + r * .4, 2.200, 0, 7); pen.fillStyle = INK; pen.fill();
+}
+function drawPin(pin, sx, sy, pz, frame, chosen) {
+  const r = (chosen ? 11 : 8) * (.7 + .3 * pz), c = STATUS_COLOR[pin.status];
+  if (pin.status === "dream") starPin(sx, sy, r * 1.15, c);
+  else if (pin.status === "plan" || pin.status === "been") flagPin(sx, sy, r * .85, c, frame);
+  else { pen.beginPath(); pen.arc(sx, sy, r * .72, 0, 7); inked(c); }
+}
+/* the sky is fixed in space, so turning the globe swings different things into view */
+/* [sticker, sky longitude, height on screen, size]: a panorama sliding round the corners */
+const SKY_THINGS = [["skySun", 95, .16, 150], ["skyMoon", -14, .83, 112], ["skyPlanet", -110, .17, 112], ["skyRocket", -70, .85, 76], ["skyComet", 170, .82, 96], ["skyEarthling", -165, .15, 58]]
+  .map(([kind, lon, fy, size]) => ({ kind, lon, fy, size }));
+const SKY_STARS = [];
+{
+  let seed = 23;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 240; i++) {
+    const z = rnd() * 2 - 1, a = rnd() * 6.283, r = Math.sqrt(1 - z * z);
+    SKY_STARS.push({ xyz: [r * Math.cos(a), z, r * Math.sin(a)], big: i % 7 === 0 });
+  }
+}
+function paintSky(w, H, cx, cy) {
+  const reach = Math.hypot(w, H) / 2;
+  const small = new Path2D(), big = new Path2D();
+  for (const s of SKY_STARS) {
+    const [px, py, pz] = project(...s.xyz);
+    if (pz > .55) continue;
+    const x = cx + px * reach * 1.25, y = cy - py * reach * 1.25;
+    if (x < 0 || x > w || y < 0 || y > H) continue;
+    if (s.big) { big.moveTo(x, y - 4); big.lineTo(x + 1, y - 1); big.lineTo(x + 4, y); big.lineTo(x + 1, y + 1); big.lineTo(x, y + 4); big.lineTo(x - 1, y + 1); big.lineTo(x - 4, y); big.lineTo(x - 1, y - 1); big.closePath(); }
+    else small.rect(x, y, 1.6, 1.6);
+  }
+  pen.fillStyle = "rgba(255,246,220,.5)"; pen.fill(small);
+  pen.fillStyle = "rgba(255,241,201,.85)"; pen.fill(big);
+  const scale = Math.max(.6, Math.min(1, Math.min(w, H) / 680));
+  const perDegree = Math.max(w * 2.2, 900) / 360;
+  for (const t of SKY_THINGS) {
+    const img = STICKER_IMG[t.kind];
+    if (!img.complete) continue;
+    const away = ((view.lon - t.lon + 540) % 360) - 180;
+    const x = cx + away * perDegree, y = t.fy * H + view.lat * H / 420;
+    const sz = t.size * scale;
+    if (x < -sz || x > w + sz) continue;
+    pen.drawImage(img, x - sz / 2, y - sz / 2, sz, sz);
+  }
+}
+
+let confetti = [];
+function celebrate() {
+  if (reduced) return;
+  const colours = ["#d6432c", "#f2ae14", "#3350b0", "#2c9c98", "#fff6dc"];
+  confetti = [...Array(90)].map((_, i) => ({ x: view.w / 2, y: view.h * .4, vx: (Math.random() - .5) * 11, vy: -3 - Math.random() * 8, spin: i, colour: colours[i % 5] }));
+}
+let screenPins = [];
+let screenScenes = [];
+let hoverScene = null;
+let drawn = 0;
+let hoverName = null, hoverRegion = null;
+function landAt({ lat, lon }) {
+  return HIGH.findIndex((f, i) => {
+    const [[w, s], [e, n]] = HIGH_BOUNDS[i];
+    if (lat < s || lat > n || (w <= e ? lon < w || lon > e : lon < w && lon > e)) return false;
+    return d3.geoContains(f, [lon, lat]);
+  });
+}
+function paintBase(detailed, moving) {
+  const busy = moving;
+  pen = bctx;
+  const { w, h: H, cx, cy, dpr } = view;
+  const R = view.r * view.zoom;
+  pen.setTransform(dpr, 0, 0, dpr, 0, 0);
+  pen.clearRect(0, 0, w, H);
+  pen.lineJoin = "round"; pen.lineCap = "round";
+
+  /* space behind the globe, only while there's any of it to see */
+  if (view.zoom < 1.9) paintSky(w, H, cx, cy);
+  pen.beginPath(); pen.arc(cx, cy, R + 5, 0, 7); pen.fillStyle = "rgba(127,208,196,.28)"; pen.fill();
+  pen.beginPath(); pen.arc(cx, cy, R, 0, 7); pen.fillStyle = state.view === "been" ? "#a9c4c4" : SEA; pen.fill();
+
+  /* flat gouache land, drawing only what's on screen */
+  /* exactly on the equator the south pole sits on the clip edge and Antarctica fills inside out */
+  projection.rotate([-view.lon, -(Math.abs(view.lat) < .25 ? .25 : view.lat)]).translate([cx, cy]).scale(R).clipExtent([[-4, -4], [w + 4, H + 4]]);
+  const allLand = detailed ? HIGH : LOW, allInfos = detailed ? HIGH_INFO : LOW_INFO, reaches = detailed ? HIGH_REACH : LOW_REACH;
+  const land = [], infos = [];
+  const [vx, vy, vz] = toXYZ(view.lat, view.lon);
+  const seen = view.zoom < 1.3 ? Math.PI : Math.asin(Math.min(1, Math.hypot(w, H) / (2 * R))) + .05;
+  for (let i = 0; i < allLand.length; i++) {
+    const c = reaches[i], d = Math.acos(Math.max(-1, Math.min(1, c.xyz[0] * vx + c.xyz[1] * vy + c.xyz[2] * vz)));
+    if (d - c.rad < seen) { land.push(allLand[i]); infos.push(allInfos[i]); }
+  }
+  const open = state.country?.name, greyMap = state.view === "been";
+  for (let i = 0; i < land.length; i++) {
+    const info = infos[i], name = land[i].properties.name;
+    const th = info.country >= 0 ? threadOf[info.country] : 0;
+    pen.beginPath(); painter(land[i]);
+    pen.fillStyle = name === open ? "#fff6dc"
+      : greyMap ? (th ? VIVID[land[i].properties.paint] : "#cfcac0")
+      : th ? THREAD_FILL[th] : info.snow ? "#f6efdc" : info.sand;
+    pen.fill();
+    if (name === hoverName && name !== open) { pen.fillStyle = "rgba(255,246,220,.4)"; pen.fill(); }
+  }
+  pen.beginPath();
+  for (const f of land) painter(f);
+  pen.strokeStyle = INK; pen.lineWidth = 1.1; pen.stroke();
+
+  /* an opened country splits into its provinces */
+  if (open && state.regions?.length) {
+    const seenHere = visitedIn(open, state.regions);
+    state.regions.forEach((r, i) => {
+      pen.beginPath(); painter(r);
+      pen.fillStyle = r === state.region ? "#ffd977" : r === hoverRegion ? "#fff" : seenHere.has(r.name) ? "#f2ae14" : i % 2 ? "#fbeecb" : "#f4e0b4";
+      pen.fill();
+    });
+    pen.beginPath();
+    for (const r of state.regions) painter(r);
+    pen.strokeStyle = "rgba(43,29,24,.5)"; pen.lineWidth = .9; pen.stroke();
+  }
+  if (open) {
+    const f = land.find((l) => l.properties.name === open);
+    if (f) { pen.beginPath(); painter(f); pen.strokeStyle = PICK; pen.lineWidth = 2.5; pen.stroke(); }
+  }
+
+  /* hard cel shadow and a dab of highlight, only on the whole globe */
+  if (view.zoom < 2) {
+    pen.save();
+    pen.beginPath(); pen.arc(cx, cy, R, 0, 7); pen.clip();
+    pen.beginPath();
+    pen.arc(cx, cy, R + 2, 0, 7);
+    pen.arc(cx - R * .17, cy - R * .17, R * 1.02, 0, 7, true);
+    pen.fillStyle = "rgba(43,29,24,.12)"; pen.fill();
+    pen.restore();
+  }
+  pen.beginPath(); pen.arc(cx, cy, R, 0, 7);
+  pen.strokeStyle = INK; pen.lineWidth = 2.5; pen.stroke();
+
+  /* names: biggest first, skipping any that would collide or not fit */
+  placed = [];
+  pen.font = "800 12px Nunito, system-ui, sans-serif";
+  pen.textAlign = "center"; pen.textBaseline = "middle";
+  const label = (text, sx, sy, soft) => {
+    if (!labelWidth.has(text)) labelWidth.set(text, pen.measureText(text).width);
+    const tw = labelWidth.get(text);
+    const box = [sx - tw / 2 - 3, sy - 9, sx + tw / 2 + 3, sy + 9];
+    if (placed.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) return false;
+    placed.push(box);
+    if (!busy) { pen.lineWidth = 3; pen.strokeStyle = "rgba(255,246,220,.92)"; pen.strokeText(text, sx, sy); }
+    pen.fillStyle = soft ? "#5f4a3b" : INK; pen.fillText(text, sx, sy);
+    return true;
+  };
+  if (open && state.regions?.length) {
+    pen.font = "700 11px Nunito, system-ui, sans-serif";
+    for (const r of [...state.regions].sort((a, b) => b.area - a.area)) {
+      const [px, py, pz] = project(...r.xyz);
+      if (pz < .22) continue;
+      const sx = cx + R * px, sy = cy - R * py;
+      if (sx < 0 || sx > w || sy < 0 || sy > H) continue;
+      const tw = r.name.length * 6;
+      if (r.area * R * R * pz < tw * tw * .3) continue;
+      label(r.name, sx, sy, true);
+    }
+    pen.font = "800 12px Nunito, system-ui, sans-serif";
+  }
+  let count = 0;
+  for (const l of LABELS) {
+    if (l.name === open && state.regions?.length) continue;
+    const [px, py, pz] = project(...l.xyz);
+    if (pz < .22) continue;
+    const sx = cx + R * px, sy = cy - R * py;
+    if (sx < 0 || sx > w || sy < 0 || sy > H) continue;
+    const text = l.text || (l.text = countryInfo(l.name).label);
+    const tw = text.length * 6.6;
+    if (l.area * R * R * pz < tw * tw * .5) continue;
+    if (label(text, sx, sy) && moving && ++count > 18) break;
+  }
+  if (view.zoom > 3.4) {
+    pen.font = "700 11.5px Nunito, system-ui, sans-serif";
+    for (const c of CITY_POINTS) {
+      if (view.zoom < c.zoom) continue;
+      const [px, py, pz] = project(...c.xyz);
+      if (pz < .15) continue;
+      const sx = cx + R * px, sy = cy - R * py;
+      if (sx < 0 || sx > w || sy < 0 || sy > H) continue;
+      const nameW = pen.measureText(c.name).width;
+      const cb = [sx - 4, sy - 8, sx + nameW + 9, sy + 8];
+      if (placed.some((o) => cb[0] < o[2] && cb[2] > o[0] && cb[1] < o[3] && cb[3] > o[1])) continue;
+      placed.push(cb);
+      pen.beginPath(); pen.arc(sx, sy, 3, 0, 7); inked("#fff6dc", 1.5);
+      pen.textAlign = "left"; pen.lineWidth = 3; pen.strokeStyle = "rgba(255,246,220,.92)"; pen.fillStyle = INK;
+      pen.strokeText(c.name, sx + 6, sy); pen.fillText(c.name, sx + 6, sy);
+      pen.textAlign = "center";
+    }
+  }
+  pen.textBaseline = "alphabetic";
+}
+
+let placed = [], chosen = [], chosenKey = "";
+function draw(now) {
+  requestAnimationFrame(draw);
+  if (!view.w) return;
+
+  let moving = dragging || !!flight || confetti.length > 0;
+  if (flight) {
+    const t = Math.min(1, (now - flight.t0) / flight.dur), e = t * t * (3 - 2 * t);
+    view.lon = flight.lon0 + flight.dLon * e;
+    view.lat = flight.lat0 + (flight.lat - flight.lat0) * e;
+    view.zoom = flight.zoom0 * Math.pow(flight.zoom / flight.zoom0, e);
+    if (t >= 1) flight = null;
+  } else if (!dragging && Math.abs(velocity) > .002) {
+    view.lon -= velocity; velocity *= .92; moving = true;
+  }
+  const settled = wasMoving && !moving;
+  wasMoving = moving;
+  /* a still map costs nothing: only animals close up keep it ticking, four times a second */
+  const animate = !reduced && (view.zoom > 2.2 || state.kinds.size > 0) && now - drawn >= 250;
+  if (!moving && !dirty && !settled && !animate) return;
+  drawn = now; dirty = false;
+
+  view.r = Math.min(view.w, view.h) * .43;
+  sinO = Math.sin(view.lon * RAD); cosO = Math.cos(view.lon * RAD); sinP = Math.sin(view.lat * RAD); cosP = Math.cos(view.lat * RAD);
+
+  const detailed = view.zoom > 2.4 || !moving;
+  const key = [state.view, view.lon, view.lat, view.zoom, detailed, threadVersion, state.country?.name, state.region?.name, state.regions?.length, hoverName, hoverRegion?.name].join();
+  if (key !== baseKey) { paintBase(detailed, moving); baseKey = key; }
+
+  pen = ctx;
+  const { w, h: H, cx, cy, dpr } = view;
+  const R = view.r * view.zoom;
+  const tick = reduced ? 0 : Math.floor(now / 250);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(layer, 0, 0);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.lineJoin = "round"; ctx.lineCap = "round";
+
+  /* the living map: zoom in and the country's animals and landmarks appear */
+  screenScenes = [];
+  const filtering = state.kinds.size > 0;
+  if ((view.zoom > 2 || filtering) && chosenKey === key + state.kinds.size + filterMarks.length) {
+    /* same view as last tick: reuse the layout and just move the animals */
+  } else if (view.zoom > 2 || filtering) {
+    chosenKey = key + state.kinds.size + filterMarks.length;
+    const size = filtering ? Math.min(78, 42 + Math.max(0, view.zoom - 1) * 8) : Math.min(78, 30 + (view.zoom - 2) * 9);
+    chosen = [];
+    const taken = (x, y, gap) => chosen.some((o) => (o.x - x) ** 2 + (o.y - y) ** 2 < ((gap + o.gap) / 2) ** 2);
+    const claim = (list, scale, spacing) => {
+      for (const s of list) {
+        if (view.zoom < s.zoom) continue;
+        if (state.view === "been") {
+          if (s.country === undefined) s.country = s.lat === undefined ? -1 : nearestCountry(s.lat, s.lon).index;
+          if (s.country < 0 || !threadOf[s.country]) continue;
+        }
+        const [px, py, pz] = project(...s.xyz);
+        if (pz < .12) continue;
+        const x = cx + R * px, y = cy - R * py;
+        if (x < -50 || x > w + 50 || y < -50 || y > H + 50) continue;
+        const sz = size * scale * (s.kind === "heart" ? .42 : 1) * Math.min(1, (view.zoom - s.zoom) / .35 + .4) * (.75 + .25 * pz);
+        const gap = sz * spacing;
+        if (taken(x, y, gap)) continue;
+        chosen.push({ s, x, y, sz, gap });
+      }
+    };
+    if (filtering) claim(filterMarks, 1, .8);
+    else { claim(SCENES, 1, 1.3); claim(SCENERY, .42, 3); }
+    chosen.sort((a, b) => a.y - b.y);
+  } else chosen = [];
+  if (chosen.length) {
+    for (const { s, x, y, sz } of chosen) {
+      const img = STICKER_IMG[s.kind];
+      if (!img.complete) continue;
+      const big = !!s.name, hovered = s === hoverScene;
+      const live = !reduced && big, swim = SWIMMERS.has(s.kind), walk = WALKERS.has(s.kind);
+      const step = (tick + s.phase) % 4;
+      const dy = live && walk ? [0, -sz * .04, 0, -sz * .02][step] : 0;
+      const dx = live && swim ? [0, sz * .05, 0, -sz * .05][step] : 0;
+      const shown = hovered ? sz * 1.14 : sz;
+      ctx.drawImage(img, x - shown / 2 + dx, y - shown * .92 + dy, shown, shown);
+      if (big) screenScenes.push({ scene: s, x, y: y - sz * .45, r: sz * .5 });
+    }
+    /* Oleshky always keeps its name */
+    const heart = chosen.find((c) => c.s.kind === "heart");
+    if (heart) {
+      ctx.font = "800 11px Nunito, system-ui, sans-serif"; ctx.textAlign = "center";
+      ctx.lineWidth = 3; ctx.strokeStyle = "rgba(255,246,220,.94)"; ctx.fillStyle = INK;
+      ctx.strokeText(heart.s.name, heart.x, heart.y + 12); ctx.fillText(heart.s.name, heart.x, heart.y + 12);
+    }
+  }
+
+  /* home: a small boat on the Black Sea, and our house at base */
+  {
+    const [x, y, z] = toXYZ(BLACK_SEA.lat, BLACK_SEA.lon);
+    const [px, py, pz] = project(x, y, z);
+    if (pz > .1 && view.zoom < 3) boat(cx + R * px, cy - R * py, Math.max(.8, Math.min(1.5, R / 260)), 0);
+  }
+  {
+    const [x, y, z] = toXYZ(HOME.lat, HOME.lon);
+    const [px, py, pz] = project(x, y, z);
+    const img = STICKER_IMG.base;
+    if (pz > .1 && img.complete) {
+      const sz = Math.min(52, 28 + view.zoom * 4), sx = cx + R * px, sy = cy - R * py;
+      ctx.drawImage(img, sx - sz / 2, sy - sz * .9, sz, sz);
+    }
+  }
+
+  /* pins */
+  screenPins = [];
+  for (const pin of currentPins()) {
+    const [x, y, z] = toXYZ(pin.lat, pin.lon);
+    const [px, py, pz] = project(x, y, z);
+    if (pz < .05) continue;
+    const sx = cx + R * px, sy = cy - R * py;
+    screenPins.push({ pin, sx, sy });
+    drawPin(pin, sx, sy, pz, 0, pin.id === state.sel);
+  }
+  const picked = screenPins.find((s) => s.pin.id === state.sel);
+  if (picked) {
+    ctx.font = "800 13px Nunito, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    const tw = ctx.measureText(picked.pin.title).width + 16, ly = picked.sy - 36;
+    ctx.beginPath(); ctx.roundRect(picked.sx - tw / 2, ly - 12, tw, 23, 7); inked("#f5e6bf");
+    ctx.fillStyle = INK; ctx.fillText(picked.pin.title, picked.sx, ly + 4);
+  }
+  if (state.draft) {
+    const [x, y, z] = toXYZ(state.draft.lat, state.draft.lon);
+    const [px, py, pz] = project(x, y, z);
+    if (pz > 0) starPin(cx + R * px, cy - R * py, 12, STATUS_COLOR.been);
+  }
+
+  /* confetti for a finished moment */
+  if (confetti.length) {
+    for (const c of confetti) {
+      c.x += c.vx; c.y += c.vy; c.vy += .16; c.spin += .2;
+      ctx.fillStyle = c.colour;
+      ctx.fillRect(c.x, c.y, 8 * Math.cos(c.spin), 5);
+    }
+    confetti = confetti.filter((c) => c.y < H + 20);
+  }
+}
+
+/* ---------- pointer ---------- */
+const touches = new Map();
+let dragging = false, moved = 0, pinch = 0;
+function setZoom(z) { view.zoom = Math.max(1, Math.min(14, z)); dirty = true; }
+function sceneAt(x, y) {
+  let best = null, bestD = Infinity;
+  for (const s of screenScenes) {
+    const d = (s.x - x) ** 2 + (s.y - y) ** 2;
+    if (d < s.r * s.r && d < bestD) { bestD = d; best = s; }
+  }
+  return best;
+}
+function pinAt(x, y) {
+  let best = null, bestD = 18 * 18;
+  for (const s of screenPins) {
+    const d = (s.sx - x) ** 2 + (s.sy - y) ** 2;
+    if (d < bestD) { bestD = d; best = s; }
+  }
+  return best;
+}
+const local = (e) => { const b = canvas.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
+canvas.addEventListener("pointerdown", (e) => {
+  canvas.setPointerCapture(e.pointerId);
+  touches.set(e.pointerId, local(e));
+  dragging = true; moved = 0; velocity = 0; flight = null;
+  canvas.classList.add("dragging");
+  $("tip").hidden = true;
+});
+canvas.addEventListener("pointermove", (e) => {
+  const [x, y] = local(e);
+  if (!touches.has(e.pointerId)) {
+    const hit = pinAt(x, y), tip = $("tip");
+    const scene = hit || placing ? null : sceneAt(x, y);
+    if ((scene && scene.scene) !== hoverScene) dirty = true;
+    hoverScene = scene ? scene.scene : null;
+    const ll = !hit && !placing ? unproject(x, y) : null;
+    const over = ll ? landAt(ll) : -1;
+    const nextName = over >= 0 ? HIGH[over].properties.name : null;
+    const nextRegion = nextName && nextName === state.country?.name ? regionAt(ll) : null;
+    if (nextName !== hoverName || nextRegion !== hoverRegion) dirty = true;
+    hoverName = nextName; hoverRegion = nextRegion;
+    const label = hit ? hit.pin.title : scene ? scene.scene.name : hoverRegion ? hoverRegion.name : hoverName ? countryInfo(hoverName).label : "";
+    tip.hidden = !label;
+    if (label) { tip.textContent = label; tip.style.left = (hit ? hit.sx : x) + "px"; tip.style.top = (hit ? hit.sy : y) + "px"; }
+    canvas.style.cursor = label ? "pointer" : "";
+    return;
+  }
+  const prev = touches.get(e.pointerId);
+  touches.set(e.pointerId, [x, y]);
+ 
+  if (touches.size === 2) {
+    const [a, b] = [...touches.values()];
+    const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    if (pinch) setZoom(view.zoom * d / pinch);
+    pinch = d; moved += 10;
+    return;
+  }
+  const dx = x - prev[0], dy = y - prev[1];
+  moved += Math.abs(dx) + Math.abs(dy);
+  const k = (1 / (view.r * view.zoom)) / RAD;
+  view.lon -= dx * k;
+  view.lat = Math.max(-80, Math.min(80, view.lat + dy * k));
+  velocity = dx * k;
+});
+function release(e) {
+  const wasDown = touches.delete(e.pointerId);
+  pinch = 0;
+  if (touches.size) return;
+  dragging = false;
+  canvas.classList.remove("dragging");
+  if (!wasDown || moved >= 6 || e.type === "pointercancel") return;
+  const [x, y] = local(e);
+  velocity = 0;
+  if (placing) {
+    const ll = unproject(x, y);
+    if (!ll) return;
+    const forBase = placingBase;
+    startPlacing();
+    if (forBase) {
+      const i = landAt(ll);
+      if (i >= 0) { setBase(countryInfo(HIGH[i].properties.name).label, ll); flyTo(ll.lat, ll.lon); }
+      else toast("That's open sea. Pick somewhere on land.");
+      return;
+    }
+    state.draft = ll; state.mode = "form"; state.sel = null;
+    renderPanel();
+    return;
+  }
+  const hit = pinAt(x, y);
+  if (hit) return select(hit.pin.id);
+  const sc = sceneAt(x, y);
+  if (sc) return openSuggestion(sc.scene.spot || sceneSpot(sc.scene));
+  const ll = unproject(x, y);
+  const i = ll ? landAt(ll) : -1;
+  if (i >= 0) {
+    const name = HIGH[i].properties.name;
+    if (state.country?.name === name && state.regions?.length) {
+      const r = regionAt(ll);
+      if (r) { state.region = r; dirty = true; renderPanel(); }
+    } else openCountry(name, ll);
+  }
+}
+canvas.addEventListener("pointerup", release);
+canvas.addEventListener("pointercancel", release);
+canvas.addEventListener("pointerleave", () => { $("tip").hidden = true; hoverName = null; hoverRegion = null; dirty = true; });
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  const [x, y] = local(e), before = unproject(x, y);
+  view.r = Math.min(view.w, view.h) * .43;
+  setZoom(view.zoom * Math.exp(-e.deltaY * .002));
+  const after = unproject(x, y);
+  if (before && after) {
+    view.lon += ((before.lon - after.lon + 540) % 360) - 180;
+    view.lat = Math.max(-80, Math.min(80, view.lat + before.lat - after.lat));
+    dirty = true;
+  }
+}, { passive: false });
+$("surpriseBtn").onclick = surprise;
+canvas.addEventListener("dblclick", (e) => {
+  const ll = unproject(...local(e));
+  if (ll) flyTo(ll.lat, ll.lon, Math.min(14, view.zoom * 2));
+});
+document.addEventListener("keydown", (e) => {
+  if (state.section !== "globe" || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  const step = 14 / view.zoom;
+  const move = { ArrowLeft: [0, -step], ArrowRight: [0, step], ArrowUp: [step, 0], ArrowDown: [-step, 0] }[e.key];
+  if (move) { e.preventDefault(); flyTo(Math.max(-80, Math.min(80, view.lat + move[0])), view.lon + move[1]); }
+  if (e.key === "+" || e.key === "=") setZoom(view.zoom * 1.4);
+  if (e.key === "-") setZoom(view.zoom / 1.4);
+  if (e.key === "Escape" && state.mode !== "list") { if (state.mode === "spot") closeSpot(); else if (state.mode === "country") closeCountry(); else closeDetail(); }
+});
+$("zoomIn").onclick = () => setZoom(view.zoom * 1.6);
+$("zoomOut").onclick = () => setZoom(view.zoom / 1.6);
+$("homeBtn").onclick = () => flyTo(HOME.lat, HOME.lon, 1);
+
+/* ---------- map filters ---------- */
+const FILTERS = { wild: ["Wildlife", "wild"], dive: ["Underwater", "water"], hike: ["Hiking", "trail"], thrill: ["Thrills", "sky"], food: ["Food", "table"], history: ["History", "sights"], still: ["Slow", "still"] };
+const CAT_FILTER = { wild: "wild", water: "dive", trail: "hike", sky: "thrill", table: "food", sights: "history", still: "still" };
+const KIND_TAGS = { coffee: ["food"], pasta: ["food"], sushi: ["food"], taco: ["food"], wine: ["food"], dumplings: ["food"], shark: ["dive", "wild"], octopus: ["dive", "wild"], seal: ["wild"], puffin: ["wild"], reindeer: ["wild"], rhino: ["wild"], hippo: ["wild"], croc: ["wild"], koala: ["wild"], monkey: ["wild"], snowLeopard: ["wild"], parrot: ["wild"], reef: ["dive"], dolphin: ["dive", "wild"], whale: ["dive", "wild"], turtle: ["dive", "wild"], manta: ["dive", "wild"], fish: ["dive"], safariBird: ["wild"], horse: ["wild"], oryx: ["wild"], falcon: ["wild"], mountain: ["hike"], pine: ["hike"], edge: ["hike"], hut: ["hike"], volcano: ["thrill"], balloon: ["thrill"], tea: ["food"], palm: ["still"], dune: ["still"], terraces: ["still"], tent: ["still"], tulips: ["still"], sunflower: ["still"], acacia: ["still"], cactus: ["still"], lighthouse: ["still"], heart: [] };
+const sceneTags = (kind) => KIND_TAGS[kind] || (WALKERS.has(kind) ? ["wild"] : ["history"]);
+let filterMarks = [];
+function pickFilters() {
+  const on = state.kinds;
+  filterMarks = !on.size ? [] : [
+    ...SCENES.filter((s) => sceneTags(s.kind).some((t) => on.has(t))),
+    ...SPOTS.filter((p) => [...p.tags].some((t) => on.has(t))).map((p) => (p.mark ||= { name: p.title, lat: p.lat, lon: p.lon, kind: p.kind, zoom: 0, xyz: toXYZ(p.lat, p.lon), phase: 0, spot: p })),
+  ];
+}
+let filterResults = [], filterShown = 40;
+function buildResults() {
+  const on = state.kinds, seen = new Set();
+  const spots = SPOTS.filter((p) => [...p.tags].some((t) => on.has(t)));
+  const scenes = SCENES.filter((s) => sceneTags(s.kind).some((t) => on.has(t))).map(sceneSpot);
+  filterResults = [...spots, ...scenes].filter((p) => !seen.has(p.title) && seen.add(p.title));
+  /* spread the list round the world instead of region by region */
+  const mix = (p) => { const x = Math.sin(p.lat * 12.9 + p.lon * 78.2) * 43758.5; return x - Math.floor(x); };
+  filterResults.sort((a, b) => mix(a) - mix(b));
+  filterShown = 40;
+}
+function sceneSpot(s) {
+  const swim = SWIMMERS.has(s.kind) || s.kind === "reef";
+  return {
+    title: s.name, place: countryInfo(W.names[nearestCountry(s.lat, s.lon).index]).label, lat: s.lat, lon: s.lon, kind: s.kind,
+    why: window.STICKERS.NOTES[s.kind] || "", tags: new Set(sceneTags(s.kind)), back: BACKDROP[swim ? "coast" : WALKERS.has(s.kind) ? "forest" : "city"],
+    cat: Object.keys(CAT_FILTER).find((c) => sceneTags(s.kind).includes(CAT_FILTER[c])) || "sights",
+  };
+}
+function renderFilterResults() {
+  const top = $("body").scrollTop;
+  $("body").replaceChildren(h("div", { class: "results" },
+    h("p", { class: "fine" }, `${filterResults.length} ideas around the world`),
+    filterResults.slice(0, filterShown).map((p) => {
+      const added = items.some((i) => i.title === p.title);
+      return h("div", { class: "result" },
+        h("button", { class: "open", onclick: () => openSuggestion(p), "aria-label": `Show ${p.title} on the globe` },
+          h("img", { src: STICKER_IMG[p.kind].src, alt: "" }),
+          h("span", {}, h("strong", {}, p.title), h("span", { class: "sub" }, p.place))),
+        canWrite && h("span", { class: "resultact" },
+          h("button", { class: "btn quiet mini", disabled: added, onclick: () => addSpot(p) }, added ? "Added" : "+ Add")));
+    }),
+    filterResults.length > filterShown && h("button", { class: "btn quiet", onclick: () => { filterShown += 40; renderPanel(); } }, "Show more")));
+  $("body").scrollTop = top;
+}
+function openSuggestion(p) {
+  state.spot = p; state.mode = "spot"; state.sel = null; state.draft = { lat: p.lat, lon: p.lon };
+  renderPanel(); flyTo(p.lat, p.lon, 6);
+}
+function renderMapFilters() {
+  $("mapfilters").replaceChildren(...Object.entries(FILTERS).map(([k, [label, cat]]) =>
+    h("button", { class: "chip", "aria-pressed": String(state.kinds.has(k)), html: glyph(cat) + label, onclick: () => {
+      state.kinds.has(k) ? state.kinds.delete(k) : state.kinds.add(k);
+      pickFilters(); buildResults(); renderMapFilters(); refreshThreads(); renderPanel();
+    } })),
+    state.kinds.size > 0 ? h("button", { class: "clear", onclick: () => { state.kinds.clear(); pickFilters(); renderMapFilters(); refreshThreads(); renderPanel(); } }, "Show all") : "");
+}
+
+/* ---------- music ----------
+   Played live by the page, so there's no recording to license. First Shchedryk, Mykola Leontovych's
+   1916 setting of a Ukrainian carol (public domain, known abroad as Carol of the Bells), gently,
+   on plucked strings and a sopilka-style flute. Then a slow dumka in the Ukrainian minor scale. */
+const music = { ctx: null, master: null, on: false, timer: 0, next: 0, step: 0 };
+const midi = (n) => 440 * 2 ** ((n - 69) / 12);
+const BEAT = .38;            // one eighth note; a bar of 3/4 is six of them
+function buildScore() {
+  const bars = [];
+  const motif = (a, b, c, d) => [[0, a], [2, b], [3, c], [4, d]];    // the four-note Shchedryk figure
+  const bar = (bass, strings, sopilka = []) => bars.push({ bass, strings, sopilka });
+  for (let i = 0; i < 4; i++) bar(45, motif(72, 71, 72, 69));
+  for (let i = 0; i < 4; i++) bar(45, motif(72, 71, 72, 69), motif(76, 74, 76, 72).map(([t, n]) => [t, n, 2]));
+  const run = (notes) => notes.map((n, t) => [t, n, 1]);
+  bar(45, motif(72, 71, 72, 69), run([81, 81, 81, 81, 79, 77]));
+  bar(45, motif(72, 71, 72, 69), [[0, 76, 5]]);
+  bar(50, motif(72, 71, 72, 69), run([74, 74, 74, 74, 72, 71]));
+  bar(45, motif(72, 71, 72, 69), [[0, 69, 5]]);
+  for (let i = 0; i < 4; i++) bar(45, motif(60, 59, 60, 57));
+  /* the dumka: rolling bandura chords, with the raised fourth that gives the Ukrainian minor its ache */
+  const roll = (a, b, c) => [[0, a], [1, b], [2, c], [3, b], [4, a + 12], [5, c]];
+  bar(45, roll(57, 60, 64)); bar(45, roll(57, 60, 64), [[0, 76, 5]]);
+  bar(50, roll(57, 62, 66), [[0, 75, 3], [3, 76, 3]]); bar(45, roll(57, 60, 64), [[0, 72, 5]]);
+  bar(50, roll(57, 62, 66), [[0, 74, 2], [2, 75, 2], [4, 76, 2]]); bar(45, roll(57, 60, 64), [[0, 72, 2], [2, 71, 4]]);
+  bar(40, roll(56, 59, 64), [[0, 71, 5]]); bar(45, roll(57, 60, 64), [[0, 69, 6]]);
+  return bars;
+}
+const SCORE = buildScore();
+function pluck(freq, when, level) {
+  const { ctx, bus } = music;
+  const gain = ctx.createGain(), tone = ctx.createBiquadFilter();
+  tone.type = "lowpass"; tone.frequency.setValueAtTime(2600, when); tone.frequency.exponentialRampToValueAtTime(700, when + 1);
+  gain.gain.setValueAtTime(level, when); gain.gain.exponentialRampToValueAtTime(.0008, when + 2.2);
+  for (const d of [-2, 3]) {
+    const o = ctx.createOscillator();
+    o.type = "triangle"; o.frequency.value = freq; o.detune.value = d;
+    o.connect(tone); o.start(when); o.stop(when + 2.3);
+  }
+  tone.connect(gain); gain.connect(bus);
+}
+function flute(freq, when, length) {
+  const { ctx, bus } = music;
+  const o = ctx.createOscillator(), vib = ctx.createOscillator(), depth = ctx.createGain(), gain = ctx.createGain();
+  o.type = "sine"; o.frequency.setValueAtTime(freq * .97, when); o.frequency.linearRampToValueAtTime(freq, when + .09);
+  vib.frequency.value = 4.8; depth.gain.setValueAtTime(0, when); depth.gain.linearRampToValueAtTime(freq * .007, when + .5);
+  vib.connect(depth); depth.connect(o.frequency);
+  gain.gain.setValueAtTime(0, when);
+  gain.gain.linearRampToValueAtTime(.05, when + .07);
+  gain.gain.setValueAtTime(.05, when + Math.max(.08, length - .12));
+  gain.gain.linearRampToValueAtTime(0, when + length);
+  o.connect(gain); gain.connect(bus);
+  o.start(when); vib.start(when); o.stop(when + length + .05); vib.stop(when + length + .05);
+}
+function musicTick() {
+  const { ctx } = music;
+  while (music.next < ctx.currentTime + .7) {
+    const bar = SCORE[music.step % SCORE.length], t = music.next;
+    pluck(midi(bar.bass), t, .16);
+    pluck(midi(bar.bass + 7), t + .02, .07);          // the open fifth of a kobza drone
+    for (const [at, note] of bar.strings) pluck(midi(note), t + at * BEAT + (at % 2 ? .012 : 0), .085);
+    for (const [at, note, length] of bar.sopilka) flute(midi(note), t + at * BEAT, length * BEAT * .96);
+    music.next += BEAT * 6; music.step++;
+  }
+}
+async function toggleMusic() {
+  music.on = !music.on;
+  const btn = $("musicBtn");
+  btn.setAttribute("aria-pressed", String(music.on));
+  if (music.on && !music.ctx) {
+    const ctx = (music.ctx = new (window.AudioContext || window.webkitAudioContext)());
+    music.master = ctx.createGain(); music.master.gain.value = 0; music.master.connect(ctx.destination);
+    music.bus = ctx.createGain(); music.bus.connect(music.master);
+    /* a soft echo stands in for a room */
+    const echo = ctx.createDelay(1), back = ctx.createGain(), soft = ctx.createBiquadFilter();
+    echo.delayTime.value = .36; back.gain.value = .34; soft.type = "lowpass"; soft.frequency.value = 1500;
+    music.bus.connect(echo); echo.connect(soft); soft.connect(back); back.connect(echo); soft.connect(music.master);
+  }
+  if (!music.ctx) return;
+  const { ctx, master } = music;
+  await ctx.resume();
+  master.gain.cancelScheduledValues(ctx.currentTime);
+  master.gain.setTargetAtTime(music.on ? .75 : 0, ctx.currentTime, .4);
+  clearInterval(music.timer);
+  if (music.on) { music.next = Math.max(music.next, ctx.currentTime + .1); musicTick(); music.timer = setInterval(musicTick, 200); }
+}
+$("musicBtn").onclick = toggleMusic;
+$("meBtn").onclick = renderWho;
+
+/* ---------- search ---------- */
+const plain = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ı/g, "i").toLowerCase();
+let findIndex = null;
+function buildFindIndex() {
+  const seen = new Set(), list = [];
+  const push = (text, sub, go) => { const key = plain(text); if (!seen.has(key)) { seen.add(key); list.push({ text, sub, key, go }); } };
+  for (const f of HIGH) { const n = f.properties.name, fit = FIT.get(n); push(countryInfo(n).label, "Country", () => openCountry(n, fit)); }
+  for (const p of SPOTS) push(p.title, p.place, () => openSuggestion(p));
+  for (const s of SCENES) push(s.name, "On the map", () => openSuggestion(sceneSpot(s)));
+  for (const f of HIGH) for (const [city, lat, lon] of citiesOf(f.properties.name)) {
+    const n = f.properties.name;
+    push(city, countryInfo(n).label, () => { openCountry(n, { lat, lon }, true); flyTo(lat, lon, 7); });
+  }
+  return list;
+}
+function runFind() {
+  const box = $("findBox"), out = $("findList"), q = plain(box.value.trim());
+  if (q.length < 2) { out.hidden = true; return; }
+  findIndex ||= buildFindIndex();
+  const hits = findIndex.filter((x) => x.key.includes(q)).sort((a, b) => a.key.indexOf(q) - b.key.indexOf(q)).slice(0, 7);
+  out.replaceChildren(...(hits.length ? hits.map((x) => h("button", { onclick: () => { box.value = ""; out.hidden = true; x.go(); } }, h("strong", {}, x.text), h("span", {}, x.sub)))
+    : [h("p", { class: "fine" }, "Nothing found.")]));
+  out.hidden = false;
+}
+$("findBox").addEventListener("input", runFind);
+$("findBox").addEventListener("keydown", (e) => { if (e.key === "Enter") $("findList").querySelector("button")?.click(); if (e.key === "Escape") { e.target.value = ""; $("findList").hidden = true; } });
+
+/* ---------- play ---------- */
+const playPool = () => SPOTS.filter((p) => !SURPRISE_SKIP.test(p.place));
+const pickOne = (list) => list[Math.floor(Math.random() * list.length)];
+const duel = { a: null, b: null, round: 0, rounds: 8, done: false };
+const quiz = { scene: null, options: [], answered: null, streak: 0, best: 0 };
+function nextDuel(keep) {
+  const pool = playPool().filter((p) => p !== keep);
+  duel.a = keep || pickOne(pool);
+  do duel.b = pickOne(pool); while (duel.b === duel.a);
+}
+function nextQuiz() {
+  const known = SCENES.filter((s) => s.kind !== "heart" && W.names[s.country] !== "Russia");
+  quiz.scene = pickOne(known);
+  const right = countryInfo(W.names[quiz.scene.country]).label, options = new Set([right]);
+  while (options.size < 3) options.add(countryInfo(W.names[pickOne(known).country]).label);
+  quiz.right = right; quiz.options = [...options].sort(() => Math.random() - .5); quiz.answered = null;
+}
+function pickCard(p) {
+  return h("button", { class: "pick", onclick: () => {
+    duel.round++;
+    if (duel.round >= duel.rounds) { duel.done = true; duel.a = p; celebrate(); } else nextDuel(p);
+    renderPlay();
+  } },
+    h("div", { class: "vis", style: `--bg:${p.back[0]};--ground:${p.back[1]}` }, h("img", { src: STICKER_IMG[p.kind].src, alt: "" })),
+    h("b", {}, p.title), h("span", { class: "sub" }, p.place));
+}
+function renderPlay() {
+  if (!duel.a) nextDuel();
+  if (!quiz.scene) nextQuiz();
+  const winner = duel.a, added = items.some((i) => i.title === winner.title);
+  $("page").replaceChildren(h("div", { class: "wrap" }, h("div", { class: "games" },
+    h("section", { class: "game" },
+      h("h3", {}, "This or that"),
+      duel.done
+        ? [h("p", {}, "Your winner, after eight rounds:"), h("div", { class: "duel" }, spotCard(winner)),
+           h("div", { class: "actions" }, h("button", { class: "btn quiet", onclick: () => { duel.done = false; duel.round = 0; nextDuel(); renderPlay(); } }, "Play again"))]
+        : [h("p", {}, `Tap the one you'd rather do. The winner stays on. Round ${duel.round + 1} of ${duel.rounds}.`), h("div", { class: "duel" }, pickCard(duel.a), pickCard(duel.b))]),
+    h("section", { class: "game" },
+      h("h3", {}, "Where in the world?"),
+      h("p", {}, `Streak ${quiz.streak} · Best ${quiz.best}`),
+      h("div", { class: "quiz" },
+        h("img", { src: STICKER_IMG[quiz.scene.kind].src, alt: "" }),
+        h("strong", {}, quiz.scene.name),
+        h("div", { class: "answers" }, quiz.options.map((o) => h("button", {
+          class: "btn quiet" + (quiz.answered ? (o === quiz.right ? " right" : o === quiz.answered ? " wrong" : "") : ""),
+          disabled: !!quiz.answered,
+          onclick: () => {
+            quiz.answered = o;
+            if (o === quiz.right) { quiz.streak++; quiz.best = Math.max(quiz.best, quiz.streak); if (quiz.streak % 5 === 0) celebrate(); } else quiz.streak = 0;
+            renderPlay();
+          },
+        }, o))),
+        quiz.answered && h("p", { class: "fine" }, window.STICKERS.NOTES[quiz.scene.kind] || ""),
+        quiz.answered && h("button", { class: "btn", onclick: () => { nextQuiz(); renderPlay(); } }, "Next"))))));
+}
+
+/* ---------- sections ---------- */
+const SECTIONS = { globe: "Globe", been: "Been to", explore: "Explore", play: "Play", stats: "Stats" };
+const activeSection = () => (state.section === "globe" && state.view === "been" ? "been" : state.section);
+function renderSections() {
+  $("sections").replaceChildren(...Object.entries(SECTIONS).map(([k, label]) =>
+    h("button", { class: "sec", "aria-current": activeSection() === k ? "page" : "false", onclick: () => setSection(k) }, label)));
+}
+function setSection(k) {
+  const wasBeen = state.view === "been";
+  state.section = k === "been" ? "globe" : k;
+  if (k === "been") setView("been");
+  else if (k === "globe" && wasBeen) setView("all");
+  renderSections();
+  $("app").hidden = state.section !== "globe";
+  $("page").hidden = state.section === "globe";
+  if (k === "explore") renderExplore();
+  if (k === "stats") renderStatsPage();
+  if (k === "play") renderPlay();
+  if (state.section === "globe") { dirty = true; baseKey = ""; }
+  $("page").scrollTop = 0;
+}
+
+const PICKS = [
+  ["What do you feel like?", { wild: "Wildlife", dive: "Diving", hike: "Hiking", thrill: "Thrills", food: "Food and wine", history: "History", still: "Slow and still" }],
+  ["What kind of landscape?", { mountain: "Mountains", desert: "Desert", coast: "Coast", island: "Islands", forest: "Forest", lake: "Lakes", city: "Old towns", cave: "Caves", volcano: "Volcanoes", ice: "Ice and snow" }],
+  ["What's the mood?", { romantic: "Romantic", quiet: "Off the beaten path", big: "Big adventure", near: "Close to our base" }],
+  ["Where?", { saudi: "Saudi Arabia", turkiye: "Türkiye", ukraine: "Ukraine", mideast: "Middle East and Central Asia", europe: "Europe", africa: "Africa", asia: "Asia", americas: "Americas", oceania: "Oceania and the far south" }],
+];
+const BACKDROP = { desert: ["#f0c56c", "#d9a441"], coast: ["#9fdce0", "#e6cf97"], island: ["#9fdce0", "#e6cf97"], lake: ["#a9d8e6", "#7a9440"], mountain: ["#bcd6e6", "#7a9440"], forest: ["#cfe3b0", "#4f7a3a"], ice: ["#dcecf5", "#fff6dc"], volcano: ["#f2b27a", "#5c4438"], cave: ["#c9b8a6", "#7a6250"], city: ["#f4d8a8", "#c9a266"] };
+const SPOTS = window.SPOTS.map(([title, place, region, lat, lon, kind, tags, why, later], i) => {
+  const list = tags.split(" ");
+  const land = list.find((t) => BACKDROP[t]) || "city";
+  const cat = list.includes("wild") ? "wild" : list.includes("dive") ? "water" : list.includes("thrill") ? "sky" : list.includes("hike") ? "trail" : list.includes("food") ? "table" : list.includes("still") ? "still" : "sights";
+  return { id: "s" + i, title, place, region, lat, lon, kind, tags: new Set(list), why, later: !!later, back: BACKDROP[land], cat };
+});
+const explore = { picks: new Set(), shown: 24, seed: 1 };
+function spotMatches(spot) {
+  return PICKS.every(([, options]) => {
+    const chosen = Object.keys(options).filter((k) => explore.picks.has(k));
+    if (!chosen.length) return true;
+    return chosen.some((k) => k === "near" ? haversineKm(HOME, spot) < 2500 : k === spot.region || spot.tags.has(k));
+  });
+}
+function spotOrder(a, b) {
+  const hash = (s) => (Math.sin((parseInt(s.id.slice(1), 10) + 1) * 12.9898 * explore.seed) * 43758.5453) % 1;
+  return hash(a) - hash(b);
+}
+function spotCard(p) {
+  const added = items.some((i) => i.title === p.title);
+  const km = Math.round(haversineKm(HOME, p)).toLocaleString("en-GB");
+  const query = encodeURIComponent(`${p.title} ${p.place} travel guide`);
+  return h("article", { class: "card" },
+    h("div", { class: "vis", style: `--bg:${p.back[0]};--ground:${p.back[1]}` }, h("img", { src: STICKER_IMG[p.kind].src, alt: "" })),
+    h("div", { class: "cardbody" },
+      h("h3", {}, p.title),
+      h("span", { class: "sub" }, `${p.place} · ${km} km from base`),
+      h("p", {}, p.why),
+      h("div", { class: "cardact" },
+        canWrite && h("button", { class: "btn mini", disabled: added, onclick: () => addSpot(p) }, added ? "Added" : "+ Add"),
+        h("button", { class: "btn quiet mini", onclick: () => seeOnGlobe(p) }, "Show on globe"),
+        h("a", { href: `https://www.google.com/search?q=${query}`, target: "_blank", rel: "noopener" }, "Read more"))));
+}
+function addSpot(p) {
+  persist({ id: newId(), title: p.title, place: p.place, lat: p.lat, lon: p.lon, cat: p.cat, status: "dream", blurb: p.why, by: myId, createdAt: Date.now(), notes: [] }, "Added to our bucket list")
+    .then(() => { refreshThreads(); if (state.section === "explore") renderExplore(); else renderPanel(); });
+}
+function seeOnGlobe(p) {
+  setSection("globe");
+  state.view = "all"; state.mode = "list"; state.draft = { lat: p.lat, lon: p.lon };
+  refreshThreads(); renderPanel();
+  flyTo(p.lat, p.lon, 5);
+}
+function renderExplore() {
+  const hits = SPOTS.filter(spotMatches).sort(spotOrder);
+  const top = $("page").scrollTop;
+  $("page").replaceChildren(h("div", { class: "wrap" },
+    h("h2", {}, "Where should we go?"),
+    PICKS.map(([title, options]) => h("div", { class: "pickgroup" }, h("h3", {}, title),
+      h("div", { class: "picks" }, Object.entries(options).map(([k, label]) =>
+        h("button", { class: "chip", "aria-pressed": String(explore.picks.has(k)), onclick: () => {
+          explore.picks.has(k) ? explore.picks.delete(k) : explore.picks.add(k);
+          explore.shown = 24; renderExplore();
+        } }, label))))),
+    h("div", { class: "resulthead" },
+      h("b", {}, hits.length === 1 ? "1 place fits" : `${hits.length} places fit`),
+      explore.picks.size > 0 && h("button", { class: "btn quiet mini", onclick: () => { explore.picks.clear(); renderExplore(); } }, "Clear"),
+      h("button", { class: "btn quiet mini", onclick: () => { explore.seed++; renderExplore(); } }, "Shuffle")),
+    hits.length ? h("div", { class: "cards" }, hits.slice(0, explore.shown).map(spotCard))
+      : h("div", { class: "empty" }, h("h3", {}, "Nothing fits all of those"), h("p", {}, "Try removing one choice.")),
+    hits.length > explore.shown && h("button", { class: "btn quiet", style: "justify-self:center", onclick: () => { explore.shown += 24; renderExplore(); } }, "Show more"),
+    h("p", { class: "fine" }, "Pictures are our own illustrations. Places were checked against travel guides, but seasons, permits and safety change, so read up before you book.")));
+  $("page").scrollTop = top;
+}
+function ringSvg(pct) {
+  const r = 44, c = 2 * Math.PI * r, on = Math.min(1, pct / 100) * c;
+  return `<svg viewBox="0 0 110 110" role="img" aria-label="${pct}% visited"><circle cx="55" cy="55" r="${r}" fill="none" stroke="#ecd59f" stroke-width="13"/><circle cx="55" cy="55" r="${r}" fill="none" stroke="#2b1d18" stroke-width="1.5" transform="translate(0 0)" opacity=".0"/><circle cx="55" cy="55" r="${r}" fill="none" stroke="#f2ae14" stroke-width="13" stroke-linecap="round" stroke-dasharray="${on} ${c}" transform="rotate(-90 55 55)"/><text x="55" y="62" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="21" fill="#2b1d18">${pct}%</text></svg>`;
+}
+function feed() {
+  const when = (t) => new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  return [...items.map((i) => ({ t: i.createdAt, who: i.who, line: `${verb(i)} ${i.title}${tail(i)}` })),
+    ...bucket.map((b) => ({ t: b.createdAt, who: b.who, line: `added ${b.text} to the bucket list` }))]
+    .filter((e) => e.t && e.who).sort((a, b) => b.t - a.t).slice(0, 12)
+    .map((e) => h("div", {}, avatar(e.who, 26), h("span", { class: "t" }, h("b", {}, personName(e.who)), ` ${e.line}`), h("time", {}, when(e.t))));
+}
+function stampList(rows, byCountry) {
+  const cities = new Set(beenItems().filter((i) => i.city).map((i) => i.city)).size;
+  const has = (n) => byCountry.has(n);
+  const badges = [
+    ["First steps", cities >= 1, "Mark your first city"], ["City hoppers", cities >= 10, "10 cities"], ["Globetrotters", cities >= 50, "50 cities"],
+    ["Passport filling", byCountry.size >= 5, "5 countries"], ["World citizens", byCountry.size >= 20, "20 countries"],
+    ["Two shores", has("Turkey") && has("Ukraine"), "Türkiye and Ukraine"], ["Home turf", rows.find((r) => r.name === "Saudi Arabia")?.cityDone >= 5, "5 Saudi cities"],
+    ["Dreamers", items.filter((i) => i.status === "dream").length + bucket.length >= 10, "10 on the bucket list"], ["Ticked off", bucket.filter((b) => b.done).length >= 5, "Tick off 5"],
+  ];
+  return [...[...byCountry.keys()].map((n) => h("div", { class: "stamp on country" }, h("b", {}, countryInfo(n).label), h("span", {}, "Visited"))),
+    ...badges.map(([name, won, how]) => h("div", { class: "stamp" + (won ? " on" : "") }, h("b", {}, name), h("span", {}, how)))];
+}
+async function renderStatsPage() {
+  const been = beenItems();
+  const byCountry = new Map();
+  for (const i of been) { const n = W.names[countryOf(i)]; byCountry.set(n, (byCountry.get(n) || 0) + 1); }
+  const homes = ["Turkey", "Ukraine", "Saudi Arabia"];
+  const names = [...homes, ...[...byCountry.keys()].filter((n) => !homes.includes(n))];
+  const rows = await Promise.all(names.map(async (name) => {
+    const list = await loadRegions(name);
+    const seen = list.length ? visitedIn(name, list).size : 0;
+    const cities = citiesOf(name);
+    const cityDone = new Set(been.filter((i) => i.city && cities.some(([c]) => c === i.city)).map((i) => i.city)).size;
+    return { name, label: countryInfo(name).label, total: list.length, seen, pct: list.length ? Math.round((seen / list.length) * 100) : byCountry.has(name) ? 100 : 0, cities: cities.length, cityDone };
+  }));
+  if (state.section !== "stats") return;
+  const regions = rows.reduce((n, r) => n + r.seen, 0);
+  const next = items.filter((i) => i.status === "plan" && i.date && i.date >= ymd(new Date())).sort(byDate)[0];
+  const days = next ? Math.ceil((new Date(next.date + "T12:00:00") - Date.now()) / 864e5) : null;
+  const far = [...been].sort((a, b) => haversineKm(HOME, b) - haversineKm(HOME, a))[0];
+  const tile = (v, k) => h("div", { class: "tile" }, h("b", {}, String(v)), h("span", {}, k));
+  $("page").replaceChildren(h("div", { class: "wrap" },
+    h("h2", {}, "Our story so far"),
+    personBar(),
+    h("div", { class: "tiles" },
+            tile(byCountry.size, byCountry.size === 1 ? "country" : "countries"),
+      tile(((byCountry.size / SHARE_OF_WORLD) * 100).toFixed(1) + "%", "of the world"),
+      tile(new Set(been.filter((i) => i.city).map((i) => i.city)).size, "cities"),
+      tile(items.filter((i) => i.status === "dream").length + bucket.filter((b) => !b.done).length, "on the bucket list"),
+      tile(bucket.filter((b) => b.done).length, "ticked off")),
+    (next || far) && h("div", { class: "tiles" },
+      next && tile(days, `days until ${next.title}`),
+      far && tile(Math.round(haversineKm(HOME, far)).toLocaleString("en-GB"), `km from base: ${far.title}`)),
+    feed().length > 0 && h("h2", {}, "Latest"),
+    feed().length > 0 && h("div", { class: "feed" }, feed()),
+    h("h2", {}, "Stamps"),
+    h("div", { class: "stamps" }, stampList(rows, byCountry)),
+    h("h2", {}, "How much of each country"),
+    h("div", { class: "rings" }, rows.map((r) => h("div", { class: "ring" },
+      h("span", { html: ringSvg(r.pct) }),
+      h("strong", {}, r.label),
+      h("span", {}, r.total ? `${r.seen} of ${r.total} regions` : "Visited"),
+      r.cities > 0 && h("span", {}, `${r.cityDone} of ${r.cities} cities`)))),
+    h("p", { class: "fine" }, "Each country fills up as you tap the cities you've been to on the globe.")));
+}
+
+/* ---------- start ---------- */
+refreshThreads();
+renderSections();
+renderMapFilters();
+renderPanel();
+resize();
+renderMe();
+setTimeout(() => { if (!window.PLANNER_CONFIG?.supabaseUrl && !profile(me) && $("who").hidden) renderWho(); }, 1800);
+document.fonts?.ready.then(() => { labelWidth.clear(); baseKey = ""; dirty = true; });
+requestAnimationFrame(draw);
+connect().then(async () => { if (user) myId = await user.id(); }).catch(() => {});
+</script>
+
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>
