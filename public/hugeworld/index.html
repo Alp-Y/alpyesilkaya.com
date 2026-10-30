@@ -6,43 +6,48 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'">
-<meta name="theme-color" content="#161b3f">
+<meta name="theme-color" content="#fdf3dc">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="HugeWorld">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png">
-<style>html,body{margin:0}body{font-size:14px;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}</style>
+<style>html,body{margin:0;overscroll-behavior:none}body{font-size:14px;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;position:fixed;inset:0}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HugeWorld</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=Ruslan+Display&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=Lilita+One&display=swap">
 <style>
 /* Layout: a sheet of story-book paper beside a painted scene where the globe rises behind cut-out hills. Stacks on phones. */
 :root {
   color-scheme: light;
   --sky: #161b3f;
-  --paper: #f5e6bf;
-  --paper-deep: #ecd59f;
-  --ink: #2b1d18;
-  --ink-soft: #5f4a3b;
-  --ink-faint: #806a55;
-  --line: #2b1d18;
-  --dream: #d6432c;
-  --plan: #3350b0;
-  --been: #f2ae14;
-  --idea: #47925a;
-  --sea: #2c9c98;
-  --font-display: "Ruslan Display", "Georgia", serif;
+  --paper: #fdf3dc;
+  --paper-deep: #f7e3b8;
+  --card: #fffaf0;
+  --ink: #26214a;
+  --ink-soft: #57507a;
+  --ink-faint: #827aa0;
+  --edge: #26214a;
+  --line: #26214a;
+  --brand: #ff5a3c;
+  --dream: #ff5a3c;
+  --plan: #4257d6;
+  --been: #ffb81f;
+  --idea: #2fa66f;
+  --sea: #1fa8a0;
+  --font-display: "Lilita One", "Nunito", "Avenir Next", system-ui, sans-serif;
   --font-body: "Nunito", "Avenir Next", system-ui, sans-serif;
-  --wobble: 255px 18px 225px 18px / 18px 225px 18px 255px;
+  --wobble: 13px;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { height: 100%; }
+html { height: 100dvh; }
+body { height: 100%; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -57,17 +62,15 @@ button { cursor: pointer; }
 
 body { display: flex; flex-direction: column; }
 #top {
-  flex: none; display: flex; align-items: center; gap: 10px; background: var(--paper); border-bottom: 3px solid var(--ink);
+  flex: none; display: flex; align-items: center; gap: 10px; background: var(--paper); border-bottom: 3px solid var(--edge);
   padding-top: max(8px, env(safe-area-inset-top, 0px)); padding-bottom: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-#top h1 { margin: 0; flex: 1; min-width: 0; font: 400 20px/1.1 var(--font-display); color: var(--dream); }
+#top h1 { margin: 0; flex: 1; min-width: 0; font: 400 25px/1 var(--font-display); color: var(--brand); letter-spacing: .01em; }
 #top svg { display: block; }
 #sections { display: flex; gap: 6px; flex: none; }
 .sec { background: none; border: 2px solid transparent; border-radius: var(--wobble); padding: 4px 13px; font-weight: 800; font-size: 14.5px; color: var(--ink-soft); }
 .sec:hover { color: var(--ink); }
-#musicBtn { flex: none; white-space: nowrap; }
-#musicBtn[aria-pressed="true"] { color: var(--dream); }
-.sec[aria-current="page"] { background: var(--been); border-color: var(--ink); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.sec[aria-current="page"] { background: var(--been); border-color: var(--ink); color: var(--ink); box-shadow: 2px 2px 0 var(--edge); }
 #page { flex: 1; min-height: 0; overflow-y: auto; background: var(--paper); padding-block: 22px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 20px; }
 .wrap h2 { margin: 0; font: 400 26px/1.15 var(--font-display); }
@@ -79,9 +82,9 @@ body { display: flex; flex-direction: column; }
 .resulthead { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
 .resulthead b { font-weight: 800; flex: 1; min-width: 140px; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-.card { background: #fff6dc; border: 2px solid var(--ink); border-radius: 14px 18px 13px 19px; box-shadow: 3px 3px 0 var(--ink); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
-.vis { height: 120px; position: relative; display: grid; place-items: center; border-bottom: 2px solid var(--ink); background: var(--bg); overflow: hidden; }
-.vis::after { content: ""; position: absolute; left: -10%; right: -10%; bottom: -36px; height: 66px; border-radius: 50%; background: var(--ground); border-top: 2px solid var(--ink); }
+.card { background: var(--card); border: 2px solid var(--edge); border-radius: 14px 18px 13px 19px; box-shadow: 3px 3px 0 var(--edge); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.vis { height: 120px; position: relative; display: grid; place-items: center; border-bottom: 2px solid var(--edge); background: var(--bg); overflow: hidden; }
+.vis::after { content: ""; position: absolute; left: -10%; right: -10%; bottom: -36px; height: 66px; border-radius: 50%; background: var(--ground); border-top: 2px solid var(--edge); }
 .vis img { position: relative; z-index: 1; width: 92px; height: 92px; margin-top: 8px; }
 .cardbody { padding: 11px 12px 12px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
 .card h3 { margin: 0; font-size: 16.5px; font-weight: 800; line-height: 1.25; }
@@ -94,22 +97,22 @@ body { display: flex; flex-direction: column; }
 .game h3 { margin: 0; font: 400 20px/1.15 var(--font-display); }
 .game > p { margin: 0; color: var(--ink-soft); font-size: 14.5px; }
 .duel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.pick { background: #fff6dc; border: 2px solid var(--ink); border-radius: 14px 18px 13px 19px; box-shadow: 3px 3px 0 var(--ink); padding: 0; overflow: hidden; text-align: left; display: flex; flex-direction: column; min-width: 0; transition: transform .14s, box-shadow .14s; }
-.pick:hover { transform: translate(-2px, -2px) rotate(-.6deg); box-shadow: 5px 5px 0 var(--ink); }
+.pick { background: var(--card); border: 2px solid var(--edge); border-radius: 14px 18px 13px 19px; box-shadow: 3px 3px 0 var(--edge); padding: 0; overflow: hidden; text-align: left; display: flex; flex-direction: column; min-width: 0; transition: transform .14s, box-shadow .14s; }
+.pick:hover { transform: translate(-2px, -2px) rotate(-.6deg); box-shadow: 5px 5px 0 var(--edge); }
 .pick .vis { height: 96px; }
 .pick .vis img { width: 74px; height: 74px; }
 .pick b { padding: 8px 10px 2px; font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; }
 .pick span.sub { padding: 0 10px 10px; font-size: 12.5px; color: var(--ink-soft); }
-.quiz { background: #fff6dc; border: 2px solid var(--ink); border-radius: 14px 18px 13px 19px; padding: 12px; display: grid; gap: 10px; justify-items: center; text-align: center; }
+.quiz { background: var(--card); border: 2px solid var(--edge); border-radius: 14px 18px 13px 19px; padding: 12px; display: grid; gap: 10px; justify-items: center; text-align: center; }
 .quiz img { width: 110px; height: 110px; }
 .quiz .answers { display: grid; gap: 6px; width: 100%; }
 .quiz .btn.right { background: #8cc06a; } .quiz .btn.wrong { background: var(--dream); color: #fff6dc; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-.tile { background: #fff6dc; border: 2px solid var(--ink); border-radius: 12px 15px 11px 16px; padding: 10px 14px; }
+.tile { background: var(--card); border: 2px solid var(--edge); border-radius: 12px 15px 11px 16px; padding: 10px 14px; }
 .tile b { display: block; font: 400 30px/1.1 var(--font-display); font-variant-numeric: tabular-nums; }
 .tile span { font-size: 13.5px; color: var(--ink-soft); font-weight: 700; }
 .rings { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
-.ring { background: #fff6dc; border: 2px solid var(--ink); border-radius: 14px 18px 13px 19px; padding: 12px; display: grid; justify-items: center; gap: 2px; text-align: center; min-width: 0; }
+.ring { background: var(--card); border: 2px solid var(--edge); border-radius: 14px 18px 13px 19px; padding: 12px; display: grid; justify-items: center; gap: 2px; text-align: center; min-width: 0; }
 .ring svg { width: 110px; height: 110px; }
 .ring strong { font-weight: 800; font-size: 16px; }
 .ring span { font-size: 13px; color: var(--ink-soft); }
@@ -125,7 +128,7 @@ body { display: flex; flex-direction: column; }
   min-height: 0; min-width: 0;
   display: flex; flex-direction: column;
   background: var(--paper);
-  border-right: 3px solid var(--ink);
+  border-right: 3px solid var(--edge);
   padding-left: max(20px, env(safe-area-inset-left, 0px));
   padding-right: 20px;
   padding-block: 18px 14px;
@@ -153,11 +156,11 @@ body { display: flex; flex-direction: column; }
 }
 .link { background: none; border: 0; padding: 0 0 0 6px; font-weight: 800; color: var(--dream); text-decoration: underline; font-size: 13px; }
 .tab:hover { color: var(--ink); }
-.tab[aria-selected="true"] { background: var(--paper-deep); border-color: var(--ink); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.tab[aria-selected="true"] { background: var(--paper-deep); border-color: var(--ink); color: var(--ink); box-shadow: 2px 2px 0 var(--edge); }
 
 #filters { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
-  background: none; border: 2px solid var(--ink); border-radius: var(--wobble);
+  background: none; border: 2px solid var(--edge); border-radius: var(--wobble);
   padding: 2px 10px; font-size: 13px; font-weight: 700; color: var(--ink);
   display: inline-flex; align-items: center; gap: 5px;
 }
@@ -168,11 +171,11 @@ body { display: flex; flex-direction: column; }
 
 .row {
   width: 100%; text-align: left; background: none; border: 0;
-  border-bottom: 2px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  border-bottom: 2px solid rgba(43, 29, 24, .22);
   padding: 9px 6px; display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: center;
 }
 button.row:hover { background: var(--paper-deep); }
-.row > span:first-child { width: 26px; height: 26px; border-radius: 50% 46% 52% 48%; background: var(--thread); border: 2px solid var(--ink); display: grid; place-items: center; color: #fff6dc; }
+.row > span:first-child { width: 26px; height: 26px; border-radius: 50% 46% 52% 48%; background: var(--thread); border: 2px solid var(--edge); display: grid; place-items: center; color: #fff6dc; }
 .row svg { width: 16px; height: 16px; }
 .row > img { width: 32px; height: 32px; margin-left: -3px; }
 .row strong { display: block; font-weight: 800; line-height: 1.25; }
@@ -185,14 +188,14 @@ button.row:hover { background: var(--paper-deep); }
 
 #foot { display: flex; gap: 8px; align-items: center; flex: none; }
 .btn {
-  border: 2px solid var(--ink); border-radius: var(--wobble); padding: 8px 14px; font-weight: 800; font-size: 14.5px;
-  background: var(--been); color: var(--ink); box-shadow: 3px 3px 0 var(--ink);
+  border: 2px solid var(--edge); border-radius: 13px; padding: 8px 14px; font-weight: 800; font-size: 14.5px;
+  background: var(--been); color: #26214a; box-shadow: 3px 3px 0 var(--edge);
 }
-.btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
-.btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
-.btn.quiet { background: var(--paper); }
-.btn.danger { background: var(--dream); color: #fff6dc; }
-.btn:disabled { opacity: .6; cursor: default; transform: none; box-shadow: 1px 1px 0 var(--ink); }
+.btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--edge); }
+.btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--edge); }
+.btn.quiet { background: var(--card); color: var(--ink); }
+.btn.danger { background: var(--dream); color: #fff; }
+.btn:disabled { opacity: .6; cursor: default; transform: none; box-shadow: 1px 1px 0 var(--edge); }
 #foot .btn:first-child { flex: 1; }
 
 .detail { display: grid; gap: 12px; padding: 2px 4px 12px 2px; }
@@ -200,7 +203,7 @@ button.row:hover { background: var(--paper-deep); }
 .back:hover { color: var(--ink); }
 .detail h2 { margin: 0; font: 400 25px/1.18 var(--font-display); text-wrap: balance; }
 .pills { display: flex; flex-wrap: wrap; gap: 6px; }
-.pill { font-size: 12.5px; font-weight: 800; padding: 1px 9px; border-radius: var(--wobble); border: 2px solid var(--ink); background: var(--thread, var(--paper-deep)); color: #fff6dc; display: inline-flex; align-items: center; gap: 5px; }
+.pill { font-size: 12.5px; font-weight: 800; padding: 1px 9px; border-radius: var(--wobble); border: 2px solid var(--edge); background: var(--thread, var(--paper-deep)); color: #fff6dc; display: inline-flex; align-items: center; gap: 5px; }
 .pill.plain { background: none; color: var(--ink); }
 .pill svg { width: 13px; height: 13px; }
 .place { font-size: 14px; color: var(--ink-soft); }
@@ -217,27 +220,27 @@ button.row:hover { background: var(--paper-deep); }
 .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
 .grid.dow span { text-align: center; font-size: 12px; font-weight: 800; color: var(--ink-faint); }
 .day {
-  aspect-ratio: 1 / .92; background: #fff6dc; border: 2px solid var(--ink); border-radius: 9px 11px 8px 12px;
+  aspect-ratio: 1 / .92; background: var(--card); border: 2px solid var(--edge); border-radius: 9px 11px 8px 12px;
   font-size: 13.5px; font-weight: 800; padding: 1px 0 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 0;
 }
 .day.blank { background: none; border: 0; }
 .day:hover { background: var(--paper-deep); }
 .day.today { background: var(--been); }
-.day.picked { box-shadow: 2px 2px 0 var(--ink); outline: 2px solid var(--dream); outline-offset: 0; }
+.day.picked { box-shadow: 2px 2px 0 var(--edge); outline: 2px solid var(--dream); outline-offset: 0; }
 .day i { display: flex; gap: 2px; height: 7px; }
-.day b { width: 7px; height: 7px; border-radius: 50%; background: var(--thread); border: 1px solid var(--ink); }
+.day b { width: 7px; height: 7px; border-radius: 50%; background: var(--thread); border: 1px solid var(--edge); }
 .bucket { display: grid; gap: 4px; padding: 2px 2px 12px; }
 .bucketadd { display: flex; gap: 8px; padding-bottom: 8px; }
-.bk { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto 24px; gap: 10px; align-items: center; padding: 7px 2px; border-bottom: 2px solid color-mix(in srgb, var(--ink) 16%, transparent); }
+.bk { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto 24px; gap: 10px; align-items: center; padding: 7px 2px; border-bottom: 2px solid rgba(43, 29, 24, .16); }
 .bk span { overflow-wrap: anywhere; font-weight: 700; }
 .bk.done span { text-decoration: line-through; color: var(--ink-faint); }
-.tick { width: 24px; height: 24px; padding: 0; border: 2px solid var(--ink); border-radius: 7px 9px 6px 10px; background: #fff6dc; font-weight: 800; line-height: 1; }
+.tick { width: 24px; height: 24px; padding: 0; border: 2px solid var(--edge); border-radius: 7px 9px 6px 10px; background: var(--card); font-weight: 800; line-height: 1; }
 .bk.done .tick { background: var(--been); }
 .x { background: none; border: 0; padding: 0; font-size: 18px; color: var(--ink-faint); }
 .x:hover { color: var(--dream); }
 .results { display: grid; gap: 2px; padding-bottom: 10px; }
 .results .fine { padding-bottom: 4px; }
-.result { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 2px solid color-mix(in srgb, var(--ink) 16%, transparent); }
+.result { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 2px solid rgba(43, 29, 24, .16); }
 .result .open { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 9px; align-items: center; background: none; border: 0; padding: 0; text-align: left; min-width: 0; }
 .result .open:hover strong { text-decoration: underline; }
 .result img { width: 42px; height: 42px; }
@@ -245,7 +248,7 @@ button.row:hover { background: var(--paper-deep); }
 .result .sub { display: block; font-size: 12.5px; color: var(--ink-soft); }
 .resultact { display: grid; gap: 4px; }
 #find { position: relative; flex: none; }
-#findList { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 6; background: var(--paper); border: 2px solid var(--ink); border-radius: 10px 12px 9px 13px; box-shadow: 3px 3px 0 var(--ink); overflow: hidden; }
+#findList { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 6; background: var(--paper); border: 2px solid var(--edge); border-radius: 10px 12px 9px 13px; box-shadow: 3px 3px 0 var(--edge); overflow: hidden; }
 #findList button { display: flex; justify-content: space-between; gap: 10px; width: 100%; background: none; border: 0; padding: 7px 10px; text-align: left; }
 #findList button:hover { background: var(--paper-deep); }
 #findList strong { font-weight: 800; min-width: 0; overflow-wrap: anywhere; }
@@ -258,31 +261,30 @@ button.row:hover { background: var(--paper-deep); }
 .stamps { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
 .stamp { border: 2px dashed var(--ink-faint); border-radius: 50% 46% 52% 48%; aspect-ratio: 1 / 1; max-width: 150px; display: grid; place-content: center; text-align: center; padding: 10px; color: var(--ink-faint); opacity: .75; }
 .stamp b { font: 400 14px/1.15 var(--font-display); }
-.stamp span { font-size: 11.5px; }
-.stamp.on { border: 3px double var(--dream); color: var(--dream); opacity: 1; transform: rotate(-4deg); background: #fff6dc; }
+.stamp span { font-size: 12px; }
+.stamp.on { border: 3px double var(--dream); color: var(--dream); opacity: 1; transform: rotate(-4deg); background: var(--card); }
 .stamp.on.country { border-color: var(--plan); color: var(--plan); transform: rotate(3deg); }
 .card { transition: transform .16s, box-shadow .16s; }
-.card:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); }
+.card:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--edge); }
 .vis img { transition: transform .22s; }
 .card:hover .vis img { transform: translateY(-5px) scale(1.06); }
 .chip, .tab, .sec, .btn, .tool { transition: transform .1s, box-shadow .1s, background-color .12s, color .12s; }
 .chip:hover { transform: translateY(-1px); }
-.tool:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+.tool:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--edge); }
 #toast { animation: pop .22s ease-out; }
 .fresh { animation: rise .24s ease-out; }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
 @keyframes pop { from { opacity: 0; transform: translate(-50%, -8px); } }
-#meBtn { flex: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
-.av { display: inline-grid; place-items: center; border-radius: 50%; border: 2px solid var(--ink); background: var(--c, var(--paper-deep)); flex: none; overflow: hidden; }
+.av { display: inline-grid; place-items: center; border-radius: 50%; border: 2px solid var(--edge); background: var(--c, var(--paper-deep)); flex: none; overflow: hidden; }
 .av img { width: 88%; height: 88%; }
 #who, #login { position: fixed; inset: 0; z-index: 7; display: grid; place-items: center; background: rgba(22, 27, 63, .55); padding: 16px; }
-.whobox { background: var(--paper); border: 3px solid var(--ink); border-radius: 16px 20px 15px 21px; box-shadow: 5px 5px 0 var(--ink); padding: 18px; width: min(420px, 100%); max-height: 100%; overflow-y: auto; display: grid; gap: 12px; }
+.whobox { background: var(--paper); border: 3px solid var(--edge); border-radius: 16px 20px 15px 21px; box-shadow: 5px 5px 0 var(--edge); padding: 18px; width: min(420px, 100%); max-height: 100%; overflow-y: auto; display: grid; gap: 12px; }
 .whobox h2 { margin: 0; font: 400 22px/1.15 var(--font-display); }
 .people { display: flex; flex-wrap: wrap; gap: 8px; }
-.person { background: #fff6dc; border: 2px solid var(--ink); border-radius: 12px 14px 11px 15px; padding: 6px 12px 6px 6px; display: inline-flex; align-items: center; gap: 7px; font-weight: 800; }
-.person[aria-pressed="true"] { background: var(--been); box-shadow: 2px 2px 0 var(--ink); }
+.person { background: var(--card); border: 2px solid var(--edge); border-radius: 12px 14px 11px 15px; padding: 6px 12px 6px 6px; display: inline-flex; align-items: center; gap: 7px; font-weight: 800; }
+.person[aria-pressed="true"] { background: var(--been); box-shadow: 2px 2px 0 var(--edge); }
 .swatches { display: flex; flex-wrap: wrap; gap: 6px; max-height: 172px; overflow-y: auto; padding: 3px; }
-.swatches button { background: var(--c, #fff6dc); border: 2px solid var(--ink); border-radius: 10px; padding: 2px; width: 44px; height: 44px; }
+.swatches button { background: var(--c, #fff6dc); border: 2px solid var(--edge); border-radius: 10px; padding: 2px; width: 44px; height: 44px; }
 .swatches button[aria-pressed="true"] { outline: 3px solid var(--dream); outline-offset: 1px; }
 .swatches img { width: 100%; height: 100%; }
 .swatches.col { max-height: none; }
@@ -291,7 +293,7 @@ button.row:hover { background: var(--paper-deep); }
 .feed div { display: flex; align-items: center; gap: 8px; font-size: 14.5px; min-width: 0; }
 .feed span.t { overflow-wrap: anywhere; min-width: 0; }
 .feed time { margin-left: auto; font-size: 12.5px; color: var(--ink-faint); white-space: nowrap; }
-.chip i.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c); border: 1px solid var(--ink); }
+.chip i.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c); border: 1px solid var(--edge); }
 #mark { display: flex; }
 #splash { position: fixed; inset: 0; z-index: 30; background: radial-gradient(70% 60% at 50% 42%, #2a3170 0, #161b3f 75%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; overflow: hidden; transition: opacity .42s, transform .42s; }
 #splash.out { opacity: 0; transform: scale(1.08); pointer-events: none; }
@@ -312,21 +314,86 @@ button, a, input, select, textarea { touch-action: manipulation; }
 .btn:active, .chip:active, .pick:active, .tool:active { transform: translate(1px, 1px) scale(.98); }
 body { -webkit-user-select: none; user-select: none; }
 input, textarea { -webkit-user-select: text; user-select: text; }
-input.text, textarea { font-size: 16px; }
+input.text, textarea, select { font-size: 16px; }
 .pal { position: fixed; left: 0; top: 0; z-index: 4; cursor: pointer; will-change: transform; -webkit-tap-highlight-color: transparent; }
 .pal.cast { z-index: 31; pointer-events: none; }
 .pal img { width: 100%; height: 100%; display: block; }
 .palheart { position: fixed; z-index: 8; color: var(--dream); font-size: 26px; pointer-events: none; animation: floatup .9s ease-out both; }
 @keyframes floatup { to { transform: translateY(-46px) scale(1.4); opacity: 0; } }
-.daily { display: grid; gap: 7px; margin-bottom: 8px; background: #fff6dc; border: 2px solid var(--ink); border-radius: 12px 14px 11px 15px; padding: 8px 10px; box-shadow: 2px 2px 0 var(--ink); }
+.daily { display: grid; gap: 7px; margin-bottom: 8px; background: var(--card); border: 2px solid var(--edge); border-radius: 12px 14px 11px 15px; padding: 8px 10px; box-shadow: 2px 2px 0 var(--edge); }
 .dailypick { display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 9px; align-items: center; background: none; border: 0; padding: 0; text-align: left; }
 .dailypick img { width: 46px; height: 46px; transition: transform .18s; }
 .dailypick:hover img { transform: rotate(-5deg) scale(1.08); }
 .daily small { display: block; font-size: 11.5px; font-weight: 800; color: var(--ink-faint); }
 .dailypick strong { display: block; font-weight: 800; line-height: 1.2; }
 .dailypick em { display: block; font-style: normal; font-size: 12.5px; color: var(--ink-soft); }
-.dailyword { border-top: 2px dashed color-mix(in srgb, var(--ink) 18%, transparent); padding-top: 6px; font-size: 14px; }
-.btn.mini { padding: 3px 10px; font-size: 12.5px; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+.dailyword { border-top: 2px dashed rgba(43, 29, 24, .18); padding-top: 6px; font-size: 14px; }
+#mapbar { position: absolute; top: 12px; left: 12px; right: 12px; display: grid; gap: 8px; z-index: 2; pointer-events: none; max-width: min(520px, 100%); }
+#mapbar > * { pointer-events: auto; }
+#find input { box-shadow: 2px 2px 0 var(--edge); }
+#mapfilters { position: static; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px; }
+#mapfilters .chip, .picks .chip { min-height: 38px; }
+#mapmode { position: absolute; left: 12px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); display: flex; background: var(--paper); border: 2px solid var(--edge); border-radius: 12px; box-shadow: 2px 2px 0 var(--edge); overflow: hidden; z-index: 2; }
+.seg { background: none; border: 0; padding: 9px 14px; font-weight: 800; font-size: 14px; color: var(--ink-soft); min-height: 40px; }
+.seg[aria-pressed="true"] { background: var(--been); color: var(--ink); }
+#tools { top: auto; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); right: 12px; flex-wrap: wrap; justify-content: flex-end; z-index: 2; }
+.tool { min-width: 42px; height: 42px; }
+#app.plans { grid-template-columns: minmax(0, 720px); justify-content: center; }
+#app.plans #stage { display: none; }
+#app.plans #panel { grid-column: 1; grid-row: 1; border: 0; }
+#app.plans { background: var(--paper); }
+.tab { min-height: 42px; flex-direction: row; justify-content: center; }
+.link { min-height: 32px; }
+.profilecard { background: var(--card); border: 2px solid var(--edge); border-radius: 14px 18px 13px 19px; padding: 14px; display: grid; gap: 12px; }
+.me { display: flex; gap: 14px; align-items: center; }
+.profilecard h2 { margin: 0; font: 400 24px/1.15 var(--font-display); }
+.settings { display: grid; gap: 2px; }
+.settings h2 { margin-bottom: 6px; }
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 2px solid rgba(43, 29, 24, .14); min-height: 56px; }
+.setting b { display: block; font-weight: 800; }
+.setting small { display: block; color: var(--ink-soft); font-size: 13px; }
+.setting .btn { flex: none; }
+.seggroup { display: flex; flex: none; border: 2px solid var(--edge); border-radius: 12px; overflow: hidden; background: var(--card); }
+.seggroup .seg { padding: 7px 11px; }
+.btn.mini { min-height: 36px; }
+.gamegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.gamecard { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; background: var(--card); border: 2px solid var(--edge); border-radius: 14px 18px 13px 19px; box-shadow: 3px 3px 0 var(--edge); padding: 10px 12px; transition: transform .14s, box-shadow .14s; }
+.gamecard:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--edge); }
+.gamecard img { width: 62px; height: 62px; }
+.gamecard b { display: block; font: 400 18px/1.15 var(--font-display); }
+.gamecard small { display: block; font-size: 13.5px; color: var(--ink-soft); }
+.theme { font-size: 19px !important; margin-top: 2px !important; }
+.score { background: var(--card); border: 2px solid var(--edge); border-radius: 14px 18px 13px 19px; box-shadow: 3px 3px 0 var(--edge); padding: 12px 14px; display: grid; gap: 8px; }
+.scoretop { display: flex; align-items: center; justify-content: center; gap: 22px; }
+.scoreside { display: grid; justify-items: center; gap: 2px; font-weight: 800; }
+.scoreside .num { font: 400 34px/1 var(--font-display); }
+.scoretop .vs { color: var(--ink-faint); }
+.score summary { font-weight: 800; cursor: pointer; min-height: 32px; }
+.score table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.score th, .score td { padding: 5px 4px; text-align: center; border-bottom: 1px solid rgba(43, 29, 24, .16); font-size: 14px; }
+.score th:first-child, .score td:first-child { text-align: left; font-weight: 700; }
+.track { display: grid; gap: 6px; background: #cfe3b0; border: 2px solid var(--edge); border-radius: 12px; padding: 8px; }
+.lane { position: relative; height: 62px; border-bottom: 2px dashed rgba(43, 29, 24, .3); }
+.lane:last-child { border-bottom: 0; }
+.lane small { position: absolute; left: 4px; bottom: 0; font-weight: 800; font-size: 12px; }
+.lane::after { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 6px; background: repeating-linear-gradient(0deg, #2b1d18 0 6px, #fff6dc 6px 12px); }
+.runner { position: absolute; top: 2px; transition: left .08s linear; transform: scaleX(-1); }
+.runner img { width: 54px; height: 54px; display: block; }
+.dashbtn { width: 100%; min-height: 96px; font-size: 26px; font-family: var(--font-display); touch-action: manipulation; }
+.gamehead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.versus { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.playername { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; }
+.scoreline { text-align: center; font-weight: 800; margin: 0; font-size: 16px; }
+.ttt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: min(320px, 100%); margin: 0 auto; }
+.cell { aspect-ratio: 1; background: var(--card); border: 2px solid var(--edge); border-radius: 14px; display: grid; place-items: center; padding: 0; }
+.cell.won { background: var(--been); }
+.memory { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; width: min(420px, 100%); margin: 0 auto; }
+.card2 { aspect-ratio: 1; background: var(--brand); color: #fff; border: 2px solid var(--edge); border-radius: 12px; font: 400 26px var(--font-display); padding: 3px; }
+.card2.up { background: var(--card); }
+.card2.found { background: #cfe3b0; }
+.card2 img { width: 100%; height: 100%; display: block; }
+#invite { position: fixed; left: 50%; top: calc(58px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 8; display: flex; align-items: center; gap: 8px; background: var(--been); border: 2px solid var(--edge); border-radius: 14px; box-shadow: 3px 3px 0 var(--edge); padding: 8px 12px; font-weight: 800; max-width: calc(100% - 24px); }
+.btn.mini { padding: 3px 10px; font-size: 12.5px; box-shadow: 2px 2px 0 var(--edge); white-space: nowrap; }
 .fine { margin: 0; font-size: 12.5px; color: var(--ink-faint); }
 .notes h3 { margin: 0; font: 400 16px/1.2 var(--font-display); }
 .note { border-left: 4px solid var(--thread, var(--ink)); padding-left: 10px; font-size: 14.5px; overflow-wrap: anywhere; }
@@ -334,7 +401,7 @@ input.text, textarea { font-size: 16px; }
 
 label.field { display: grid; gap: 3px; font-size: 13.5px; font-weight: 700; color: var(--ink-soft); }
 input.text, textarea, select {
-  width: 100%; background: #fff6dc; border: 2px solid var(--ink); border-radius: 10px 12px 9px 13px;
+  width: 100%; background: var(--card); border: 2px solid var(--edge); border-radius: 10px 12px 9px 13px;
   padding: 7px 10px; color: var(--ink); min-width: 0; font-weight: 500;
 }
 textarea { resize: vertical; min-height: 66px; }
@@ -347,21 +414,21 @@ textarea { resize: vertical; min-height: 66px; }
 }
 .tool {
   min-width: 36px; height: 36px; padding: 0 11px; border-radius: var(--wobble);
-  background: var(--paper); border: 2px solid var(--ink); color: var(--ink); font-size: 14px; font-weight: 800; box-shadow: 2px 2px 0 var(--ink);
+  background: var(--paper); border: 2px solid var(--edge); color: var(--ink); font-size: 14px; font-weight: 800; box-shadow: 2px 2px 0 var(--edge);
 }
 #mapfilters { position: absolute; top: 14px; left: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; z-index: 2; }
-#mapfilters .chip { background: var(--paper); box-shadow: 2px 2px 0 var(--ink); padding: 3px 10px; white-space: nowrap; }
+#mapfilters .chip { background: var(--paper); box-shadow: 2px 2px 0 var(--edge); padding: 3px 10px; white-space: nowrap; }
 #mapfilters .chip[aria-pressed="true"] { background: var(--been); color: var(--ink); }
 #mapfilters .clear { background: none; border: 0; color: var(--paper); font-size: 12.5px; font-weight: 800; padding: 2px 4px; text-decoration: underline; }
 .tool.hot { background: var(--been); }
 #hint {
   position: absolute; left: 50%; top: 62px; transform: translateX(-50%);
-  background: var(--dream); color: #fff6dc; font-weight: 800; font-size: 14px; border: 2px solid var(--ink);
+  background: var(--dream); color: #fff6dc; font-weight: 800; font-size: 14px; border: 2px solid var(--edge);
   padding: 5px 14px; border-radius: var(--wobble); white-space: nowrap;
 }
 #tip {
   position: absolute; pointer-events: none; transform: translate(-50%, calc(-100% - 14px));
-  background: var(--paper); border: 2px solid var(--ink); border-radius: 8px 10px 7px 11px; font-weight: 800;
+  background: var(--paper); border: 2px solid var(--edge); border-radius: 8px 10px 7px 11px; font-weight: 800;
   padding: 2px 9px; font-size: 13px; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis;
 }
 #toast {
@@ -371,34 +438,80 @@ textarea { resize: vertical; min-height: 66px; }
 }
 
 @media (max-width: 760px) {
+  #mapbar { top: 8px; left: 8px; right: 8px; max-width: none; }
+  #mapfilters { flex-wrap: nowrap; overflow-x: auto; margin-inline: -8px; padding: 0 8px 4px; scrollbar-width: none; position: static; }
+  #mapfilters::-webkit-scrollbar { display: none; }
+  #mapmode { bottom: 10px; left: 8px; }
+  #tools { bottom: 10px; right: 8px; }
+  .tool { padding: 0 9px; }
+  #homeBtn { display: none; }
+  #app.plans { grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); }
+  #grip { height: 34px; padding: 14px 0; margin: -12px 0 -8px; }
+  #app.plans #grip { display: none; }
   :root { --nav: calc(56px + env(safe-area-inset-bottom, 0px)); }
   #top { padding-bottom: 6px; }
   #top h1 { display: block; font-size: 18px; }
-  #sections { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; flex: none; background: var(--paper); border-top: 3px solid var(--ink); padding: 4px 4px env(safe-area-inset-bottom, 0px); }
+  #sections { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; flex: none; background: var(--paper); border-top: 3px solid var(--edge); padding: 4px 4px env(safe-area-inset-bottom, 0px); }
   #sections .sec { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 3px 0; border: 0; border-radius: 10px; font-size: 11.5px; font-weight: 800; box-shadow: none; }
   #sections .sec svg { display: block; width: 22px; height: 22px; }
   #sections .sec[aria-current="page"] { background: var(--been); box-shadow: none; }
   #app, #page { margin-bottom: var(--nav); }
-  #app { grid-template-rows: 46% minmax(0, 1fr); transition: grid-template-rows .26s ease; }
+  #app { grid-template-rows: 46% minmax(0, 1fr); }
   #app.mapfull { grid-template-rows: minmax(0, 1fr) 30px; }
   #app.mapfull #panel > :not(#grip) { display: none; }
   #grip { display: block; flex: none; align-self: center; width: 54px; height: 16px; margin: -6px 0 -2px; background: none; border: 0; padding: 5px 0; }
   #grip::before { content: ""; display: block; height: 5px; border-radius: 3px; background: var(--ink-faint); }
   #toast { top: auto; bottom: calc(var(--nav) + 10px); }
-  #mapfilters { top: 58px; left: 0; right: 0; flex-direction: row; overflow-x: auto; padding: 0 10px 4px; scrollbar-width: none; }
   #mapfilters .chip { flex: none; }
   #app { grid-template-columns: minmax(0, 1fr); grid-template-rows: 43% minmax(0, 1fr); }
   #stage { grid-column: 1; grid-row: 1; }
   #panel {
-    grid-column: 1; grid-row: 2; border-right: 0; border-top: 3px solid var(--ink);
+    grid-column: 1; grid-row: 2; border-right: 0; border-top: 3px solid var(--edge);
     padding-right: max(16px, env(safe-area-inset-right, 0px));
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-block: 10px max(10px, env(safe-area-inset-bottom, 0px)); gap: 9px;
   }
-  #meBtn { font-size: 13px; padding: 3px 6px; } #musicBtn { font-size: 0; padding: 3px 6px; } #musicBtn::before { content: "♪"; font-size: 16px; }
-  .tab { font-size: 11.5px; }
+  .tab { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+#stage #tools { position: absolute; top: auto; left: auto; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+#stage #mapfilters { position: static; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; }
+@media (max-width: 760px) {
+  #stage #tools { right: 8px; bottom: 10px; }
+  #stage #mapfilters { flex-wrap: nowrap; overflow-x: auto; margin-inline: -8px; padding: 0 8px 4px; }
+  #stage #zoomIn, #stage #zoomOut, #stage #homeBtn { display: none; }
+  #stage .chip { padding: 3px 12px; }
+}
+
+/* dark mode: the same adventure after sunset */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1f47; --paper-deep: #2a2f63; --card: #252a5a;
+  --ink: #fdf3dc; --ink-soft: #c9c3e0; --ink-faint: #9a94bd; --edge: #0c0f2b; --line: #0c0f2b;
+  --brand: #ff7a5c; --dream: #ff7a5c; --plan: #8c9bff; --been: #ffc53d; --idea: #58cf95;
+}
+:root[data-theme="dark"] input.text, :root[data-theme="dark"] textarea, :root[data-theme="dark"] select { background: #14183a; }
+:root[data-theme="dark"] .quiz .btn.right { color: #26214a; }
+:root[data-theme="dark"] .tab[aria-selected="true"], :root[data-theme="dark"] .sec[aria-current="page"] { color: #26214a; }
+:root[data-theme="dark"] .tab[aria-selected="true"] { background: var(--been); }
+.sec, .chip, .tab, .seg { color: var(--ink-soft); }
+.sec[aria-current="page"] { color: #26214a; }
+.seg[aria-pressed="true"] { color: #26214a; }
+#mapfilters .chip[aria-pressed="true"] { color: #26214a; }
+#mapfilters .chip { color: var(--ink); }
+.chip { color: var(--ink); }
+.card2.flipin { animation: flipin .26s ease-out; }
+@keyframes flipin { from { transform: rotateY(90deg); } }
+.simon { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: min(320px, 100%); margin: 0 auto; }
+.pad { aspect-ratio: 1; border: 2px solid var(--edge); border-radius: 14px; background: var(--card); padding: 6px; transition: transform .1s, background-color .1s; }
+.pad.lit { background: var(--been); transform: scale(1.08); }
+.pad img { width: 100%; height: 100%; display: block; }
+.packgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 7px; }
+.packgrid .pad.on { background: var(--idea); }
+.bar { height: 8px; border-radius: 4px; background: var(--paper-deep); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--brand); transform-origin: left; animation: drain linear both; }
+@keyframes drain { to { transform: scaleX(0); } }
 </style>
 </head>
 <body>
@@ -411,15 +524,11 @@ textarea { resize: vertical; min-height: 66px; }
 <header id="top">
   <span id="mark"></span>
   <h1>HugeWorld</h1>
-  <button id="meBtn" class="sec" aria-label="Choose your profile"></button>
-  <button id="musicBtn" class="sec" aria-pressed="false">♪ Music</button>
-  <nav id="sections" aria-label="Sections"></nav>
+    <nav id="sections" aria-label="Sections"></nav>
 </header>
 <div id="app">
   <section id="panel" aria-label="Our places">
     <button id="grip" aria-label="Show more of the globe"></button>
-    <div id="stats"></div>
-    <div id="find"><input class="text" id="findBox" type="search" placeholder="Search a country, city or place" aria-label="Search the map" autocomplete="off"><div id="findList" hidden></div></div>
     <nav id="tabs" role="tablist" aria-label="Globe views"></nav>
     <div id="filters"></div>
     <div id="body"></div>
@@ -427,7 +536,11 @@ textarea { resize: vertical; min-height: 66px; }
       </section>
   <main id="stage">
     <canvas id="globe" aria-label="Hand-painted globe. Drag to turn it, scroll to zoom, click a country for things to do there. Everything on it is also listed in the panel."></canvas>
-    <div id="mapfilters" role="group" aria-label="Show on the map"></div>
+    <div id="mapbar">
+      <div id="find"><input class="text" id="findBox" type="search" placeholder="Search a country, city or place" aria-label="Search the map" autocomplete="off"><div id="findList" hidden></div></div>
+      <div id="mapfilters" role="group" aria-label="Show on the map"></div>
+    </div>
+    <div id="mapmode" role="group" aria-label="What the map shows"></div>
     <div id="tools">
       <button class="tool hot" id="surpriseBtn">Surprise us</button>
       <button class="tool" id="homeBtn">Our base</button>
@@ -440,7 +553,6 @@ textarea { resize: vertical; min-height: 66px; }
   </div>
 <section id="page" hidden></section>
 <div id="login" role="dialog" aria-modal="true" aria-label="Sign in" hidden></div>
-<div id="who" role="dialog" aria-modal="true" aria-label="Profiles" hidden></div>
 <div id="toast" role="status" hidden></div>
 
 <script src="vendor/d3.min.js"></script>
@@ -522,7 +634,7 @@ function h(tag, props, ...kids) {
     else if (k === "html") el.innerHTML = v;
     else if (v !== undefined && v !== null && v !== false) el.setAttribute(k, v === true ? "" : v);
   }
-  el.append(...kids.flat().filter((c) => c !== null && c !== undefined && c !== false));
+  el.append(...kids.flat(Infinity).filter((c) => c !== null && c !== undefined && c !== false));
   return el;
 }
 const glyph = (cat) => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${(CATS[cat] || CATS.still).icon}</svg>`;
@@ -570,7 +682,7 @@ function countryOf(p) {
 }
 
 /* ---------- state ---------- */
-const state = { view: "all", cat: null, mode: "list", sel: null, draft: null, section: "globe", person: "all", kinds: new Set(), confirmDelete: false, country: null, regions: null, region: null, spot: null,
+const state = { view: "all", cat: null, mode: "list", sel: null, draft: null, section: "globe", mapView: "all", planTab: "all", person: "all", editProfile: false, kinds: new Set(), confirmDelete: false, country: null, regions: null, region: null, spot: null,
   calYear: new Date().getFullYear(), calMonth: new Date().getMonth(), calDay: null };
 let items = [];
 let store = null;   // { save, remove, shared }
@@ -589,11 +701,24 @@ try { HOME = JSON.parse(localStorage.getItem(BASE_KEY)) || HOME; } catch {}
 function readLocal() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch { return []; } }
 function writeLocal() { try { localStorage.setItem(STORE_KEY, JSON.stringify(items)); } catch {} }
 
+/* without a database, two windows on one computer can still play each other */
+const GAMES_KEY = "hw-games";
+let games = [];
+try { games = JSON.parse(localStorage.getItem(GAMES_KEY)) || []; } catch {}
+const gameBus = typeof BroadcastChannel === "function" ? new BroadcastChannel("hw-games") : null;
+function writeGames() {
+  try { localStorage.setItem(GAMES_KEY, JSON.stringify(games)); } catch {}
+  gameBus?.postMessage(games);
+  gamesChanged();
+}
+if (gameBus) gameBus.onmessage = (e) => { games = e.data; gamesChanged(); };
 const localStore = {
   shared: false,
   async save(item) { items = items.filter((i) => i.id !== item.id).concat(item); writeLocal(); changed(); },
   async remove(id) { items = items.filter((i) => i.id !== id); writeLocal(); changed(); },
   async saveProfile(p) { profiles = profiles.filter((x) => x.id !== p.id).concat(p); try { localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles)); } catch {} changed(); },
+  async saveGame(g) { games = games.filter((x) => x.id !== g.id).concat(g); writeGames(); },
+  async removeGame(id) { games = games.filter((x) => x.id !== id); writeGames(); },
   async saveBucket(b) { bucket = bucket.filter((x) => x.id !== b.id).concat(b); try { localStorage.setItem(BUCKET_KEY, JSON.stringify(bucket)); } catch {} changed(); },
   async removeBucket(id) { bucket = bucket.filter((x) => x.id !== id); try { localStorage.setItem(BUCKET_KEY, JSON.stringify(bucket)); } catch {} changed(); },
   async saveBase(base) { try { localStorage.setItem(BASE_KEY, JSON.stringify(base)); } catch {} HOME = base; changed(); },
@@ -620,51 +745,56 @@ function announce(i, note) {
   if (!i.who || i.who === me) return;
   toast(`${personName(i.who)} ${note ? "added" : verb(i)} ${note ? i.text : i.title}${tail(i)}`);
 }
-function renderMe() {
-  const btn = $("meBtn"), p = profile(me);
-  btn.replaceChildren(...(p ? [avatar(me, 24), p.name] : ["Who are you?"]));
-}
 const newProfile = { name: "", animal: AVATARS[0], colour: COLOURS[0] };
-function renderWho() {
-  const box = $("who");
-  const close = () => { box.hidden = true; };
-  const createForm = h("form", { class: "whobox-form", style: "display:grid;gap:10px", onsubmit: (e) => {
+function profileForm(existing) {
+  return h("form", { style: "display:grid;gap:10px", onsubmit: (e) => {
     e.preventDefault();
     const name = e.target.elements.profileName.value.trim();
     if (!name) return;
-    const id = newId();
-    store.saveProfile({ id, name, animal: newProfile.animal, colour: newProfile.colour, createdAt: Date.now() }).then(() => {
+    const id = existing?.id || newId();
+    store.saveProfile({ ...existing, id, name, animal: newProfile.animal, colour: newProfile.colour, createdAt: existing?.createdAt || Date.now() }).then(() => {
       me = id;
       try { localStorage.setItem(ME_KEY, id); } catch {}
-      renderMe(); close(); toast(`Hi ${name}!`);
-    }, () => toast("That didn't save. You may need Editor access."));
+      state.editProfile = false;
+      toast(existing ? "Profile saved" : `Hi ${name}!`);
+      renderStatsPage();
+    }, () => toast("That didn't save. Try again."));
   } },
     h("label", { class: "field" }, "Your name", h("input", { class: "text", id: "profileName", name: "profileName", maxlength: 24, required: true, autocomplete: "off", value: newProfile.name, oninput: (e) => { newProfile.name = e.target.value; } })),
-    h("div", { class: "swatches" }, AVATARS.map((a) => h("button", { type: "button", "aria-label": a, "aria-pressed": String(newProfile.animal === a), style: `--c:${newProfile.colour}`, onclick: () => { newProfile.animal = a; renderWho(); } }, h("img", { src: STICKER_IMG[a].src, alt: "" })))),
-    h("div", { class: "swatches col" }, COLOURS.map((c) => h("button", { type: "button", "aria-label": `Colour ${c}`, "aria-pressed": String(newProfile.colour === c), style: `--c:${c}`, onclick: () => { newProfile.colour = c; renderWho(); } }))),
-    h("button", { class: "btn", type: "submit" }, "Create my profile"));
-  box.replaceChildren(h("div", { class: "whobox" },
-    h("h2", {}, "Who's here?"),
-    profiles.length > 0 && h("div", { class: "people" }, profiles.map((p) => h("button", { class: "person", "aria-pressed": String(p.id === me), onclick: () => {
-      me = p.id;
-      try { localStorage.setItem(ME_KEY, p.id); } catch {}
-      renderMe(); close(); changed();
-    } }, avatar(p.id, 30), p.name))),
-    createForm,
-    h("button", { class: "btn quiet", onclick: close }, "Not now"),
-    h("button", { class: "btn quiet", onclick: () => {
+    h("div", { class: "field" }, "Your picture", h("div", { class: "swatches" }, AVATARS.map((a) => h("button", { type: "button", "aria-label": a, "aria-pressed": String(newProfile.animal === a), style: `--c:${newProfile.colour}`, onclick: () => { newProfile.animal = a; renderStatsPage(); } }, h("img", { src: STICKER_IMG[a].src, alt: "" }))))),
+    h("div", { class: "field" }, "Your colour", h("div", { class: "swatches col" }, COLOURS.map((c) => h("button", { type: "button", "aria-label": `Colour ${c}`, "aria-pressed": String(newProfile.colour === c), style: `--c:${c}`, onclick: () => { newProfile.colour = c; renderStatsPage(); } })))),
+    h("div", { class: "actions" }, h("button", { class: "btn", type: "submit" }, existing ? "Save" : "Create my profile"),
+      existing && h("button", { class: "btn quiet", type: "button", onclick: () => { state.editProfile = false; renderStatsPage(); } }, "Cancel")));
+}
+function profileHead() {
+  const p = profile(me);
+  if (!p || state.editProfile) return h("section", { class: "profilecard" }, h("h2", {}, p ? "Edit profile" : "Create your profile"), profileForm(state.editProfile ? p : null));
+  const others = profiles.filter((x) => x.id !== me && !x.owner);
+  return h("section", { class: "profilecard" },
+    h("div", { class: "me" }, avatar(me, 68), h("div", {}, h("h2", {}, p.name), h("button", { class: "link", style: "padding:0", onclick: () => { Object.assign(newProfile, { name: p.name, animal: p.animal, colour: p.colour }); state.editProfile = true; renderStatsPage(); } }, "Edit profile"))),
+    others.length > 0 && h("div", { class: "people" }, others.map((x) => h("button", { class: "person", onclick: () => { me = x.id; try { localStorage.setItem(ME_KEY, x.id); } catch {} renderStatsPage(); } }, avatar(x.id, 26), x.name))));
+}
+function settingsList() {
+  const row = (label, value, button) => h("div", { class: "setting" }, h("span", {}, h("b", {}, label), value && h("small", {}, value)), button);
+  return h("section", { class: "settings" }, h("h2", {}, "Settings"),
+    row("Our base", HOME.name, canWrite && h("button", { class: "btn quiet mini", onclick: () => startPlacing("base") }, "Change")),
+    row("Appearance", null, h("div", { class: "seggroup" }, [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(([v, label]) => h("button", { class: "seg", "aria-pressed": String(themeChoice === v), onclick: () => {
+      themeChoice = v;
+      try { localStorage.setItem(THEME_KEY, v); } catch {}
+      applyTheme(); renderStatsPage();
+    } }, label)))),
+    row("Music", "Shchedryk and a Ukrainian dumka", h("button", { class: "btn quiet mini", id: "musicBtn", "aria-pressed": String(music.on), onclick: () => toggleMusic().then(renderStatsPage) }, music.on ? "Turn off" : "Turn on")),
+    row("Animal visitors", "Cats, birds and cheetahs pass through", h("button", { class: "btn quiet mini", onclick: () => {
       palsOn = !palsOn;
       try { localStorage.setItem(PALS_KEY, palsOn ? "on" : "off"); } catch {}
-      toast(palsOn ? "Animal visitors are back" : "Animal visitors are resting");
-      renderWho();
-    } }, palsOn ? "Turn off animal visitors" : "Turn on animal visitors"),
-    h("button", { class: "btn quiet", onclick: downloadBackup }, "Download a backup"),
-    authClient && h("button", { class: "link", onclick: () => authClient.auth.signOut().then(() => location.reload()) }, "Sign out")));
-  box.hidden = false;
+      renderStatsPage();
+    } }, palsOn ? "Turn off" : "Turn on")),
+    row("Backup", "Save a copy of everything", h("button", { class: "btn quiet mini", onclick: downloadBackup }, "Download")),
+    authClient && row("Account", null, h("button", { class: "btn quiet mini", onclick: () => authClient.auth.signOut().then(() => location.reload()) }, "Sign out")));
 }
 function personBar() {
   if (profiles.length < 2) return null;
-  const pick = (id, label, av) => h("button", { class: "person", "aria-pressed": String(state.person === id), onclick: () => { state.person = id; refreshThreads(); renderPanel(); if (state.section === "stats") renderStatsPage(); } }, av, label);
+  const pick = (id, label, av) => h("button", { class: "person", "aria-pressed": String(state.person === id), onclick: () => { state.person = id; refreshThreads(); renderPanel(); if (state.section === "profile") renderStatsPage(); } }, av, label);
   return h("div", { class: "people" }, pick("all", "Both", null), profiles.map((p) => pick(p.id, p.name, avatar(p.id, 22))));
 }
 const beenItems = () => items.filter((i) => i.status === "been" && (state.person === "all" || i.who === state.person));
@@ -744,13 +874,13 @@ async function connectCloud() {
   authUid = session.user.id;
   const cloud = window.createCloud(client);
   const apply = () => {
-    items = cloud.rows("places"); bucket = cloud.rows("bucket"); profiles = cloud.rows("profiles");
+    items = cloud.rows("places"); bucket = cloud.rows("bucket"); profiles = cloud.rows("profiles"); games = cloud.rows("games"); gamesChanged();
     const base = cloud.rows("settings").find((d) => d.id === "base");
     if (base) { const { id, ...home } = base; HOME = home; }
     applyPrivate(cloud.rows("settings"));
     const mine = profiles.find((p) => p.owner === authUid);
     if (mine) me = mine.id;
-    renderMe(); changed();
+     changed();
   };
   apply();
   store = {
@@ -759,6 +889,8 @@ async function connectCloud() {
     remove: (id) => cloud.remove("places", id).then(apply),
     saveBase: (base) => cloud.save("settings", { id: "base", ...base }).then(apply),
     saveProfile: (p) => cloud.save("profiles", { ...p, owner: authUid }).then(apply),
+    saveGame: (g) => cloud.save("games", g).then(() => { games = cloud.rows("games"); gamesChanged(); }),
+    removeGame: (id) => cloud.remove("games", id).then(() => { games = cloud.rows("games"); gamesChanged(); }),
     saveBucket: (b) => cloud.save("bucket", b).then(apply),
     removeBucket: (id) => cloud.remove("bucket", id).then(apply),
   };
@@ -770,7 +902,7 @@ async function connectCloud() {
     if (type === "INSERT" && collection === "bucket") announce(doc, true);
     apply();
   });
-  if (!profile(me)) renderWho();
+  if (!profile(me)) setSection("profile");
 }
 async function connect() {
   if (window.PLANNER_CONFIG?.supabaseUrl) return connectCloud();
@@ -790,7 +922,7 @@ async function connect() {
     removeBucket: (id) => db.collection("bucket").doc(id).delete(),
   };
   profiles = [];
-  db.collection("profiles").onSnapshot((snap) => { profiles = snap.docs.map((d) => ({ id: d.id, ...d.data() })); renderMe(); changed(); }, () => {});
+  db.collection("profiles").onSnapshot((snap) => { profiles = snap.docs.map((d) => ({ id: d.id, ...d.data() }));  changed(); }, () => {});
   let bucketReady = false;
   db.collection("bucket").onSnapshot((snap) => {
     if (bucketReady) for (const c of snap.docChanges()) if (c.type === "added") announce({ id: c.doc.id, ...c.doc.data() }, true);
@@ -835,21 +967,12 @@ function refreshThreads() {
 }
 
 /* ---------- panel ---------- */
-function renderStats() {
-  const been = beenItems().length;
-  const next = items.filter((i) => i.status === "plan" && i.date && i.date >= ymd(new Date())).sort(byDate)[0];
-  $("stats").replaceChildren(
-    h("span", {}, h("b", {}, String(been)), been === 1 ? " city been to" : " cities been to"),
-    h("span", {}, "Base: ", h("b", {}, HOME.name),
-      canWrite && h("button", { class: "link", onclick: () => startPlacing("base") }, "Change")),
-    ...(next ? [h("span", {}, h("b", {}, String(Math.ceil((new Date(next.date + "T12:00:00") - Date.now()) / 864e5))), ` days to ${next.title}`)] : []),
-  );
-}
 const byDate = (a, b) => (a.date || "9999").localeCompare(b.date || "9999");
 
 function renderTabs() {
+  $("tabs").hidden = state.section !== "plans";
   $("tabs").replaceChildren(...Object.entries(VIEWS).filter(([k]) => k !== "been").map(([k, v]) =>
-    h("button", { class: "tab", role: "tab", "aria-selected": String(state.view === k), style: `--thread:${v.thread}`, onclick: () => setView(k) }, v.tab)));
+    h("button", { class: "tab", role: "tab", "aria-selected": String(state.view === k), style: `--thread:${v.thread}`, onclick: () => { state.planTab = k; setView(k); } }, v.tab)));
   $("filters").hidden = true;
   $("filters").replaceChildren(...Object.entries(CATS).filter(([k]) => k !== "sights").map(([k, c]) =>
     h("button", { class: "chip", "aria-pressed": String(state.cat === k), html: glyph(k) + c.label, onclick: () => { state.cat = state.cat === k ? null : k; changed(); } })));
@@ -872,6 +995,9 @@ function row(p) {
     h("em", { style: "display:inline-flex;gap:6px;align-items:center" }, dateText(p) || km + " km", avatar(p.who, 22)));
 }
 
+function renderGlobeHome() {
+  $("body").replaceChildren(dailyCard(), h("p", { class: "fine" }, "Tap a country to explore it, or choose a filter to see ideas."));
+}
 function renderList() {
   const pins = [...currentPins()].sort(byDate);
   const bar = state.view === "been" ? personBar() : null;
@@ -909,6 +1035,7 @@ function renderDetail() {
   $("body").replaceChildren(h("article", { class: "detail", style: `--thread:${threadVar(p.status)}` },
     h("button", { class: "back", onclick: closeDetail }, "← Back"),
     h("h2", {}, p.title),
+    state.section === "plans" && h("button", { class: "link", style: "padding:0;justify-self:start", onclick: () => { setSection("globe"); flyTo(p.lat, p.lon, 5); } }, "Show on globe"),
     h("div", { class: "pills" },
       h("span", { class: "pill" }, STATUS_LABEL[p.status]),
       h("span", { class: "pill plain", html: glyph(p.cat) + (CATS[p.cat] || CATS.still).label }),
@@ -1117,36 +1244,40 @@ function renderForm() {
 
 function renderFoot() {
   const foot = $("foot");
-  if (!canWrite || state.mode !== "list" || state.view === "cal") { foot.replaceChildren(); return; }
+  if (!canWrite || state.mode !== "list" || state.section !== "plans" || state.view === "cal") { foot.replaceChildren(); return; }
   foot.replaceChildren(
     h("button", { class: "btn", onclick: () => startPlacing() }, placing ? "Tap the globe…" : "Add a place"));
 }
 
-let lastPanel = "";
+let lastPanel = "", lastSheet = null;
 function renderPanel() {
   dirty = true;
   renderSections();
   const panelKey = [state.view, state.mode, state.sel, state.country?.name, state.region?.name, state.spot?.title, state.kinds.size > 0].join();
   $("body").classList.toggle("fresh", false);
   if (panelKey !== lastPanel) { lastPanel = panelKey; void $("body").offsetWidth; $("body").classList.add("fresh"); }
-  renderTabs(); renderStats();
+  renderTabs();
+  /* on phones the sheet stays out of the way until there's something to show */
+  const nothingOpen = state.section === "globe" && state.mode === "list" && !state.kinds.size && state.mapView === "all";
+  if (nothingOpen !== lastSheet) { $("app").classList.toggle("mapfull", nothingOpen); lastSheet = nothingOpen; }
   if (state.mode === "detail") renderDetail();
   else if (state.mode === "form") renderForm();
   else if (state.mode === "spot") renderSpot();
   else if (state.mode === "country") renderCountry();
-  else if (state.kinds.size && state.view === "all") renderFilterResults();
+  else if (state.section === "globe" && state.kinds.size && state.mapView === "all") renderFilterResults();
+  else if (state.section === "globe" && state.mapView === "all") renderGlobeHome();
   else if (state.view === "cal") renderCalendar();
-  else if (state.view === "all") renderBucket();
+  else if (state.section === "plans") renderBucket();
   else renderList();
   renderFoot();
 }
 function changed() {
   refreshThreads();
   dirty = true;
-  if (state.section === "stats") renderStatsPage();
+  if (state.section === "profile") renderStatsPage();
   const a = document.activeElement;
   const typing = a && $("body").contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
-  if (state.mode === "form" || typing) { renderTabs(); renderStats(); return; }
+  if (state.mode === "form" || typing) { renderTabs(); return; }
   renderPanel();
 }
 
@@ -1228,13 +1359,13 @@ function addIdea(p) {
   const id = newId();
   const { id: sourceIdea, status, ...rest } = p;
   persist({ ...rest, id, sourceIdea, status: "dream", by: myId, createdAt: Date.now(), notes: [] }, "Added to our bucket list").then(() => {
-    state.view = "all"; state.sel = id; state.mode = "detail"; changed();
+    state.sel = id; state.mode = "detail"; changed();
   });
 }
 function setStatus(p, status) {
   persist({ ...p, status }, status === "been" ? "Another one for the map" : "It's a plan");
   if (status === "been") celebrate();
-  state.view = STATUS_VIEW[status]; state.sel = p.id; state.mode = "detail"; changed();
+  state.sel = p.id; state.mode = "detail"; changed();
 }
 function removeItem(p) { store.remove(p.id).catch(() => toast("That didn't save. Try again.")); closeDetail(); }
 function addNote(p, field) {
@@ -1254,7 +1385,7 @@ function surprise() {
   if (!pool.length) return toast("You've been everywhere on our list!");
   const p = pool[Math.floor(Math.random() * pool.length)];
   setSection("globe");
-  state.view = "all"; state.cat = null; state.spot = p; state.mode = "spot"; state.sel = null;
+  state.mapView = "all"; state.view = "all"; renderMapMode(); state.cat = null; state.spot = p; state.mode = "spot"; state.sel = null;
   state.country = null; state.region = null; state.regions = null; state.draft = { lat: p.lat, lon: p.lon };
   refreshThreads(); renderPanel();
   flyTo(p.lat, p.lon, 8);
@@ -1267,7 +1398,7 @@ function renderSpot() {
   const query = encodeURIComponent(`${p.title} ${p.place} travel guide`);
   $("body").replaceChildren(h("article", { class: "detail" },
     h("button", { class: "back", onclick: closeSpot }, "← Back"),
-    h("div", { class: "vis", style: `--bg:${p.back[0]};--ground:${p.back[1]};border:2px solid var(--ink);border-radius:12px` }, h("img", { src: STICKER_IMG[p.kind].src, alt: "" })),
+    h("div", { class: "vis", style: `--bg:${p.back[0]};--ground:${p.back[1]};border:2px solid var(--edge);border-radius:12px` }, h("img", { src: STICKER_IMG[p.kind].src, alt: "" })),
     h("h2", {}, p.title),
     h("div", { class: "place" }, h("b", {}, p.place), ` · ${km} km from base`),
     p.why && h("p", { class: "blurb" }, p.why),
@@ -1283,6 +1414,7 @@ function setBase(name, ll) {
   store.saveBase({ lat: ll.lat, lon: ll.lon, name }).then(() => toast(`Our base is now ${name}`), () => toast("That didn't save. Try again."));
 }
 function startPlacing(kind) {
+  if (state.section !== "globe") setSection("globe");
   placing = !placing;
   placingBase = placing && kind === "base";
   $("hint").textContent = placingBase ? "Tap the place that's now home" : "Tap the globe where it belongs";
@@ -1302,7 +1434,7 @@ function submitForm(e) {
     notes: note ? [{ text: note, at: Date.now(), by: myId }] : [],
   };
   if (f.date.value) item.date = f.date.value;
-  state.draft = null; state.view = STATUS_VIEW[status]; state.sel = item.id; state.mode = "detail";
+  state.draft = null; state.sel = item.id; state.mode = "detail";
   persist(item, "It's on the map").then(changed);
 }
 let myId = null;
@@ -1324,27 +1456,18 @@ const info = (f) => ({ country: W.names.indexOf(f.properties.name), sand: PAINTS
 const HIGH = window.LAND, LOW = window.LAND_LOW;
 const HIGH_INFO = HIGH.map(info), LOW_INFO = LOW.map(info);
 /* bounding boxes keep hover and click picking quick on the detailed map */
-const HIGH_BOUNDS = HIGH.map((f) => d3.geoBounds(f));
+const HIGH_BOUNDS = HIGH.map((f) => { const b = f.properties.box; return [[b[0], b[1]], [b[2], b[3]]]; });
 /* each label sits on the country's biggest landmass, so France lands in France */
 const FIT = new Map();
 const LABELS = HIGH.map((f) => {
-  const polys = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
-  const main = polys.map((coordinates) => ({ type: "Polygon", coordinates })).sort((a, b) => d3.geoArea(b) - d3.geoArea(a))[0];
-  const [lon, lat] = d3.geoCentroid(main);
-  const [[w, s], [e, n]] = d3.geoBounds(main);
-  const rad = Math.max(...[[w, s], [w, n], [e, s], [e, n]].map((p) => d3.geoDistance([lon, lat], p)));
-  FIT.set(f.properties.name, { lat, lon, rad: Math.max(.03, rad) });
-  return { name: f.properties.name, xyz: toXYZ(lat, lon), area: d3.geoArea(main) };
+  const [lat, lon, area, rad] = f.properties.main;
+  FIT.set(f.properties.name, { lat, lon, rad });
+  return { name: f.properties.name, xyz: toXYZ(lat, lon), area };
 }).sort((a, b) => b.area - a.area);
 const labelWidth = new Map();
 const CITY_POINTS = window.CITIES.map(([name, lat, lon], i) => ({ name, xyz: toXYZ(lat, lon), zoom: i % 3 === 0 ? 3.6 : 5 }));
 /* a bounding circle per country, so only what's on screen is drawn when zoomed in */
-const reach = (f) => {
-  const [lon, lat] = d3.geoCentroid(f);
-  const [[w, s], [e, n]] = d3.geoBounds(f);
-  const rad = Math.max(...[[w, s], [w, n], [e, s], [e, n]].map((p) => d3.geoDistance([lon, lat], p)));
-  return { xyz: toXYZ(lat, lon), rad: Math.min(Math.PI, rad * 1.15) };
-};
+const reach = (f) => { const [lat, lon, rad] = f.properties.reach; return { xyz: toXYZ(lat, lon), rad }; };
 const HIGH_REACH = HIGH.map(reach), LOW_REACH = LOW.map(reach);
 
 /* stickers: rasterised once so dozens can be drawn each frame */
@@ -1360,7 +1483,8 @@ const SWIMMERS = new Set(["whale", "turtle", "manta", "fish", "dolphin", "shark"
 const WALKERS = new Set(["rhino", "hippo", "croc", "koala", "reindeer", "puffin", "seal", "monkey", "snowLeopard", "parrot", "lion", "cheetah", "elephant", "giraffe", "zebra", "gorilla", "camel", "penguin", "polar", "kangaroo", "panda", "tiger", "bear", "moose", "llama", "toucan", "lemur", "orangutan"]);
 const inRussia = (lat, lon) => nearestCountry(lat, lon).name === "Russia";   // we never suggest Russia
 const SCENES = window.STICKERS.SCENES.filter(([, lat, lon]) => !inRussia(lat, lon)).map(([name, lat, lon, kind, zoom], i) => ({ name, lat, lon, kind, zoom, xyz: toXYZ(lat, lon), phase: i % 3 }));
-for (const s of SCENES) s.country = nearestCountry(s.lat, s.lon).index;
+/* looked up the first time it's needed, so launching stays quick */
+for (const s of SCENES) Object.defineProperty(s, "country", { configurable: true, get() { const c = nearestCountry(s.lat, s.lon).index; Object.defineProperty(s, "country", { value: c, writable: true }); return c; } });
 const SCENERY = [];
 {
   let seed = 11;
@@ -1385,16 +1509,31 @@ let sinO = 0, cosO = 1, sinP = 0, cosP = 1;
 const view = { lon: HOME.lon - 8, lat: HOME.lat + 8, zoom: 1, w: 0, h: 0, cx: 0, cy: 0, r: 0, dpr: 1 };
 let velocity = 0, flight = null;
 
+/* sharper on strong devices, gentler on modest ones, and it steps down if frames run slow */
+const lowEnd = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 3;
+let quality = lowEnd ? 1.25 : 1.5, slowFrames = 0, lightDrag = false;
+function noteFrame(ms, moving) {
+  if (!moving) return;
+  slowFrames = ms > 45 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
+  if (slowFrames > 12) { slowFrames = 0; if (quality > 1) { quality = 1; resize(); } else lightDrag = true; }
+}
+let resizeQueued = false;
+function queueResize() {
+  if (resizeQueued) return;
+  resizeQueued = true;
+  requestAnimationFrame(() => { resizeQueued = false; resize(); });
+}
 function resize() {
   const b = canvas.getBoundingClientRect();
-  view.dpr = Math.min(devicePixelRatio || 1, 1.5);
+  if (!b.width || !b.height) return;
+  view.dpr = Math.min(devicePixelRatio || 1, quality);
   view.w = b.width; view.h = b.height;
   canvas.width = layer.width = b.width * view.dpr; canvas.height = layer.height = b.height * view.dpr;
   view.cx = b.width / 2;
   view.cy = b.height * .5;
   baseKey = ""; dirty = true;
 }
-new ResizeObserver(resize).observe(canvas);
+new ResizeObserver(queueResize).observe(canvas);
 
 function project(x, y, z) {
   const x1 = x * cosO - z * sinO, z1 = x * sinO + z * cosO;
@@ -1467,10 +1606,10 @@ const SKY_STARS = [];
     SKY_STARS.push({ xyz: [r * Math.cos(a), z, r * Math.sin(a)], big: i % 7 === 0 });
   }
 }
-function paintSky(w, H, cx, cy) {
+function paintSky(w, H, cx, cy, moving) {
   const reach = Math.hypot(w, H) / 2;
   const small = new Path2D(), big = new Path2D();
-  for (const s of SKY_STARS) {
+  for (const s of moving ? SKY_STARS.slice(0, 80) : SKY_STARS) {
     const [px, py, pz] = project(...s.xyz);
     if (pz > .55) continue;
     const x = cx + px * reach * 1.25, y = cy - py * reach * 1.25;
@@ -1521,7 +1660,7 @@ function paintBase(detailed, moving) {
   pen.lineJoin = "round"; pen.lineCap = "round";
 
   /* space behind the globe, only while there's any of it to see */
-  if (view.zoom < 1.9) paintSky(w, H, cx, cy);
+  if (view.zoom < 1.9) paintSky(w, H, cx, cy, moving);
   pen.beginPath(); pen.arc(cx, cy, R + 5, 0, 7); pen.fillStyle = "rgba(127,208,196,.28)"; pen.fill();
   pen.beginPath(); pen.arc(cx, cy, R, 0, 7); pen.fillStyle = state.view === "been" ? "#a9c4c4" : SEA; pen.fill();
 
@@ -1537,7 +1676,21 @@ function paintBase(detailed, moving) {
     if (d - c.rad < seen) { land.push(allLand[i]); infos.push(allInfos[i]); }
   }
   const open = state.country?.name, greyMap = state.view === "been";
-  for (let i = 0; i < land.length; i++) {
+  projection.precision(moving ? 2.5 : .9);
+  if (moving && !open) {
+    const byColour = new Map();
+    for (let i = 0; i < land.length; i++) {
+      const info = infos[i], th = info.country >= 0 ? threadOf[info.country] : 0;
+      const colour = greyMap ? (th ? VIVID[land[i].properties.paint] : "#cfcac0") : th ? THREAD_FILL[th] : info.snow ? "#f6efdc" : info.sand;
+      if (!byColour.has(colour)) byColour.set(colour, []);
+      byColour.get(colour).push(land[i]);
+    }
+    for (const [colour, list] of byColour) {
+      pen.beginPath();
+      for (const f of list) painter(f);
+      pen.fillStyle = colour; pen.fill();
+    }
+  } else for (let i = 0; i < land.length; i++) {
     const info = infos[i], name = land[i].properties.name;
     const th = info.country >= 0 ? threadOf[info.country] : 0;
     pen.beginPath(); painter(land[i]);
@@ -1547,9 +1700,11 @@ function paintBase(detailed, moving) {
     pen.fill();
     if (name === hoverName && name !== open) { pen.fillStyle = "rgba(255,246,220,.4)"; pen.fill(); }
   }
-  pen.beginPath();
-  for (const f of land) painter(f);
-  pen.strokeStyle = INK; pen.lineWidth = 1.1; pen.stroke();
+  if (!(moving && lightDrag)) {
+    pen.beginPath();
+    for (const f of land) painter(f);
+    pen.strokeStyle = INK; pen.lineWidth = 1.1; pen.stroke();
+  }
 
   /* an opened country splits into its provinces */
   if (open && state.regions?.length) {
@@ -1618,7 +1773,8 @@ function paintBase(detailed, moving) {
     const text = l.text || (l.text = countryInfo(l.name).label);
     const tw = text.length * 6.6;
     if (l.area * R * R * pz < tw * tw * .5) continue;
-    if (label(text, sx, sy) && moving && ++count > 18) break;
+    if (moving && lightDrag) break;
+    if (label(text, sx, sy) && moving && ++count > 9) break;
   }
   if (view.zoom > 3.4) {
     pen.font = "700 11.5px Nunito, system-ui, sans-serif";
@@ -1641,7 +1797,8 @@ function paintBase(detailed, moving) {
   pen.textBaseline = "alphabetic";
 }
 
-let placed = [], chosen = [], chosenKey = "";
+const paintedAt = { lon: 0, lat: 0, zoom: 0, t: 0, key: "" };
+let placed = [], chosen = [], chosenKey = "", lastDraw = 0;
 function draw(now) {
   requestAnimationFrame(draw);
   if (!view.w) return;
@@ -1661,14 +1818,27 @@ function draw(now) {
   /* a still map costs nothing: only animals close up keep it ticking, four times a second */
   const animate = !reduced && (view.zoom > 2.2 || state.kinds.size > 0) && now - drawn >= 250;
   if (!moving && !dirty && !settled && !animate) return;
+  if (moving && lastDraw) noteFrame(now - lastDraw, true);
+  lastDraw = moving ? now : 0;
   drawn = now; dirty = false;
 
   view.r = Math.min(view.w, view.h) * .43;
   sinO = Math.sin(view.lon * RAD); cosO = Math.cos(view.lon * RAD); sinP = Math.sin(view.lat * RAD); cosP = Math.cos(view.lat * RAD);
 
-  const detailed = view.zoom > 2.4 || !moving;
+  const detailed = view.zoom > 4.5 || !moving;
   const key = [state.view, view.lon, view.lat, view.zoom, detailed, threadVersion, state.country?.name, state.region?.name, state.regions?.length, hoverName, hoverRegion?.name].join();
-  if (key !== baseKey) { paintBase(detailed, moving); baseKey = key; }
+  /* up close the map is nearly flat, so a drag can slide the last painting and only
+     repaint now and then; the sea colour fills any gap at the edges */
+  const R_ = view.r * view.zoom;
+  const dLon = ((paintedAt.lon - view.lon + 540) % 360) - 180, slideX = dLon * RAD * R_ * cosP, slideY = (view.lat - paintedAt.lat) * RAD * R_;
+  const canSlide = moving && !flight && view.zoom >= 2.4 && paintedAt.zoom === view.zoom && paintedAt.key === [state.view, threadVersion, state.country?.name, state.region?.name].join()
+    && now - paintedAt.t < 160 && Math.hypot(slideX, slideY) < view.w * .22;
+  let shiftX = 0, shiftY = 0;
+  if (canSlide) { shiftX = slideX; shiftY = slideY; }
+  else if (key !== baseKey) {
+    paintBase(detailed, moving); baseKey = key;
+    Object.assign(paintedAt, { lon: view.lon, lat: view.lat, zoom: view.zoom, t: now, key: [state.view, threadVersion, state.country?.name, state.region?.name].join() });
+  }
 
   pen = ctx;
   const { w, h: H, cx, cy, dpr } = view;
@@ -1676,7 +1846,8 @@ function draw(now) {
   const tick = reduced ? 0 : Math.floor(now / 250);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(layer, 0, 0);
+  if (shiftX || shiftY) { ctx.fillStyle = SEA; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+  ctx.drawImage(layer, shiftX * dpr, shiftY * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.lineJoin = "round"; ctx.lineCap = "round";
 
@@ -1764,7 +1935,7 @@ function draw(now) {
     ctx.font = "800 13px Nunito, system-ui, sans-serif";
     ctx.textAlign = "center";
     const tw = ctx.measureText(picked.pin.title).width + 16, ly = picked.sy - 36;
-    ctx.beginPath(); ctx.roundRect(picked.sx - tw / 2, ly - 12, tw, 23, 7); inked("#f5e6bf");
+    ctx.beginPath(); ctx.rect(picked.sx - tw / 2, ly - 12, tw, 23); inked("#f5e6bf");
     ctx.fillStyle = INK; ctx.fillText(picked.pin.title, picked.sx, ly + 4);
   }
   if (state.draft) {
@@ -1812,9 +1983,13 @@ canvas.addEventListener("pointerdown", (e) => {
   canvas.classList.add("dragging");
   $("tip").hidden = true;
 });
+let hoverQueued = false;
 canvas.addEventListener("pointermove", (e) => {
   const [x, y] = local(e);
   if (!touches.has(e.pointerId)) {
+    if (e.pointerType !== "mouse" || hoverQueued) return;
+    hoverQueued = true;
+    requestAnimationFrame(() => { hoverQueued = false; });
     const hit = pinAt(x, y), tip = $("tip");
     const scene = hit || placing ? null : sceneAt(x, y);
     if ((scene && scene.scene) !== hoverScene) dirty = true;
@@ -1902,6 +2077,7 @@ canvas.addEventListener("wheel", (e) => {
   }
 }, { passive: false });
 $("surpriseBtn").onclick = surprise;
+for (const g of ["gesturestart", "gesturechange"]) document.addEventListener(g, (e) => e.preventDefault(), { passive: false });
 canvas.addEventListener("dblclick", (e) => {
   const ll = unproject(...local(e));
   if (ll) flyTo(ll.lat, ll.lon, Math.min(14, view.zoom * 2));
@@ -2046,8 +2222,6 @@ function musicTick() {
 }
 async function toggleMusic() {
   music.on = !music.on;
-  const btn = $("musicBtn");
-  btn.setAttribute("aria-pressed", String(music.on));
   if (music.on && !music.ctx) {
     const ctx = (music.ctx = new (window.AudioContext || window.webkitAudioContext)());
     music.master = ctx.createGain(); music.master.gain.value = 0; music.master.connect(ctx.destination);
@@ -2065,8 +2239,6 @@ async function toggleMusic() {
   clearInterval(music.timer);
   if (music.on) { music.next = Math.max(music.next, ctx.currentTime + .1); musicTick(); music.timer = setInterval(musicTick, 200); }
 }
-$("musicBtn").onclick = toggleMusic;
-$("meBtn").onclick = renderWho;
 $("grip").onclick = () => { $("app").classList.toggle("mapfull"); buzz(); };
 
 /* ---------- search ---------- */
@@ -2096,9 +2268,254 @@ function runFind() {
 $("findBox").addEventListener("input", runFind);
 $("findBox").addEventListener("keydown", (e) => { if (e.key === "Enter") $("findList").querySelector("button")?.click(); if (e.key === "Escape") { e.target.value = ""; $("findList").hidden = true; } });
 
-/* ---------- play ---------- */
+/* ---------- minigames ----------
+   One shared record says which game is on and its random seed. Each player only ever writes
+   their own moves, so nobody can overwrite the other; the board is worked out from both. */
 const playPool = () => SPOTS.filter((p) => !SURPRISE_SKIP.test(p.place));
 const pickOne = (list) => list[Math.floor(Math.random() * list.length)];
+const GAMES = {
+  geo: { name: "Geo Race", theme: "Geography", about: "Which country is this in? Fastest right answer wins.", icon: "camel" },
+  capital: { name: "Capital Clash", theme: "Geography", about: "Name the capital before your rival does.", icon: "acropolis" },
+  space: { name: "Space Race", theme: "Space", about: "Seven questions from across the solar system.", icon: "volcano" },
+  wild: { name: "Wild Quiz", theme: "Animals", about: "How well do you know the animal kingdom?", icon: "panda" },
+  dash: { name: "Cheetah Dash", theme: "Animals", about: "Tap as fast as you can. First across the line wins.", icon: "cheetah" },
+  pairs: { name: "Animal Pairs", theme: "Memory", about: "Take turns finding matching animals.", icon: "owl" },
+  route: { name: "Remember the Route", theme: "Memory", about: "Watch the stops light up, then repeat them. It keeps getting longer.", icon: "balloon" },
+  packing: { name: "Pack the Bag", theme: "Memory", about: "Study what's packed, then pick it all out from memory.", icon: "tent" },
+  sync: { name: "In Sync", theme: "Travel", about: "Pick your dream trip and see how often you match.", icon: "balloon" },
+  ttt: { name: "Tic-Tac-Toe", theme: "Just fun", about: "Three in a row, with your own animals.", icon: "ginger" },
+};
+const SPACE_Q = [
+  ["What's the largest planet?", "Jupiter", "Saturn", "Neptune"], ["Which planet is closest to the Sun?", "Mercury", "Venus", "Mars"], ["Which planet is called the Red Planet?", "Mars", "Venus", "Jupiter"],
+  ["Which planet is the hottest?", "Venus", "Mercury", "Mars"], ["What galaxy do we live in?", "The Milky Way", "Andromeda", "The Sombrero"], ["Who first walked on the Moon?", "Neil Armstrong", "Buzz Aldrin", "Michael Collins"],
+  ["How many planets orbit our Sun?", "8", "7", "9"], ["How long does sunlight take to reach Earth?", "About 8 minutes", "About 8 seconds", "About 8 hours"], ["Which planet has the Great Red Spot?", "Jupiter", "Mars", "Uranus"],
+  ["Titan is a moon of which planet?", "Saturn", "Jupiter", "Neptune"], ["Roughly how often does Halley's Comet return?", "Every 76 years", "Every 7 years", "Every 760 years"], ["What's at the centre of our solar system?", "The Sun", "Earth", "Jupiter"],
+  ["Which planet spins on its side?", "Uranus", "Mars", "Venus"], ["How many moons does Earth have?", "1", "2", "3"],
+];
+const WILD_Q = [
+  ["What's the fastest land animal?", "Cheetah", "Lion", "Horse"], ["What's the tallest animal?", "Giraffe", "Elephant", "Ostrich"], ["What's the largest animal ever known?", "Blue whale", "African elephant", "Whale shark"],
+  ["How many hearts does an octopus have?", "Three", "One", "Two"], ["What do koalas mostly eat?", "Eucalyptus leaves", "Bamboo", "Grass"], ["What is a group of lions called?", "A pride", "A pack", "A herd"],
+  ["Which is the only mammal that truly flies?", "Bat", "Flying squirrel", "Sugar glider"], ["What does a camel's hump store?", "Fat", "Water", "Air"], ["What's the largest living bird?", "Ostrich", "Albatross", "Emu"],
+  ["Where do lemurs live in the wild?", "Madagascar", "Brazil", "India"], ["What colour is a polar bear's skin?", "Black", "White", "Pink"], ["Which big cat has spots and tear marks on its face?", "Cheetah", "Leopard", "Jaguar"],
+];
+const seeded = (seed) => () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+function shuffled(list, rnd) { const a = [...list]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const current = () => games.find((g) => g.id === "current");
+const movesOf = (g, pid) => games.find((x) => x.id === `m-${g.gid}-${pid}`)?.moves || {};
+const rival = (g) => (g.by === me ? g.to : g.by);
+function saveMove(key, value) {
+  const g = current();
+  store.saveGame({ id: `m-${g.gid}-${me}`, moves: { ...movesOf(g, me), [key]: value } }).catch(() => toast("That move didn't send. Try again."));
+  buzz();
+}
+function startGame(type) {
+  if (!profile(me)) { setSection("profile"); return toast("Create your profile first."); }
+  if (profiles.length < 2) return toast("Both of you need a profile to play together.");
+  store.saveGame({ id: "current", type, gid: newId(), seed: 1 + Math.floor(Math.random() * 2147483000), by: me, to: profiles.find((p) => p.id !== me).id, startedAt: Date.now() });
+}
+function leaveGame() {
+  const g = current();
+  if (!g) return;
+  store.removeGame(`m-${g.gid}-${me}`);
+  store.removeGame(`m-${g.gid}-${rival(g)}`);
+  store.removeGame("current");
+}
+function tally(g, winner, syncScore) {
+  const t = games.find((x) => x.id === "tally") || { id: "tally", wins: {}, byGame: {}, bestSync: 0, seen: [] };
+  if ((t.seen || []).includes(g.gid)) return;
+  const game = (t.byGame || {})[g.type] || {};
+  store.saveGame({ ...t, seen: [...(t.seen || []).slice(-40), g.gid],
+    wins: winner ? { ...t.wins, [winner]: (t.wins[winner] || 0) + 1 } : t.wins,
+    byGame: { ...t.byGame, [g.type]: winner ? { ...game, [winner]: (game[winner] || 0) + 1 } : { ...game, played: (game.played || 0) + 1 } },
+    bestSync: Math.max(t.bestSync || 0, syncScore || 0) });
+}
+const namesOf = (pid) => h("span", { class: "playername" }, avatar(pid, 26), personName(pid));
+
+function geoRounds(rnd) {
+  const known = SCENES.filter((s) => s.kind !== "heart" && W.names[s.country] !== "Russia");
+  return [...Array(7)].map(() => {
+    const scene = known[Math.floor(rnd() * known.length)], right = countryInfo(W.names[scene.country]).label, opts = new Set([right]);
+    while (opts.size < 4) opts.add(countryInfo(W.names[known[Math.floor(rnd() * known.length)].country]).label);
+    return { q: scene.name, kind: scene.kind, right, opts: shuffled([...opts], rnd) };
+  });
+}
+function capitalRounds(rnd) {
+  const skip = /Russia|Somaliland|N\. Cyprus|W\. Sahara|Palestine|Antarctica|Fr\. S\./;
+  const list = Object.entries(window.FACTS).map(([c, f]) => [c, f.split("|")[0]]).filter(([c, cap]) => !skip.test(c) && cap && !/,|None|Disputed/.test(cap) && cap !== c);
+  return shuffled(list, rnd).slice(0, 7).map(([c, cap]) => {
+    const opts = new Set([cap]);
+    while (opts.size < 4) opts.add(list[Math.floor(rnd() * list.length)][1]);
+    return { q: `Capital of ${countryInfo(c).label}?`, kind: "gate", right: cap, opts: shuffled([...opts], rnd) };
+  });
+}
+const bankRounds = (bank, kind) => (rnd) => shuffled(bank, rnd).slice(0, 7).map(([q, right, x, y]) => ({ q, kind, right, opts: shuffled([right, x, y], rnd) }));
+function quizGame(g, rounds) {
+  const score = { [me]: 0, [rival(g)]: 0 };
+  let n = 0;
+  for (; n < rounds.length; n++) {
+    const ma = movesOf(g, me)[`r${n}`], mb = movesOf(g, rival(g))[`r${n}`], right = rounds[n].right;
+    const hits = [[me, ma], [rival(g), mb]].filter(([, m]) => m?.c === right).sort((x, y) => x[1].at - y[1].at);
+    if (hits.length) score[hits[0][0]]++;
+    else if (!(ma && mb)) break;
+  }
+  const done = n >= rounds.length;
+  return { done, winner: score[me] === score[rival(g)] ? null : score[me] > score[rival(g)] ? me : rival(g),
+    line: `${personName(me)} ${score[me]} · ${score[rival(g)]} ${personName(rival(g))}`,
+    view: () => { const r = rounds[n], mine = movesOf(g, me)[`r${n}`]; return [
+      h("p", { class: "fine" }, `Round ${n + 1} of ${rounds.length}`),
+      h("div", { class: "quiz" }, h("img", { src: STICKER_IMG[r.kind].src, alt: "" }), h("strong", {}, r.q),
+        h("div", { class: "answers" }, r.opts.map((o) => h("button", { class: "btn quiet" + (mine?.c === o ? " wrong" : ""), disabled: !!mine, onclick: () => saveMove(`r${n}`, { c: o, at: Date.now() }) }, o))),
+        mine && h("p", { class: "fine" }, "Not that one. Waiting for your rival…")),
+    ]; } };
+}
+const DASH_GOAL = 40;
+const dash = { gid: null, taps: 0 };
+function dashGame(g, a, b) {
+  if (dash.gid !== g.gid) { dash.gid = g.gid; dash.taps = 0; }
+  const ready = a.ready && b.ready, finished = [[me, a.doneAt], [rival(g), b.doneAt]].filter(([, t]) => t).sort((x, y) => x[1] - y[1]);
+  const mineNow = Math.max(dash.taps, a.taps || 0), done = finished.length > 0;
+  const lane = (pid, count, kind) => h("div", { class: "lane" }, h("span", { class: "runner", style: `left:${Math.min(100, count / DASH_GOAL * 100) * .86}%` }, h("img", { src: STICKER_IMG[kind].src, alt: "" })), h("small", {}, personName(pid)));
+  return { done, winner: finished[0]?.[0] || null, line: "",
+    view: () => [
+      h("div", { class: "track" }, lane(me, mineNow, "cheetah"), lane(rival(g), b.taps || 0, "walkGinger")),
+      !a.ready ? h("button", { class: "btn dashbtn", onclick: () => saveMove("ready", true) }, "I'm ready")
+        : !ready ? h("p", { class: "fine", style: "text-align:center" }, "Waiting for your rival to get ready…")
+        : h("button", { class: "btn dashbtn", onpointerdown: (e) => {
+            e.preventDefault();
+            dash.taps++;
+            const runner = document.querySelector(".lane .runner");
+            if (runner) runner.style.left = `${Math.min(100, dash.taps / DASH_GOAL * 100) * .86}%`;
+            if (dash.taps === DASH_GOAL) saveMove("doneAt", Date.now());
+            else if (dash.taps < DASH_GOAL && dash.taps % 4 === 0) saveMove("taps", dash.taps);
+          } }, "TAP!"),
+    ] };
+}
+function syncGame(g, a, b, rnd) {
+  const pool = shuffled(playPool(), rnd).slice(0, 16), pairs = [...Array(8)].map((_, i) => [pool[i * 2], pool[i * 2 + 1]]);
+  let same = 0, n = 0;
+  for (; n < pairs.length; n++) {
+    const x = a[`r${n}`], y = b[`r${n}`];
+    if (x === undefined || y === undefined) break;
+    if (x === y) same++;
+  }
+  const done = n >= pairs.length;
+  return { done, winner: null, syncScore: same, line: `${same} of ${Math.min(n, 8)} matched`, final: `You matched on ${same} of 8. ${same >= 6 ? "Basically one brain." : same >= 4 ? "Pretty in sync." : "Opposites attract!"}`,
+    view: () => { const mine = a[`r${n}`]; return [
+      h("p", { class: "fine" }, `Pick ${n + 1} of 8`),
+      mine !== undefined ? h("p", {}, "Waiting for the other pick…") : h("div", { class: "duel" }, pairs[n].map((p, i) => h("button", { class: "pick", onclick: () => saveMove(`r${n}`, i) },
+        h("div", { class: "vis", style: `--bg:${p.back[0]};--ground:${p.back[1]}` }, h("img", { src: STICKER_IMG[p.kind].src, alt: "" })), h("b", {}, p.title), h("span", { class: "sub" }, p.place)))),
+    ]; } };
+}
+function tttGame(g) {
+  const order = [g.by, g.to], board = Array(9).fill(null);
+  let n = 0;
+  for (; n < 9; n++) { const c = movesOf(g, order[n % 2])[`t${n}`]; if (c === undefined) break; board[c] = order[n % 2]; }
+  const lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+  const win = lines.find(([x, y, z]) => board[x] && board[x] === board[y] && board[y] === board[z]);
+  const winner = win ? board[win[0]] : null, done = !!win || n === 9, mine = order[n % 2] === me;
+  return { done, winner, line: done ? "" : mine ? "Your turn" : `${personName(order[n % 2])}'s turn`,
+    view: () => [h("div", { class: "ttt" }, board.map((o, i) => h("button", { class: "cell" + (win?.includes(i) ? " won" : ""), "aria-label": `Square ${i + 1}`, disabled: !!o || !mine || done, onclick: () => saveMove(`t${n}`, i) }, o && avatar(o, 62))))] };
+}
+function memoryGame(g, a, b, rnd) {
+  const kinds = shuffled(["lion", "cheetah", "tabby", "owl", "parrot", "camel", "panda", "koala", "shiba", "penguin"], rnd).slice(0, 8);
+  const cards = shuffled([...kinds, ...kinds], rnd), order = [g.by, g.to], found = {}, score = { [order[0]]: 0, [order[1]]: 0 };
+  let n = 0, who = 0, last = null;
+  for (;;) {
+    const turn = movesOf(g, order[who])[`t${n}`];
+    if (!turn) break;
+    last = turn;
+    if (cards[turn[0]] === cards[turn[1]]) { found[turn[0]] = found[turn[1]] = order[who]; score[order[who]]++; } else who = 1 - who;
+    n++;
+  }
+  const done = Object.keys(found).length === cards.length, mine = order[who] === me;
+  const winner = score[order[0]] === score[order[1]] ? null : score[order[0]] > score[order[1]] ? order[0] : order[1];
+  return { done, winner, line: `${personName(me)} ${score[me]} · ${score[rival(g)]} ${personName(rival(g))}${done ? "" : mine ? " · your turn" : ""}`,
+    view: () => [h("div", { class: "memory" }, cards.map((k, i) => {
+      const up = found[i] !== undefined || flip.includes(i) || (last && !flip.length && last.includes(i));
+      return h("button", { class: "card2" + (up ? " up" : "") + (found[i] ? " found" : "") + (up && !seenUp.has(i + g.gid) && (seenUp.add(i + g.gid), true) ? " flipin" : ""), "aria-label": `Card ${i + 1}`, disabled: !mine || done || up && found[i] !== undefined, onclick: () => {
+        if (flip.includes(i)) return;
+        flip.push(i);
+        if (flip.length === 2) { const t = [...flip]; flip.length = 0; saveMove(`t${n}`, t); } else renderPlay();
+      } }, up ? h("img", { src: STICKER_IMG[k].src, alt: "" }) : "?");
+    }))] };
+}
+const flip = [], seenUp = new Set();
+const ROUTE_STOPS = ["pyramids", "eiffel", "fuji", "taj", "colosseum", "liberty"];
+const route = { gid: null, level: 1, input: [], lit: -1, showing: false, shown: 0 };
+function playRoute(seq) {
+  route.showing = true; route.input = []; route.lit = -1;
+  let i = 0;
+  renderPlay();
+  const step = () => {
+    if (state.section !== "play" || !current()) return;
+    if (i >= route.level) { route.lit = -1; route.showing = false; renderPlay(); return; }
+    route.lit = seq[i++]; renderPlay();
+    setTimeout(() => { route.lit = -1; renderPlay(); setTimeout(step, 180); }, 480);
+  };
+  setTimeout(step, 500);
+}
+function routeGame(g, a, b, rnd) {
+  const seq = [...Array(20)].map(() => Math.floor(rnd() * 6));
+  if (route.gid !== g.gid) { Object.assign(route, { gid: g.gid, level: 1, input: [], lit: -1, showing: false, shown: 0 }); }
+  const done = a.fail !== undefined && b.fail !== undefined;
+  const winner = !done || a.fail === b.fail ? null : a.fail > b.fail ? me : rival(g);
+  return { done, winner, line: done ? `${personName(me)} ${a.fail} · ${b.fail} ${personName(rival(g))}` : "",
+    view: () => {
+      if (a.fail !== undefined) return [h("p", { style: "text-align:center" }, `You remembered ${a.fail} stops. Waiting for your rival…`)];
+      if (route.shown !== route.level) { route.shown = route.level; setTimeout(() => playRoute(seq)); }
+      return [h("p", { class: "fine", style: "text-align:center" }, route.showing ? `Watch: ${route.level} ${route.level === 1 ? "stop" : "stops"}` : `Your turn: ${route.input.length} of ${route.level}`),
+        h("div", { class: "simon" }, ROUTE_STOPS.map((k, i) => h("button", { class: "pad" + (route.lit === i ? " lit" : ""), "aria-label": k, disabled: route.showing, onclick: () => {
+          buzz();
+          route.input.push(i);
+          if (seq[route.input.length - 1] !== i) { saveMove("fail", route.level - 1); return; }
+          if (route.input.length === route.level) {
+            if (route.level === 20) saveMove("fail", 20); else { route.level++; route.input = []; renderPlay(); }
+          } else renderPlay();
+        } }, h("img", { src: STICKER_IMG[k].src, alt: "" }))))];
+    } };
+}
+const PACK_ITEMS = ["tea", "coffee", "sushi", "taco", "wine", "balloon", "tent", "lighthouse", "gondola", "cactus", "tulips", "sunflower", "pysanka", "fish", "palm", "castle", "mountain", "dumplings"];
+const pack = { gid: null, studying: true, picked: new Set(), timer: 0 };
+function packingGame(g, a, b, rnd) {
+  const all = shuffled(PACK_ITEMS, rnd), bag = all.slice(0, 8), choices = shuffled(all.slice(0, 16), rnd);
+  if (pack.gid !== g.gid) {
+    Object.assign(pack, { gid: g.gid, studying: true, picked: new Set() });
+    clearTimeout(pack.timer);
+    pack.timer = setTimeout(() => { pack.studying = false; if (state.section === "play") renderPlay(); }, 7000);
+  }
+  const done = a.score !== undefined && b.score !== undefined;
+  const winner = !done || a.score === b.score ? null : a.score > b.score ? me : rival(g);
+  return { done, winner, line: done ? `${personName(me)} ${a.score} · ${b.score} ${personName(rival(g))}` : "",
+    view: () => {
+      if (a.score !== undefined) return [h("p", { style: "text-align:center" }, `You remembered ${a.score} of 8. Waiting for your rival…`)];
+      if (pack.studying) return [h("p", { class: "fine", style: "text-align:center" }, "Memorise the bag!"), h("div", { class: "bar" }, h("i", { style: "animation-duration:7s" })),
+        h("div", { class: "packgrid" }, bag.map((k) => h("div", { class: "pad" }, h("img", { src: STICKER_IMG[k].src, alt: "" }))))];
+      return [h("p", { class: "fine", style: "text-align:center" }, `What was in the bag? ${pack.picked.size} of 8 chosen`),
+        h("div", { class: "packgrid" }, choices.map((k) => h("button", { class: "pad" + (pack.picked.has(k) ? " on" : ""), "aria-label": k, onclick: () => {
+          if (pack.picked.has(k)) pack.picked.delete(k); else if (pack.picked.size < 8) pack.picked.add(k);
+          buzz(); renderPlay();
+        } }, h("img", { src: STICKER_IMG[k].src, alt: "" })))),
+        h("button", { class: "btn", style: "justify-self:center", disabled: pack.picked.size !== 8, onclick: () => saveMove("score", bag.filter((k) => pack.picked.has(k)).length) }, "Done")];
+    } };
+}
+const RULES = {
+  route: routeGame, packing: packingGame,
+  geo: (g, a, b, rnd) => quizGame(g, geoRounds(rnd)), capital: (g, a, b, rnd) => quizGame(g, capitalRounds(rnd)),
+  space: (g, a, b, rnd) => quizGame(g, bankRounds(SPACE_Q, "volcano")(rnd)), wild: (g, a, b, rnd) => quizGame(g, bankRounds(WILD_Q, "lion")(rnd)),
+  dash: dashGame, pairs: memoryGame, sync: syncGame, ttt: tttGame,
+};
+function gameBoard(g) {
+  const rnd = seeded(g.seed), result = RULES[g.type](g, movesOf(g, me), movesOf(g, rival(g)), rnd);
+  if (result.done) tally(g, result.winner, result.syncScore);
+  const title = result.final || (result.winner ? (result.winner === me ? "You won!" : `${personName(result.winner)} won!`) : "It's a tie!");
+  if (result.done && !celebrated.has(g.gid)) { celebrated.add(g.gid); if (result.winner === me || g.type === "sync") celebrate(); }
+  return h("div", { class: "wrap" },
+    h("div", { class: "gamehead" }, h("h2", {}, GAMES[g.type].name), h("button", { class: "btn quiet mini", onclick: leaveGame }, result.done ? "Back to games" : "Leave")),
+    h("div", { class: "versus" }, namesOf(g.by), h("b", {}, "vs"), namesOf(rival(g))),
+    result.line && h("p", { class: "scoreline" }, result.line),
+    result.done ? [h("div", { class: "quiz" }, h("h3", {}, title)), h("button", { class: "btn", style: "justify-self:center", onclick: () => startGame(g.type) }, "Rematch")] : result.view());
+}
+const celebrated = new Set();
 const duel = { a: null, b: null, round: 0, rounds: 8, done: false };
 const quiz = { scene: null, options: [], answered: null, streak: 0, best: 0 };
 function nextDuel(keep) {
@@ -2123,34 +2540,78 @@ function pickCard(p) {
     h("b", {}, p.title), h("span", { class: "sub" }, p.place));
 }
 function renderPlay() {
+  const g = current();
+  if (g && rival(g)) { $("page").replaceChildren(gameBoard(g)); return; }
   if (!duel.a) nextDuel();
   if (!quiz.scene) nextQuiz();
-  const winner = duel.a, added = items.some((i) => i.title === winner.title);
-  $("page").replaceChildren(h("div", { class: "wrap" }, h("div", { class: "games" },
-    h("section", { class: "game" },
-      h("h3", {}, "This or that"),
-      duel.done
-        ? [h("p", {}, "Your winner, after eight rounds:"), h("div", { class: "duel" }, spotCard(winner)),
-           h("div", { class: "actions" }, h("button", { class: "btn quiet", onclick: () => { duel.done = false; duel.round = 0; nextDuel(); renderPlay(); } }, "Play again"))]
-        : [h("p", {}, `Tap the one you'd rather do. The winner stays on. Round ${duel.round + 1} of ${duel.rounds}.`), h("div", { class: "duel" }, pickCard(duel.a), pickCard(duel.b))]),
-    h("section", { class: "game" },
-      h("h3", {}, "Where in the world?"),
-      h("p", {}, `Streak ${quiz.streak} · Best ${quiz.best}`),
-      h("div", { class: "quiz" },
-        h("img", { src: STICKER_IMG[quiz.scene.kind].src, alt: "" }),
-        h("strong", {}, quiz.scene.name),
-        h("div", { class: "answers" }, quiz.options.map((o) => h("button", {
-          class: "btn quiet" + (quiz.answered ? (o === quiz.right ? " right" : o === quiz.answered ? " wrong" : "") : ""),
-          disabled: !!quiz.answered,
-          onclick: () => {
-            quiz.answered = o;
-            if (o === quiz.right) { quiz.streak++; quiz.best = Math.max(quiz.best, quiz.streak); if (quiz.streak % 5 === 0) celebrate(); } else quiz.streak = 0;
-            renderPlay();
-          },
-        }, o))),
-        quiz.answered && h("p", { class: "fine" }, window.STICKERS.NOTES[quiz.scene.kind] || ""),
-        quiz.answered && h("button", { class: "btn", onclick: () => { nextQuiz(); renderPlay(); } }, "Next"))))));
+  const winner = duel.a, t = games.find((x) => x.id === "tally") || {}, wins = t.wins || {}, two = profiles.slice(0, 2);
+  $("page").replaceChildren(h("div", { class: "wrap" },
+    two.length === 2 && h("section", { class: "score" },
+      h("div", { class: "scoretop" }, two.map((p, i) => [i === 1 && h("b", { class: "vs" }, "vs"), h("div", { class: "scoreside" }, avatar(p.id, 48), h("b", { class: "num" }, String(wins[p.id] || 0)), h("span", {}, p.name))])),
+      h("details", {}, h("summary", {}, "Scoreboard by game"),
+        h("table", {}, h("thead", {}, h("tr", {}, h("th", { scope: "col" }, "Game"), two.map((p) => h("th", { scope: "col" }, p.name)))),
+          h("tbody", {}, Object.entries(GAMES).filter(([k]) => k !== "sync").map(([k, info]) => h("tr", {}, h("td", {}, info.name), two.map((p) => h("td", {}, String(t.byGame?.[k]?.[p.id] || 0)))))))),
+      t.bestSync > 0 && h("p", { class: "fine" }, `Best In Sync score: ${t.bestSync} of 8`)),
+    [...new Set(Object.values(GAMES).map((g) => g.theme))].map((theme) => [h("h2", { class: "theme" }, theme),
+      h("div", { class: "gamegrid" }, Object.entries(GAMES).filter(([, i]) => i.theme === theme).map(([type, info]) => h("button", { class: "gamecard", onclick: () => startGame(type) },
+        h("img", { src: STICKER_IMG[info.icon].src, alt: "" }), h("span", {}, h("b", {}, info.name), h("small", {}, info.about)))))]),
+    h("h2", { class: "theme" }, "Solo"),
+    h("div", { class: "games" },
+      h("section", { class: "game" },
+        h("h3", {}, "This or that"),
+        duel.done
+          ? [h("p", {}, "Your winner, after eight rounds:"), h("div", { class: "duel" }, spotCard(winner)),
+             h("div", { class: "actions" }, h("button", { class: "btn quiet", onclick: () => { duel.done = false; duel.round = 0; nextDuel(); renderPlay(); } }, "Play again"))]
+          : [h("p", {}, `Tap the one you'd rather do. Round ${duel.round + 1} of ${duel.rounds}.`), h("div", { class: "duel" }, pickCard(duel.a), pickCard(duel.b))]),
+      h("section", { class: "game" },
+        h("h3", {}, "Where in the world?"),
+        h("p", {}, `Streak ${quiz.streak} · Best ${quiz.best}`),
+        h("div", { class: "quiz" },
+          h("img", { src: STICKER_IMG[quiz.scene.kind].src, alt: "" }),
+          h("strong", {}, quiz.scene.name),
+          h("div", { class: "answers" }, quiz.options.map((o) => h("button", {
+            class: "btn quiet" + (quiz.answered ? (o === quiz.right ? " right" : o === quiz.answered ? " wrong" : "") : ""),
+            disabled: !!quiz.answered,
+            onclick: () => {
+              quiz.answered = o;
+              if (o === quiz.right) { quiz.streak++; quiz.best = Math.max(quiz.best, quiz.streak); if (quiz.streak % 5 === 0) celebrate(); } else quiz.streak = 0;
+              renderPlay();
+            },
+          }, o))),
+          quiz.answered && h("p", { class: "fine" }, window.STICKERS.NOTES[quiz.scene.kind] || ""),
+          quiz.answered && h("button", { class: "btn", onclick: () => { nextQuiz(); renderPlay(); } }, "Next"))))));
 }
+/* a challenge reaches you wherever you are in the app */
+let announcedGame = null;
+function gamesChanged() {
+  if (typeof profile !== "function" || !$("sections")) return;
+  const g = current();
+  if (g && g.gid !== announcedGame) {
+    announcedGame = g.gid;
+    if (g.by !== me && state?.section !== "play" && Date.now() - g.startedAt < 6e5) {
+      const bar = h("button", { id: "invite", onclick: () => { bar.remove(); setSection("play"); } }, avatar(g.by, 26), `${personName(g.by)} challenged you to ${GAMES[g.type].name}. Tap to play`);
+      $("invite")?.remove();
+      document.body.append(bar);
+      buzz();
+      setTimeout(() => bar.remove(), 20000);
+    }
+    flip.length = 0;
+  }
+  if (typeof state !== "undefined" && state.section === "play") renderPlay();
+}
+
+/* ---------- appearance ---------- */
+const THEME_KEY = "hw-theme";
+let themeChoice = "auto";
+try { themeChoice = localStorage.getItem(THEME_KEY) || "auto"; } catch {}
+const systemDark = matchMedia("(prefers-color-scheme: dark)");
+function applyTheme() {
+  const dark = themeChoice === "dark" || (themeChoice === "auto" && systemDark.matches);
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#1b1f47" : "#fdf3dc");
+}
+systemDark.addEventListener?.("change", applyTheme);
+applyTheme();
 
 /* ---------- opening ---------- */
 function logoSvg(size) {
@@ -2228,7 +2689,7 @@ function palTapped(el, kind) {
   setTimeout(() => heart.remove(), 900);
 }
 function visit() {
-  const blocked = !palsOn || palBusy || reduced || document.hidden || $("splash") || !$("who").hidden || !$("login").hidden || state.mode === "form";
+  const blocked = !palsOn || palBusy || reduced || document.hidden || $("splash") || !$("login").hidden || state.mode === "form";
   if (blocked || document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
   const W_ = innerWidth, H_ = innerHeight;
   const leftEdge = -80, rightEdge = W_ + 80, leftward = Math.random() < .5;
@@ -2253,7 +2714,7 @@ function visit() {
     travel(el, { from: a, to: b, y: H_ - (innerWidth <= 760 ? 150 : 90), bob: 5, duration: 1800 }).onfinish = () => done(el);
   } else {
     /* a small bird stops for a rest on a button */
-    const perches = ["surpriseBtn", "homeBtn", "musicBtn", "meBtn"].map($).filter((n) => n && n.offsetParent);
+    const perches = ["surpriseBtn", "homeBtn"].map($).filter((n) => n && n.offsetParent);
     const spot = pick(perches).getBoundingClientRect(), kind = pick(flyers.slice(3)), el = sprite(kind, 32);
     el.onclick = () => palTapped(el, kind);
     const x = spot.left + spot.width / 2 - 16, y = spot.top - 26;
@@ -2288,32 +2749,41 @@ function downloadBackup() {
 }
 
 /* ---------- sections ---------- */
-const SECTIONS = { globe: "Globe", been: "Been to", explore: "Explore", play: "Play", stats: "Stats" };
+const SECTIONS = { globe: "Globe", plans: "Plans", explore: "Explore", play: "Minigames", profile: "Profile" };
 const SEC_ICON = {
   globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
-  been: '<path d="M6 21V4M6 5c5-3 8 3 13 0v9c-5 3-8-3-13 0"/>',
+  plans: '<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
   explore: '<circle cx="12" cy="12" r="9"/><path d="M15.500 8.500l-2 5-5 2 2-5z"/>',
   play: '<rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="15" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="9" cy="15" r="1"/>',
-  stats: '<path d="M5 20v-7M12 20V5M19 20v-10"/>',
+  profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 4-7 8-7s7 2 8 7"/>',
 };
-const activeSection = () => (state.section === "globe" && state.view === "been" ? "been" : state.section);
+const activeSection = () => state.section;
 function renderSections() {
   $("sections").replaceChildren(...Object.entries(SECTIONS).map(([k, label]) =>
     h("button", { class: "sec", "aria-current": activeSection() === k ? "page" : "false", html: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SEC_ICON[k]}</svg><span>${label}</span>`, onclick: () => { buzz(); setSection(k); } })));
 }
 function setSection(k) {
-  const wasBeen = state.view === "been";
-  state.section = k === "been" ? "globe" : k;
-  if (k === "been") setView("been");
-  else if (k === "globe" && wasBeen) setView("all");
+  state.section = k;
+  const onApp = k === "globe" || k === "plans";
+  $("app").hidden = !onApp;
+  $("page").hidden = onApp;
+  $("app").classList.toggle("plans", k === "plans");
+  if (k === "globe") { state.view = state.mapView; dirty = true; baseKey = ""; }
+  if (k === "plans") { state.view = state.planTab; state.mode = state.mode === "detail" ? "detail" : "list"; }
+  if (onApp) { refreshThreads(); renderPanel(); }
   renderSections();
-  $("app").hidden = state.section !== "globe";
-  $("page").hidden = state.section === "globe";
   if (k === "explore") renderExplore();
-  if (k === "stats") renderStatsPage();
+  if (k === "profile") renderStatsPage();
   if (k === "play") renderPlay();
-  if (state.section === "globe") { dirty = true; baseKey = ""; }
   $("page").scrollTop = 0;
+}
+function setMapView(v) {
+  state.mapView = v; state.view = v; state.spot = null; state.draft = null; state.country = null; state.region = null; state.regions = null; state.sel = null; state.mode = "list";
+  renderMapMode(); refreshThreads(); renderPanel();
+}
+function renderMapMode() {
+  $("mapmode").replaceChildren(...[["all", "Everything"], ["been", "Been to"]].map(([v, label]) =>
+    h("button", { class: "seg", "aria-pressed": String(state.mapView === v), onclick: () => setMapView(v) }, label)));
 }
 
 const PICKS = [
@@ -2362,7 +2832,7 @@ function addSpot(p) {
 }
 function seeOnGlobe(p) {
   setSection("globe");
-  state.view = "all"; state.mode = "list"; state.draft = { lat: p.lat, lon: p.lon };
+  state.mapView = "all"; state.view = "all"; renderMapMode(); state.mode = "list"; state.draft = { lat: p.lat, lon: p.lon };
   refreshThreads(); renderPanel();
   flyTo(p.lat, p.lon, 5);
 }
@@ -2423,13 +2893,14 @@ async function renderStatsPage() {
     const cityDone = new Set(been.filter((i) => i.city && cities.some(([c]) => c === i.city)).map((i) => i.city)).size;
     return { name, label: countryInfo(name).label, total: list.length, seen, pct: list.length ? Math.round((seen / list.length) * 100) : byCountry.has(name) ? 100 : 0, cities: cities.length, cityDone };
   }));
-  if (state.section !== "stats") return;
+  if (state.section !== "profile") return;
   const regions = rows.reduce((n, r) => n + r.seen, 0);
   const next = items.filter((i) => i.status === "plan" && i.date && i.date >= ymd(new Date())).sort(byDate)[0];
   const days = next ? Math.ceil((new Date(next.date + "T12:00:00") - Date.now()) / 864e5) : null;
   const far = [...been].sort((a, b) => haversineKm(HOME, b) - haversineKm(HOME, a))[0];
   const tile = (v, k) => h("div", { class: "tile" }, h("b", {}, String(v)), h("span", {}, k));
   $("page").replaceChildren(h("div", { class: "wrap" },
+    profileHead(),
     h("h2", {}, "Our story so far"),
     personBar(),
     h("div", { class: "tiles" },
@@ -2451,7 +2922,8 @@ async function renderStatsPage() {
       h("strong", {}, r.label),
       h("span", {}, r.total ? `${r.seen} of ${r.total} regions` : "Visited"),
       r.cities > 0 && h("span", {}, `${r.cityDone} of ${r.cities} cities`)))),
-    h("p", { class: "fine" }, "Each country fills up as you tap the cities you've been to on the globe.")));
+    h("p", { class: "fine" }, "Each country fills up as you tap the cities you've been to on the globe."),
+    settingsList()));
 }
 
 /* ---------- start ---------- */
@@ -2461,10 +2933,17 @@ openingScreen();
 scheduleVisit();
 renderSections();
 renderMapFilters();
+renderMapMode();
 renderPanel();
 resize();
-renderMe();
-setTimeout(() => { if (!window.PLANNER_CONFIG?.supabaseUrl && !profile(me) && $("who").hidden) renderWho(); }, 1800);
+
+/* home-screen shortcuts land here: ?go=plans, been, explore, play, profile, surprise */
+{
+  const go = new URLSearchParams(location.search).get("go");
+  if (go === "been") setMapView("been");
+  else if (go === "surprise") setTimeout(surprise, 400);
+  else if (go && SECTIONS[go]) setSection(go);
+}
 document.fonts?.ready.then(() => { labelWidth.clear(); baseKey = ""; dirty = true; });
 requestAnimationFrame(draw);
 connect().then(async () => { if (user) myId = await user.id(); }).catch(() => {});

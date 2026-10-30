@@ -6,7 +6,53 @@
   "display": "standalone",
   "orientation": "any",
   "background_color": "#161b3f",
-  "theme_color": "#f5e6bf",
+  "theme_color": "#fdf3dc",
+  "shortcuts": [
+    {
+      "name": "Bucket list",
+      "short_name": "Plans",
+      "url": "./?go=plans",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Surprise us",
+      "short_name": "Surprise",
+      "url": "./?go=surprise",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Places we've been",
+      "short_name": "Been to",
+      "url": "./?go=been",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Minigames",
+      "short_name": "Games",
+      "url": "./?go=play",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
   "icons": [
     {
       "src": "icons/icon-192.png",
