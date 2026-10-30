@@ -689,10 +689,10 @@ let store = null;   // { save, remove, shared }
 let user = null;
 let canWrite = true;
 
-const STORE_KEY = "two-shores-local";
-const BASE_KEY = "two-shores-base";
-const BUCKET_KEY = "two-shores-bucket";
-const ME_KEY = "two-shores-me", PROFILES_KEY = "two-shores-profiles";
+const STORE_KEY = "hugeworld-local";
+const BASE_KEY = "hugeworld-base";
+const BUCKET_KEY = "hugeworld-bucket";
+const ME_KEY = "hugeworld-me", PROFILES_KEY = "hugeworld-profiles";
 let profiles = [], me = null;
 try { me = localStorage.getItem(ME_KEY); profiles = JSON.parse(localStorage.getItem(PROFILES_KEY)) || []; } catch {}
 let bucket = [];
@@ -2874,7 +2874,7 @@ function stampList(rows, byCountry) {
   const badges = [
     ["First steps", cities >= 1, "Mark your first city"], ["City hoppers", cities >= 10, "10 cities"], ["Globetrotters", cities >= 50, "50 cities"],
     ["Passport filling", byCountry.size >= 5, "5 countries"], ["World citizens", byCountry.size >= 20, "20 countries"],
-    ["Two shores", has("Turkey") && has("Ukraine"), "Türkiye and Ukraine"], ["Home turf", rows.find((r) => r.name === "Saudi Arabia")?.cityDone >= 5, "5 Saudi cities"],
+    ["Both homes", has("Turkey") && has("Ukraine"), "Türkiye and Ukraine"], ["Home turf", rows.find((r) => r.name === "Saudi Arabia")?.cityDone >= 5, "5 Saudi cities"],
     ["Dreamers", items.filter((i) => i.status === "dream").length + bucket.length >= 10, "10 on the bucket list"], ["Ticked off", bucket.filter((b) => b.done).length >= 5, "Tick off 5"], ["Animal friend", palsFound >= 5, "Tap 5 visitors"],
   ];
   return [...[...byCountry.keys()].map((n) => h("div", { class: "stamp on country" }, h("b", {}, countryInfo(n).label), h("span", {}, "Visited"))),
