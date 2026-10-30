@@ -486,6 +486,7 @@ textarea { resize: vertical; min-height: 66px; }
 
 /* ---------- globe-first layout ---------- */
 #app { position: relative; display: block !important; }
+#app[hidden] { display: none !important; }
 #stage { position: absolute; inset: 0; }
 #panel { position: absolute; z-index: 3; top: 12px; right: 12px; bottom: 12px; width: min(380px, calc(100% - 24px)); border: 2px solid var(--edge); border-radius: 18px; box-shadow: 4px 4px 0 var(--edge); padding: 16px; transition: transform .28s cubic-bezier(.2, .8, .3, 1), opacity .2s; }
 #app.mapfull #panel { transform: translateX(calc(100% + 24px)); opacity: 0; pointer-events: none; }
@@ -519,7 +520,7 @@ textarea { resize: vertical; min-height: 66px; }
 @keyframes logoin { from { opacity: 0; transform: translateY(10px) scale(.96); } }
 #welcome { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; padding: 20px; background: rgba(14, 17, 44, .5); animation: fadein .3s ease; }
 .welcomecard { background: var(--paper); color: var(--ink); width: min(360px, 100%); border-radius: 22px; padding: 26px 22px 16px; display: grid; gap: 12px; justify-items: center; text-align: center; box-shadow: 0 18px 50px rgba(8, 10, 30, .4); animation: logoin .3s ease; }
-.welcomecard img { width: 112px; height: 112px; }
+.welcomecard > img { width: 112px; height: 112px; }
 .welcomecard h2 { margin: 0; font: 400 25px/1.15 var(--font-display); }
 .welcomecard p { margin: 0; color: var(--ink-soft); font-size: 15.5px; line-height: 1.45; }
 .welcomecard form { display: grid; gap: 12px; width: 100%; }
@@ -529,7 +530,10 @@ textarea { resize: vertical; min-height: 66px; }
 .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--paper-deep); }
 .dots i.on { background: var(--brand); }
 .swatches.single { justify-content: center; max-height: none; overflow: visible; }
-.swatches.single button { background: var(--card); width: 58px; height: 58px; border-radius: 14px; }
+.swatches.single { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 70px; gap: 8px; width: 100%; padding: 0; max-height: none; overflow: visible; }
+.swatches.single button { background: var(--card); width: 100%; height: 70px; border-radius: 14px; padding: 6px; }
+.swatches.single img { width: 100%; height: 100%; display: block; }
+.swatches.single button[aria-pressed="true"] { background: var(--been); outline: 3px solid var(--brand); outline-offset: 1px; }
 @keyframes fadein { from { opacity: 0; } }
 @media (max-width: 760px) {
   #panel, #stage #panel { top: auto !important; right: 0; left: 0; bottom: 0; width: 100%; height: 56%; border-radius: 20px 20px 0 0; border-width: 2px 0 0; box-shadow: none; padding: 14px 16px 12px; }
@@ -575,6 +579,66 @@ html.widgetview #page { padding: max(16px, env(safe-area-inset-top, 0px)) 16px 1
 @media (max-width: 760px) {
   #chat { right: 0; left: 0; width: 100%; top: calc(58px + env(safe-area-inset-top, 0px)); bottom: var(--nav); border-radius: 0; border-width: 0; box-shadow: none; }
 }
+
+#panel, #page, #chat, .welcomecard { zoom: var(--ui, 1); }
+html.calm *, html.calm *::before { animation-duration: .01s !important; transition-duration: .01s !important; }
+.undo { background: none; border: 0; color: var(--been); font-weight: 800; padding: 0 0 0 6px; }
+.bktext { outline: none; min-width: 0; cursor: text; border-radius: 4px; }
+.bktext:focus { background: var(--paper-deep); }
+.sortrow { text-align: right; }
+.settings h3, .subhead { margin: 14px 0 2px; font: 400 17px/1.2 var(--font-display); color: var(--brand); }
+.setting { flex-wrap: wrap; }
+.setting > span { min-width: 120px; flex: 1; }
+.seggroup { flex-wrap: wrap; }
+.seggroup.wide { display: flex; width: fit-content; }
+.cal { max-width: 460px; margin: 0 auto; width: 100%; }
+.lesson { max-width: 620px; }
+.chapters { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.reader { max-width: 620px; justify-items: center; text-align: center; }
+.reader .gamehead { width: 100%; }
+.reader img { width: 110px; height: 110px; }
+.reader small { color: var(--ink-faint); font-weight: 800; }
+.reader p { font-size: 17px; line-height: 1.65; text-align: left; margin: 0; color: var(--ink); max-width: none !important; }
+.answers.two { grid-template-columns: 1fr 1fr; }
+.order { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; width: 100%; text-align: left; }
+.order li { padding: 6px 10px; border-radius: 10px; background: var(--paper-deep); }
+.order li.good { background: #cfe3b0; color: #26214a; }
+#pinbar { position: absolute; top: 68px; left: 50%; transform: translateX(-50%); z-index: 3; background: var(--been); color: #26214a; font-weight: 800; padding: 8px 16px; border-radius: 14px; border: 2px solid var(--edge); white-space: nowrap; max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; }
+#pinbar[hidden] { display: none; }
+
+/* small touches */
+.ripple { position: absolute; border-radius: 50%; background: currentColor; opacity: .16; transform: scale(0); pointer-events: none; animation: ripple .5s ease-out forwards; }
+@keyframes ripple { to { transform: scale(1); opacity: 0; } }
+.tapring { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; border: 2px solid #fff6dc; pointer-events: none; z-index: 1; animation: tapring .5s ease-out forwards; }
+@keyframes tapring { to { transform: scale(4.5); opacity: 0; } }
+@media (hover: hover) {
+  .gamecard:hover, .card:hover, .pick:hover { box-shadow: 5px 5px 0 var(--edge), 0 0 0 3px rgba(255, 184, 31, .35); }
+  .btn:hover, .tool:hover { filter: brightness(1.06); box-shadow: 3px 3px 0 var(--edge), 0 0 0 3px rgba(255, 184, 31, .3); }
+  .chip:hover, .seg:hover, .tab:hover { background-color: rgba(255, 184, 31, .18); }
+  .sec:hover svg { transform: translateY(-2px); }
+  .gamecard:hover img { transform: rotate(-4deg) scale(1.08); }
+  .row:hover svg, .row:hover img { transform: scale(1.14); }
+  .pad:hover, .card2:hover:not(:disabled), .cell:hover:not(:disabled) { box-shadow: 0 0 0 3px rgba(255, 184, 31, .4); }
+  .msg p:hover { transform: translateY(-1px); }
+  #chatBtn:hover { color: var(--brand); transform: scale(1.1); }
+  .stickerbar button:hover { transform: scale(1.18) rotate(-4deg); }
+}
+.gamecard img, .row svg, .row img, .sec svg, #chatBtn { transition: transform .16s ease; }
+.gamecard:active, .card:active, .pick:active, .chip:active, .seg:active, .row:active, .sec:active, .tab:active { transform: scale(.97); }
+.sec[aria-current="page"] svg { animation: navpop .3s cubic-bezier(.3, 1.7, .5, 1); }
+@keyframes navpop { 0% { transform: scale(.7); } }
+.quiz .btn.right { animation: rightpop .3s cubic-bezier(.3, 1.7, .5, 1); }
+@keyframes rightpop { 40% { transform: scale(1.05); } }
+.quiz .btn.wrong { animation: wrongshake .3s ease; }
+@keyframes wrongshake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.tick[aria-pressed="true"] { animation: rightpop .3s cubic-bezier(.3, 1.7, .5, 1); }
+.chip[aria-pressed="true"], .citychips .chip[aria-pressed="true"] { animation: rightpop .24s ease; }
+.msg { animation: logoin .2s ease; }
+.cell .av { animation: rightpop .26s ease; }
+#panel { will-change: transform; }
+#chatDot { animation: dotpulse 1.8s ease-in-out infinite; }
+@keyframes dotpulse { 50% { transform: scale(1.3); } }
+html.calm .ripple, html.calm .tapring { display: none; }
 
 /* dark mode: the same adventure after sunset */
 :root[data-theme="dark"] {
@@ -644,6 +708,7 @@ html.widgetview #page { padding: max(16px, env(safe-area-inset-top, 0px)) 16px 1
       <button id="filterBtn" class="tool" aria-expanded="false">Filters</button></div>
       <div id="mapfilters" role="group" aria-label="Show on the map" hidden></div>
     </div>
+    <div id="pinbar" role="status" hidden></div>
     <div id="mapmode" role="group" aria-label="What the map shows"></div>
     <div id="tools">
       <button class="tool" id="flatBtn" aria-label="Switch between globe and flat map">2D</button>
@@ -677,6 +742,7 @@ html.widgetview #page { padding: max(16px, env(safe-area-inset-top, 0px)) 16px 1
 <script src="boost.js"></script>
 <script src="final.js"></script>
 <script src="learn.js"></script>
+<script src="lore.js"></script>
 <script>
 "use strict";
 const BLACK_SEA = { lat: 43.4, lon: 34 };
@@ -883,20 +949,29 @@ function profileHead() {
     others.length > 0 && h("div", { class: "people" }, others.map((x) => h("button", { class: "person", onclick: () => { me = x.id; try { localStorage.setItem(ME_KEY, x.id); } catch {} renderStatsPage(); } }, avatar(x.id, 26), x.name))));
 }
 function settingsList() {
-  const row = (label, value, button) => h("div", { class: "setting" }, h("span", {}, h("b", {}, label), value && h("small", {}, value)), button);
-  return h("section", { class: "settings" }, h("h2", {}, "Settings"),
+  const row = (label, value, control) => h("div", { class: "setting" }, h("span", {}, h("b", {}, label), value && h("small", {}, value)), control);
+  const choice = (options, current, pick) => h("div", { class: "seggroup" }, options.map(([v, label]) => h("button", { class: "seg", "aria-pressed": String(current === v), onclick: () => { pick(v); renderStatsPage(); } }, label)));
+  const pref = (key, options) => choice(options, prefs[key], (v) => { prefs[key] = v; savePrefs(); if (key === "labels") { baseKey = ""; dirty = true; } });
+  const toggle = (on, flip) => h("button", { class: "btn quiet mini", "aria-pressed": String(!!on), onclick: () => { flip(); renderStatsPage(); } }, on ? "On" : "Off");
+  return h("section", { class: "settings" },
+    h("h2", {}, "Settings"),
+    h("h3", {}, "Look and feel"),
+    row("Theme", null, choice([["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]], themeChoice, (v) => { themeChoice = v; try { localStorage.setItem(THEME_KEY, v); } catch {} applyTheme(); })),
+    row("Font", null, pref("font", Object.entries(FONTS).map(([k, f]) => [k, f[0]]))),
+    row("Text size", null, pref("size", [[.9, "S"], [1, "M"], [1.12, "L"], [1.25, "XL"]])),
+    row("Motion", "Calmer animations and no visitors", pref("motion", [["normal", "Full"], ["less", "Less"]])),
+    h("h3", {}, "Map"),
+    row("Place names", "How many names the map shows", pref("labels", [[.6, "Fewer"], [1, "Normal"], [1.7, "More"]])),
+    row("Distances", null, pref("units", [["km", "km"], ["mi", "miles"]])),
     row("Our base", HOME.name, canWrite && h("button", { class: "btn quiet mini", onclick: () => startPlacing("base") }, "Change")),
-    row("Appearance", null, h("div", { class: "seggroup" }, [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].map(([v, label]) => h("button", { class: "seg", "aria-pressed": String(themeChoice === v), onclick: () => {
-      themeChoice = v;
-      try { localStorage.setItem(THEME_KEY, v); } catch {}
-      applyTheme(); renderStatsPage();
-    } }, label)))),
-    row("Music", "Shchedryk and a Ukrainian dumka", h("button", { class: "btn quiet mini", id: "musicBtn", "aria-pressed": String(music.on), onclick: () => toggleMusic().then(renderStatsPage) }, music.on ? "Turn off" : "Turn on")),
-    row("Animal visitors", "Cats, birds and cheetahs pass through", h("button", { class: "btn quiet mini", onclick: () => {
-      palsOn = !palsOn;
-      try { localStorage.setItem(PALS_KEY, palsOn ? "on" : "off"); } catch {}
-      renderStatsPage();
-    } }, palsOn ? "Turn off" : "Turn on")),
+    h("h3", {}, "Learning"),
+    row("Difficulty", "Easy has fewer choices. Expert adds harder questions and a timer.", pref("level", [["easy", "Easy"], ["normal", "Normal"], ["expert", "Expert"]])),
+    row("Reading depth", "How much detail stories include", pref("depth", [["short", "Short"], ["deep", "In depth"]])),
+    h("h3", {}, "Sound and extras"),
+    row("Music", "Shchedryk and a Ukrainian dumka", toggle(music.on, () => { toggleMusic().then(renderStatsPage); })),
+    row("Vibration", "On phones that support it", toggle(prefs.haptics, () => { prefs.haptics = !prefs.haptics; savePrefs(); })),
+    row("Animal visitors", "A rare cat or bird", toggle(palsOn, () => { palsOn = !palsOn; try { localStorage.setItem(PALS_KEY, palsOn ? "on" : "off"); } catch {} })),
+    h("h3", {}, "Your data"),
     row("Bucket list widget", "A small view to pin to your home screen", h("a", { class: "btn quiet mini", href: "./?go=widget" }, "Open")),
     row("Backup", "Save a copy of everything", h("button", { class: "btn quiet mini", onclick: downloadBackup }, "Download")),
     authClient && row("Account", null, h("button", { class: "btn quiet mini", onclick: () => authClient.auth.signOut().then(() => location.reload()) }, "Sign out")));
@@ -908,6 +983,12 @@ function personBar() {
 }
 const beenItems = () => items.filter((i) => i.status === "been" && (state.person === "all" || i.who === state.person));
 
+function toastUndo(msg, undo) {
+  toast(msg);
+  const t = $("toast");
+  t.append(" ", h("button", { class: "undo", onclick: () => { t.hidden = true; undo(); } }, "Undo"));
+  clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 6000);
+}
 function toast(msg) {
   const t = $("toast");
   t.textContent = msg; t.hidden = false;
@@ -1097,11 +1178,11 @@ function dateText(p) {
 }
 
 function row(p) {
-  const km = Math.round(haversineKm(HOME, p)).toLocaleString("en-GB");
+  const km = showDistance(haversineKm(HOME, p));
   return h("button", { class: "row", style: `--thread:${threadVar(p.status)}`, onclick: () => select(p.id) },
     h("span", { html: glyph(p.cat) }),
     h("span", {}, h("strong", {}, p.title), h("span", { class: "sub" }, p.place)),
-    h("em", { style: "display:inline-flex;gap:6px;align-items:center" }, dateText(p) || km + " km", avatar(p.who, 22)));
+    h("em", { style: "display:inline-flex;gap:6px;align-items:center" }, dateText(p) || km, avatar(p.who, 22)));
 }
 
 function renderList() {
@@ -1124,7 +1205,7 @@ function renderDetail() {
   if (!p) { state.mode = "list"; return renderPanel(); }
   const isIdea = p.status === "idea";
   const added = isIdea && items.some((i) => i.sourceIdea === p.id);
-  const km = Math.round(haversineKm(HOME, p)).toLocaleString("en-GB");
+  const km = showDistance(haversineKm(HOME, p));
   const by = h("span", {});
   const notes = p.notes || [];
 
@@ -1146,7 +1227,7 @@ function renderDetail() {
       h("span", { class: "pill" }, STATUS_LABEL[p.status]),
       h("span", { class: "pill plain", html: glyph(p.cat) + (CATS[p.cat] || CATS.still).label }),
       p.example && h("span", { class: "pill plain" }, "Example")),
-    h("div", { class: "place" }, h("b", {}, p.place), ` · ${km} km from base`, dateText(p) && ` · ${dateText(p)}`),
+    h("div", { class: "place" }, h("b", {}, p.place), ` · ${km} from base`, dateText(p) && ` · ${dateText(p)}`),
     p.blurb && h("p", { class: "blurb" }, p.blurb),
     by,
     actions,
@@ -1305,8 +1386,9 @@ function scheduleOn(p, day) {
   persist({ ...p, date: day, status: "plan" }, `On the calendar for ${new Date(day + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`);
 }
 function renderBucket() {
-  const notes = [...bucket].sort((a, b) => (a.done === b.done ? b.createdAt - a.createdAt : a.done ? 1 : -1));
-  const places = items.filter((i) => i.status === "dream");
+  const az = prefs.sort === "az";
+  const notes = [...bucket].sort((a, b) => (a.done === b.done ? (az ? a.text.localeCompare(b.text) : b.createdAt - a.createdAt) : a.done ? 1 : -1));
+  const places = items.filter((i) => i.status === "dream").sort((a, b) => (az ? a.title.localeCompare(b.title) : b.createdAt - a.createdAt));
   const toggle = (b) => { store.saveBucket({ ...b, done: !b.done }).catch(() => toast("That didn't save. Try again.")); if (!b.done) celebrate(); };
   $("body").replaceChildren(h("div", { class: "bucket" },
     canWrite && h("form", { class: "bucketadd", onsubmit: (e) => {
@@ -1320,12 +1402,16 @@ function renderBucket() {
       h("input", { class: "text", id: "bucketText", name: "bucketText", maxlength: 200, placeholder: "Write anything…", "aria-label": "Add to the bucket list", autocomplete: "off" }),
       h("button", { class: "btn", type: "submit" }, "Add")),
     dailyCard(),
+    (places.length + notes.length) > 1 && h("div", { class: "sortrow" }, h("button", { class: "link", onclick: () => { prefs.sort = az ? "new" : "az"; savePrefs(); renderPanel(); } }, az ? "Sort: A to Z" : "Sort: newest")),
     places.map(row),
     notes.map((b) => h("div", { class: "bk" + (b.done ? " done" : "") },
       h("button", { class: "tick", "aria-pressed": String(!!b.done), "aria-label": b.done ? `Mark ${b.text} as not done` : `Mark ${b.text} as done`, disabled: !canWrite, onclick: () => toggle(b) }, b.done ? "✓" : ""),
-      h("span", {}, b.text),
+      h("span", { class: "bktext", role: "textbox", contenteditable: canWrite ? "plaintext-only" : "false", spellcheck: "false", "aria-label": "Edit item", onblur: (e) => {
+        const text = e.target.textContent.trim();
+        if (text && text !== b.text) store.saveBucket({ ...b, text }).catch(() => toast("That didn't save. Try again."));
+      }, onkeydown: (e) => { if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } } }, b.text),
       avatar(b.who, 22) || h("i"),
-      canWrite && h("button", { class: "x", "aria-label": `Remove ${b.text}`, onclick: () => store.removeBucket(b.id).catch(() => toast("That didn't save. Try again.")) }, "×"))),
+      canWrite && h("button", { class: "x", "aria-label": `Remove ${b.text}`, onclick: () => store.removeBucket(b.id).then(() => toastUndo("Removed", () => store.saveBucket(b)), () => toast("That didn't save. Try again.")) }, "×"))),
     !places.length && !notes.length && h("p", { class: "fine" }, "Nothing yet. Write something above, or click a country on the globe.")));
 }
 function renderForm() {
@@ -1449,7 +1535,7 @@ function markBeen(fields) {
   persist({ id: newId(), cat: "sights", status: "been", by: myId, createdAt: Date.now(), notes: [], ...fields }, "Another one for the map").then(changed);
   celebrate();
 }
-function closeCountry() { state.country = null; state.region = null; state.regions = null; state.mode = "list"; flyTo(view.lat, view.lon, Math.min(view.zoom, 1.6)); renderPanel(); }
+function closeCountry() { state.country = null; state.region = null; state.regions = null; state.mode = "list"; flyTo(view.lat, view.lon, 1); renderPanel(); }
 function addThing(t, label) {
   const c = t.lat === undefined ? state.country : t;
   persist({ id: newId(), title: t.title, place: `${t.place}, ${label}`, lat: c.lat, lon: c.lon, cat: t.cat, status: "dream", by: myId, createdAt: Date.now(), notes: [] }, "Added to our bucket list").then(changed);
@@ -1472,7 +1558,10 @@ function setStatus(p, status) {
   if (status === "been") celebrate();
   state.sel = p.id; state.mode = "detail"; changed();
 }
-function removeItem(p) { store.remove(p.id).catch(() => toast("That didn't save. Try again.")); closeDetail(); }
+function removeItem(p) {
+  store.remove(p.id).then(() => toastUndo(`Removed ${p.title}`, () => store.save(p)), () => toast("That didn't save. Try again."));
+  closeDetail();
+}
 function addNote(p, field) {
   const text = field.value.trim(); if (!text) return;
   field.value = ""; field.blur();
@@ -1495,17 +1584,17 @@ function surprise() {
   refreshThreads(); renderPanel();
   flyTo(p.lat, p.lon, 8);
 }
-function closeSpot() { state.spot = null; state.draft = null; state.mode = "list"; flyTo(view.lat, view.lon, Math.min(view.zoom, 1.6)); renderPanel(); }
+function closeSpot() { state.spot = null; state.draft = null; state.mode = "list"; flyTo(view.lat, view.lon, 1); renderPanel(); }
 function renderSpot() {
   const p = state.spot;
   const added = items.some((i) => i.title === p.title);
-  const km = Math.round(haversineKm(HOME, p)).toLocaleString("en-GB");
+  const km = showDistance(haversineKm(HOME, p));
   const query = encodeURIComponent(`${p.title} ${p.place} travel guide`);
   $("body").replaceChildren(h("article", { class: "detail" },
     h("button", { class: "back", onclick: closeSpot }, "← Back"),
     h("div", { class: "vis", style: `--bg:${p.back[0]};--ground:${p.back[1]};border:2px solid var(--edge);border-radius:12px` }, h("img", { src: STICKER_IMG[p.kind].src, alt: "" })),
     h("h2", {}, p.title),
-    h("div", { class: "place" }, h("b", {}, p.place), ` · ${km} km from base`),
+    h("div", { class: "place" }, h("b", {}, p.place), ` · ${km} from base`),
     p.why && h("p", { class: "blurb" }, p.why),
     h("div", { class: "actions" },
       canWrite && h("button", { class: "btn", disabled: added, onclick: () => addSpot(p) }, added ? "Added" : "+ Add"),
@@ -1546,7 +1635,8 @@ let myId = null;
 
 /* ---------- globe ---------- */
 const canvas = $("globe"), ctx = canvas.getContext("2d");
-const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const motionQuery = matchMedia("(prefers-reduced-motion: reduce)");
+let reduced = motionQuery.matches;
 const css = getComputedStyle(document.documentElement);
 const tok = (n) => css.getPropertyValue(n).trim();
 const INK = tok("--ink"), PAPER = "#fff1c9", SEA = tok("--sea"), PICK = tok("--dream");
@@ -1791,7 +1881,7 @@ const TIERS = [1, 1.5, 2.2, 3.2, 4.6, 6.5, 9, 14];
 const labelTiers = new Map(), sprites = new Map();
 function labelsFor(zoom) {
   const tier = TIERS.filter((t) => t <= zoom + .001).pop() || 1;
-  const key = tier + "/" + Math.round(view.r) + flatMap;
+  const key = tier + "/" + Math.round(view.r) + flatMap + prefs.labels;
   if (labelTiers.has(key)) return labelTiers.get(key);
   const R = view.r * tier, kept = [];
   const fits = (xyz, width, height) => !kept.some((k) => {
@@ -1802,7 +1892,7 @@ function labelsFor(zoom) {
   });
   for (const l of LABELS) {
     const text = l.text || (l.text = countryInfo(l.name).label), width = text.length * 7 + 8;
-    if (l.area * R * R < width * width * (tier < 1.5 ? .9 : .55)) continue;
+    if (l.area * R * R < width * width * (tier < 1.5 ? .9 : .55) / prefs.labels) continue;
     if (fits(l.xyz, width)) kept.push({ text, xyz: l.xyz, width, country: l.name });
   }
   if (tier >= 3.2) {
@@ -2230,6 +2320,7 @@ function release(e) {
   if (!wasDown || moved >= 6 || e.type === "pointercancel") return;
   const [x, y] = local(e);
   velocity = 0;
+  globeRing(x, y);
   if (placing) {
     const ll = unproject(x, y);
     if (!ll) return;
@@ -2245,6 +2336,7 @@ function release(e) {
     renderPanel();
     return;
   }
+  if (pinGame.on) { const ll = unproject(x, y); if (ll) answerPin(ll); return; }
   const hit = pinAt(x, y);
   if (hit) return select(hit.pin.id);
   const sc = sceneAt(x, y);
@@ -2503,6 +2595,8 @@ const GAMES = {
   pairs: { name: "Animal Pairs", theme: "Memory", about: "Take turns finding matching animals.", icon: "owl" },
   route: { name: "Remember the Route", theme: "Memory", about: "Watch the stops light up, then repeat them. It keeps getting longer.", icon: "balloon" },
   packing: { name: "Pack the Bag", theme: "Memory", about: "Study what's packed, then pick it all out from memory.", icon: "tent" },
+  fiction: { name: "Fact Duel", theme: "Geography", about: "True or false. Whoever is right first scores.", icon: "owl" },
+  first: { name: "Which Came First?", theme: "History", about: "Two events. Tap the older one before your rival.", icon: "library" },
   sync: { name: "In Sync", theme: "Travel", about: "Pick your dream trip and see how often you match.", icon: "balloon" },
   ttt: { name: "Tic-Tac-Toe", theme: "Just fun", about: "Three in a row, with your own animals.", icon: "ginger" },
 };
@@ -2722,6 +2816,8 @@ const RULES = {
   route: routeGame, packing: packingGame,
   geo: (g, a, b, rnd) => quizGame(g, geoRounds(rnd)), capital: (g, a, b, rnd) => quizGame(g, capitalRounds(rnd)),
   space: (g, a, b, rnd) => quizGame(g, bankRounds(SPACE_Q, "volcano")(rnd)), wild: (g, a, b, rnd) => quizGame(g, bankRounds(WILD_Q, "lion")(rnd)),
+  fiction: (g, a, b, rnd) => quizGame(g, shuffled(window.FACT_OR_FICTION, rnd).slice(0, 8).map(([q, t]) => ({ q, kind: "owl", right: t ? "True" : "False", opts: ["True", "False"] }))),
+  first: (g, a, b, rnd) => quizGame(g, [...Array(7)].map(() => { const [x, y] = shuffled(window.TIMELINE, rnd); return { q: "Which came first?", kind: "library", right: x[1] < y[1] ? x[0] : y[0], opts: [x[0], y[0]] }; })),
   dash: dashGame, pairs: memoryGame, sync: syncGame, ttt: tttGame,
 };
 function gameBoard(g) {
@@ -2739,33 +2835,139 @@ function gameBoard(g) {
 const LEARN_KEY = "hw-learn";
 let learnBest = {};
 try { learnBest = JSON.parse(localStorage.getItem(LEARN_KEY)) || {}; } catch {}
-const learn = { track: null, list: [], n: 0, score: 0, picked: null };
+const learn = { track: null, topic: null, chapter: null, list: [], n: 0, score: 0, picked: null, timer: 0 };
+const LEVELS = { easy: { count: 5, options: 2, label: "Easy" }, normal: { count: 10, options: 3, label: "Normal" }, expert: { count: 12, options: 3, seconds: 15, label: "Expert" } };
 function startLesson(track) {
-  const pool = [...window.LESSONS[track].questions].sort(() => Math.random() - .5).slice(0, 10);
-  const list = pool.map((q) => ({ q, opts: [q[1], q[2], q[3]].sort(() => Math.random() - .5) }));
+  const level = LEVELS[prefs.level];
+  const all = window.LESSONS[track].questions, expert = prefs.level === "expert";
+  const pool = all.filter((q) => (expert ? true : !q.hard)).sort((a, b) => (expert ? (b.hard ? 1 : 0) - (a.hard ? 1 : 0) : 0) || Math.random() - .5);
+  const picked = (expert ? pool.slice(0, 16) : pool).sort(() => Math.random() - .5).slice(0, level.count);
+  const list = picked.map((q) => ({ q, opts: [q[1], q[2], q[3]].slice(0, level.options).sort(() => Math.random() - .5) }));
   Object.assign(learn, { track, list, n: 0, score: 0, picked: null });
   renderPlay();
+}
+function nextTimer() {
+  clearTimeout(learn.timer);
+  const seconds = LEVELS[prefs.level].seconds;
+  if (seconds && !learn.picked && learn.track && learn.n < learn.list.length) learn.timer = setTimeout(() => { learn.picked = "(time)"; renderPlay(); }, seconds * 1000);
+}
+function topicView(id) {
+  const t = window.LESSONS[id], depth = prefs.depth;
+  if (learn.chapter !== null) {
+    const c = t.stories[learn.chapter], last = learn.chapter === t.stories.length - 1;
+    return h("div", { class: "wrap reader" },
+      h("div", { class: "gamehead" }, h("button", { class: "btn quiet mini", onclick: () => { learn.chapter = null; renderPlay(); } }, "← Chapters"), h("div", { class: "seggroup" }, [["short", "Short"], ["deep", "In depth"]].map(([v, l]) => h("button", { class: "seg", "aria-pressed": String(depth === v), onclick: () => { prefs.depth = v; savePrefs(); renderPlay(); } }, l)))),
+      h("img", { src: STICKER_IMG[c.kind].src, alt: "" }),
+      h("small", {}, `Chapter ${learn.chapter + 1} of ${t.stories.length}`),
+      h("h2", {}, c.title), h("p", {}, depth === "short" ? c.short : c.deep),
+      h("button", { class: "btn", onclick: () => { if (last) { learn.chapter = null; startLesson(id); } else { learn.chapter++; renderPlay(); $("page").scrollTop = 0; } } }, last ? "Test yourself" : "Next chapter"));
+  }
+  return h("div", { class: "wrap" },
+    h("div", { class: "gamehead" }, h("h2", {}, t.name), h("button", { class: "btn quiet mini", onclick: () => { learn.topic = null; renderPlay(); } }, "Back")),
+    h("h3", { class: "subhead" }, "Stories"),
+    h("div", { class: "chapters" }, t.stories.map((c, i) => h("button", { class: "gamecard", onclick: () => { learn.chapter = i; renderPlay(); } }, h("img", { src: STICKER_IMG[c.kind].src, alt: "" }), h("span", {}, h("b", {}, c.title), h("small", {}, c.short))))),
+    h("h3", { class: "subhead" }, "Quiz"),
+    h("div", { class: "seggroup wide" }, Object.entries(LEVELS).map(([k, l]) => h("button", { class: "seg", "aria-pressed": String(prefs.level === k), onclick: () => { prefs.level = k; savePrefs(); renderPlay(); } }, l.label))),
+    h("p", { class: "fine" }, prefs.level === "easy" ? "5 questions, two choices each." : prefs.level === "normal" ? "10 questions, three choices each." : "12 harder questions, 15 seconds each."),
+    h("button", { class: "btn", style: "justify-self:start", onclick: () => startLesson(id) }, learnBest[`${id}-${prefs.level}`] ? `Play again · best ${learnBest[`${id}-${prefs.level}`]}` : "Start quiz"));
+}
+/* ---------- solo challenges ---------- */
+const solo = { type: null, round: 0, score: 0, data: null, answered: null };
+const SOLO = { timeline: { name: "Timeline", about: "Put events in the right order.", icon: "library" }, fiction: { name: "Fact or Fiction", about: "True or false? Keep the streak alive.", icon: "owl" }, pin: { name: "Pin the Place", about: "Find countries on the map. Closer is better.", icon: "balloon" } };
+function startSolo(type) {
+  Object.assign(solo, { type, round: 0, score: 0, data: null, answered: null });
+  if (type === "pin") { startPin(); return; }
+  nextSolo();
+}
+function nextSolo() {
+  solo.answered = null;
+  if (solo.type === "timeline") {
+    const size = { easy: 3, normal: 4, expert: 6 }[prefs.level];
+    const events = [...window.TIMELINE].sort(() => Math.random() - .5).slice(0, size);
+    solo.data = { events, chosen: [] };
+  } else solo.data = window.FACT_OR_FICTION[Math.floor(Math.random() * window.FACT_OR_FICTION.length)];
+  renderPlay();
+}
+function soloView() {
+  const info = SOLO[solo.type], total = solo.type === "timeline" ? 5 : 10;
+  const head = h("div", { class: "gamehead" }, h("span", { class: "fine" }, `${info.name} · ${Math.min(solo.round + 1, total)} of ${total} · Score ${solo.score}`), h("button", { class: "btn quiet mini", onclick: () => { solo.type = null; renderPlay(); } }, "Leave"));
+  if (solo.round >= total) {
+    const best = Math.max(learnBest[solo.type] || 0, solo.score);
+    learnBest[solo.type] = best; try { localStorage.setItem(LEARN_KEY, JSON.stringify(learnBest)); } catch {}
+    return h("div", { class: "wrap lesson" }, h("div", { class: "quiz" }, h("img", { src: STICKER_IMG[info.icon].src, alt: "" }), h("h3", {}, `${solo.score} points`), h("p", { class: "fine" }, `Your best: ${best}`),
+      h("button", { class: "btn", onclick: () => startSolo(solo.type) }, "Play again"), h("button", { class: "btn quiet", onclick: () => { solo.type = null; renderPlay(); } }, "Back to Minigames")));
+  }
+  const after = (points) => { solo.score += points; solo.answered = true; renderPlay(); };
+  const next = () => { solo.round++; nextSolo(); };
+  if (solo.type === "fiction") {
+    const [text, truth] = solo.data;
+    return h("div", { class: "wrap lesson" }, head, h("div", { class: "quiz" }, h("strong", { class: "question" }, text),
+      solo.answered ? [h("p", {}, solo.answered === "yes" ? "Correct!" : `Not quite. That's ${truth ? "true" : "false"}.`), h("button", { class: "btn", onclick: next }, "Next")]
+        : h("div", { class: "answers two" }, [["True", true], ["False", false]].map(([l, v]) => h("button", { class: "btn quiet", onclick: () => { solo.answered = v === truth ? "yes" : "no"; solo.score += v === truth ? 1 : 0; renderPlay(); } }, l)))));
+  }
+  const { events, chosen } = solo.data, sorted = [...events].sort((a, b) => a[1] - b[1]);
+  const year = (y) => (y < 0 ? `${-y} BC` : String(y));
+  return h("div", { class: "wrap lesson" }, head, h("div", { class: "quiz" }, h("strong", { class: "question" }, solo.answered ? "The true order" : "Tap them from oldest to newest"),
+    solo.answered ? [h("ol", { class: "order" }, sorted.map((e, i) => h("li", { class: chosen[i] === e ? "good" : "bad" }, h("b", {}, year(e[1])), " ", e[0]))), h("button", { class: "btn", onclick: next }, "Next")]
+      : h("div", { class: "answers" }, events.map((e) => {
+        const at = chosen.indexOf(e);
+        return h("button", { class: "btn quiet", onclick: () => {
+          if (at >= 0) chosen.splice(at); else chosen.push(e);
+          if (chosen.length === events.length) after(sorted.every((x, i) => chosen[i] === x) ? 3 : sorted.filter((x, i) => chosen[i] === x).length >= events.length / 2 ? 1 : 0); else renderPlay();
+        } }, at >= 0 ? `${at + 1}. ${e[0]}` : e[0]);
+      }))));
+}
+/* Pin the Place plays on the real map */
+const pinGame = { on: false, round: 0, score: 0, target: null };
+function startPin() {
+  solo.type = null;
+  Object.assign(pinGame, { on: true, round: 0, score: 0 });
+  if (!flatMap) $("flatBtn").click();
+  setSection("globe");
+  nextPin();
+}
+function nextPin() {
+  if (pinGame.round >= 5) {
+    pinGame.on = false; $("pinbar").hidden = true;
+    learnBest.pin = Math.max(learnBest.pin || 0, pinGame.score); try { localStorage.setItem(LEARN_KEY, JSON.stringify(learnBest)); } catch {}
+    toast(`Pin the Place: ${pinGame.score} points. Your best: ${learnBest.pin}`);
+    setSection("play");
+    return;
+  }
+  const size = { easy: [.04, 9], normal: [.006, .04], expert: [.0006, .006] }[prefs.level];
+  const pool = LABELS.filter((l) => l.area > size[0] && l.area < size[1] && l.name !== "Russia" && l.name !== "Antarctica" && window.FACTS[l.name]);
+  pinGame.target = pool[Math.floor(Math.random() * pool.length)];
+  $("pinbar").hidden = false;
+  $("pinbar").textContent = `Find ${countryInfo(pinGame.target.name).label}  ·  ${pinGame.round + 1} of 5  ·  ${pinGame.score} pts`;
+}
+function answerPin(ll) {
+  const fit = FIT.get(pinGame.target.name), km = haversineKm(ll, fit);
+  const points = km < 300 ? 3 : km < 900 ? 2 : km < 2000 ? 1 : 0;
+  pinGame.score += points; pinGame.round++;
+  toast(points ? `${showDistance(km)} away: +${points}` : `${showDistance(km)} away`);
+  buzz(); nextPin();
 }
 function lessonView() {
   const lesson = window.LESSONS[learn.track], total = learn.list.length;
   if (learn.n >= total) {
     const best = Math.max(learnBest[learn.track] || 0, learn.score);
-    if (best !== learnBest[learn.track]) { learnBest[learn.track] = best; try { localStorage.setItem(LEARN_KEY, JSON.stringify(learnBest)); } catch {} }
+    if (best !== learnBest[learn.track]) { learnBest[learn.track] = best; learnBest[`${learn.track}-${prefs.level}`] = Math.max(learnBest[`${learn.track}-${prefs.level}`] || 0, learn.score); try { localStorage.setItem(LEARN_KEY, JSON.stringify(learnBest)); } catch {} }
     return h("div", { class: "wrap lesson" }, h("div", { class: "quiz" },
       h("img", { src: STICKER_IMG[lesson.icon].src, alt: "" }), h("h3", {}, `${learn.score} of ${total}`),
       h("p", { class: "fine" }, learn.score >= 8 ? "Superb. You really know this." : learn.score >= 5 ? "Nicely done." : "Every round teaches you something."),
       h("button", { class: "btn", onclick: () => startLesson(learn.track) }, "Play again"),
-      h("button", { class: "btn quiet", onclick: () => { learn.track = null; renderPlay(); } }, "Back to Minigames")));
+      h("button", { class: "btn quiet", onclick: () => { learn.track = null; renderPlay(); } }, "Back to topic")));
   }
   const item = learn.list[learn.n], [question, right, , , fact, place, where, lat, lon, kind] = item.q, added = place && items.some((i) => i.title === place);
   return h("div", { class: "wrap lesson" },
     h("div", { class: "gamehead" }, h("span", { class: "fine" }, `${lesson.name} · ${learn.n + 1} of ${total}`), h("button", { class: "btn quiet mini", onclick: () => { learn.track = null; renderPlay(); } }, "Leave")),
     h("div", { class: "bar still" }, h("i", { style: `transform:scaleX(${(learn.n + (learn.picked ? 1 : 0)) / total})` })),
+    LEVELS[prefs.level].seconds && !learn.picked && h("div", { class: "bar" }, h("i", { style: `animation-duration:${LEVELS[prefs.level].seconds}s` })),
     h("div", { class: "quiz" },
       h("strong", { class: "question" }, question),
       h("div", { class: "answers" }, item.opts.map((o) => h("button", {
         class: "btn quiet" + (learn.picked ? (o === right ? " right" : o === learn.picked ? " wrong" : "") : ""), disabled: !!learn.picked,
-        onclick: () => { learn.picked = o; if (o === right) { learn.score++; buzz(); } renderPlay(); },
+        onclick: () => { clearTimeout(learn.timer); learn.picked = o; if (o === right) { learn.score++; buzz(); } renderPlay(); },
       }, o))),
       learn.picked && h("div", { class: "factcard" },
         kind && h("img", { src: STICKER_IMG[kind].src, alt: "" }),
@@ -2800,7 +3002,9 @@ function pickCard(p) {
     h("b", {}, p.title), h("span", { class: "sub" }, p.place));
 }
 function renderPlay() {
-  if (learn.track) { $("page").replaceChildren(lessonView()); return; }
+  if (solo.type) { $("page").replaceChildren(soloView()); return; }
+  if (learn.track) { $("page").replaceChildren(lessonView()); nextTimer(); return; }
+  if (learn.topic) { $("page").replaceChildren(topicView(learn.topic)); return; }
   const g = current();
   if (g && rival(g)) { $("page").replaceChildren(gameBoard(g)); return; }
   if (!duel.a) nextDuel();
@@ -2808,9 +3012,12 @@ function renderPlay() {
   const winner = duel.a, t = games.find((x) => x.id === "tally") || {}, wins = t.wins || {}, two = profiles.slice(0, 2);
   $("page").replaceChildren(h("div", { class: "wrap" },
     h("h2", {}, "Learn"),
-    h("p", { class: "fine", style: "margin:-12px 0 0" }, "Short lessons for one. Works with no signal, so it's perfect for a flight."),
-    h("div", { class: "gamegrid" }, Object.entries(window.LESSONS).map(([id, l]) => h("button", { class: "gamecard", onclick: () => startLesson(id) },
-      h("img", { src: STICKER_IMG[l.icon].src, alt: "" }), h("span", {}, h("b", {}, l.name), h("small", {}, learnBest[id] ? `Best score ${learnBest[id]} of 10` : `${l.questions.length} questions`))))),
+    h("p", { class: "fine", style: "margin:-12px 0 0" }, "Stories and quizzes for one. Works with no signal, so it's perfect for a flight."),
+    h("div", { class: "gamegrid" }, Object.entries(window.LESSONS).map(([id, l]) => h("button", { class: "gamecard", onclick: () => { learn.topic = id; learn.chapter = null; renderPlay(); } },
+      h("img", { src: STICKER_IMG[l.icon].src, alt: "" }), h("span", {}, h("b", {}, l.name), h("small", {}, `${l.stories.length} stories · ${l.questions.length} questions`))))),
+    h("h2", {}, "Solo challenges"),
+    h("div", { class: "gamegrid" }, Object.entries(SOLO).map(([id, g]) => h("button", { class: "gamecard", onclick: () => startSolo(id) },
+      h("img", { src: STICKER_IMG[g.icon].src, alt: "" }), h("span", {}, h("b", {}, g.name), h("small", {}, learnBest[id] ? `Best ${learnBest[id]}` : g.about))))),
     h("h2", {}, "Play together"),
     two.length === 2 && h("section", { class: "score" },
       h("div", { class: "scoretop" }, two.map((p, i) => [i === 1 && h("b", { class: "vs" }, "vs"), h("div", { class: "scoreside" }, avatar(p.id, 48), h("b", { class: "num" }, String(wins[p.id] || 0)), h("span", {}, p.name))])),
@@ -2868,6 +3075,25 @@ function gamesChanged() {
   if (typeof state !== "undefined" && state.section === "play") renderPlay();
 }
 
+/* ---------- preferences ---------- */
+const PREFS_KEY = "hw-prefs";
+const prefs = { font: "rounded", size: 1, motion: "normal", labels: 1, units: "km", level: "normal", depth: "deep", haptics: true, sort: "new" };
+try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY)) || {}); } catch {}
+const FONTS = { rounded: ["Rounded", '"Nunito", system-ui, sans-serif'], clean: ["Clean", 'system-ui, -apple-system, "Segoe UI", sans-serif'], book: ["Book", 'Georgia, "Times New Roman", serif'], easy: ["Easy read", '"Atkinson Hyperlegible", system-ui, sans-serif'] };
+function savePrefs() {
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch {}
+  applyPrefs();
+}
+function applyPrefs() {
+  const root = document.documentElement.style;
+  root.setProperty("--font-body", FONTS[prefs.font][1]);
+  root.setProperty("--ui", prefs.size);
+  document.documentElement.classList.toggle("calm", prefs.motion === "less");
+  reduced = motionQuery.matches || prefs.motion === "less";
+  if (prefs.font === "easy" && !$("easyFont")) document.head.append(h("link", { id: "easyFont", rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" }));
+}
+const showDistance = (km) => (prefs.units === "mi" ? `${Math.round(km * .621).toLocaleString("en-GB")} mi` : `${Math.round(km).toLocaleString("en-GB")} km`);
+
 /* ---------- appearance ---------- */
 const THEME_KEY = "hw-theme";
 let themeChoice = "auto";
@@ -2880,6 +3106,7 @@ function applyTheme() {
 }
 systemDark.addEventListener?.("change", applyTheme);
 applyTheme();
+applyPrefs();
 
 /* ---------- opening ---------- */
 function logoSvg(size) {
@@ -3047,7 +3274,7 @@ function dailyCard() {
     h("div", { class: "dailyword" }, h("small", {}, `Word of the day: ${word[2]}`), h("b", {}, word[0]), h("span", {}, " · "), h("b", {}, word[1])));
 }
 
-const buzz = () => { try { navigator.vibrate?.(9); } catch {} };
+const buzz = () => { try { if (prefs.haptics) navigator.vibrate?.(9); } catch {} };
 
 /* ---------- backup ---------- */
 function downloadBackup() {
@@ -3128,6 +3355,39 @@ function renderWidgetView() {
     list.length ? h("ul", {}, list.slice(0, 8).map((x) => h("li", {}, h("span", {}, "★"), x.text))) : h("p", {}, "Nothing yet. Dream something up!")));
 }
 
+/* ---------- small touches ---------- */
+const PRESSABLE = ".btn, .gamecard, .chip, .seg, .tool, .pick, .pad, .card2, .cell, .tab, .row, .sec, #sections .sec";
+document.addEventListener("pointerdown", (e) => {
+  if (reduced) return;
+  const el = e.target.closest?.(PRESSABLE);
+  if (!el || el.disabled) return;
+  const r = el.getBoundingClientRect(), size = Math.max(r.width, r.height) * 1.6;
+  const ink = h("span", { class: "ripple", style: `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px` });
+  if (getComputedStyle(el).position === "static") el.style.position = "relative";
+  el.style.overflow = "hidden";
+  el.append(ink);
+  setTimeout(() => ink.remove(), 500);
+}, { passive: true });
+function globeRing(x, y) {
+  if (reduced) return;
+  const ring = h("div", { class: "tapring", style: `left:${x}px;top:${y}px` });
+  $("stage").append(ring);
+  setTimeout(() => ring.remove(), 520);
+}
+function countUp(root) {
+  if (reduced) return;
+  for (const el of root.querySelectorAll(".tile b, .scoreside .num")) {
+    const end = parseFloat(el.textContent), suffix = el.textContent.replace(/[\d.,]/g, "");
+    if (!end || el.textContent.includes(",")) continue;
+    const decimals = el.textContent.includes(".") ? 1 : 0, start = performance.now();
+    (function step(t) {
+      const p = Math.min(1, (t - start) / 500), eased = 1 - (1 - p) ** 3;
+      el.textContent = (end * eased).toFixed(decimals) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    })(start);
+  }
+}
+
 /* ---------- sections ---------- */
 const SECTIONS = { globe: "Globe", plans: "Plans", explore: "Explore", play: "Minigames", profile: "Profile" };
 const SEC_ICON = {
@@ -3195,13 +3455,13 @@ function spotOrder(a, b) {
 }
 function spotCard(p) {
   const added = items.some((i) => i.title === p.title);
-  const km = Math.round(haversineKm(HOME, p)).toLocaleString("en-GB");
+  const km = showDistance(haversineKm(HOME, p));
   const query = encodeURIComponent(`${p.title} ${p.place} travel guide`);
   return h("article", { class: "card" },
     h("div", { class: "vis", style: `--bg:${p.back[0]};--ground:${p.back[1]}` }, h("img", { src: STICKER_IMG[p.kind].src, alt: "" })),
     h("div", { class: "cardbody" },
       h("h3", {}, p.title),
-      h("span", { class: "sub" }, `${p.place} · ${km} km from base`),
+      h("span", { class: "sub" }, `${p.place} · ${km} from base`),
       h("p", {}, p.why),
       h("div", { class: "cardact" },
         canWrite && h("button", { class: "btn mini", disabled: added, onclick: () => addSpot(p) }, added ? "Added" : "+ Add"),
@@ -3306,7 +3566,9 @@ async function renderStatsPage() {
       r.cities > 0 && h("span", {}, `${r.cityDone} of ${r.cities} cities`)))),
     h("p", { class: "fine" }, "Each country fills up as you tap the cities you've been to on the globe."),
     settingsList()));
+  if (!state.editProfile && performance.now() - lastCount > 4000) { lastCount = performance.now(); countUp($("page")); }
 }
+let lastCount = 0;
 
 /* ---------- start ---------- */
 refreshThreads();
