@@ -317,6 +317,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 input.text, textarea, select { font-size: 16px; }
 .pal { position: fixed; left: 0; top: 0; z-index: 4; cursor: pointer; will-change: transform; -webkit-tap-highlight-color: transparent; }
 .pal.cast { z-index: 31; pointer-events: none; }
+.pal.stagepal { position: absolute; z-index: 1; }
 .pal img { width: 100%; height: 100%; display: block; }
 .palheart { position: fixed; z-index: 8; color: var(--dream); font-size: 26px; pointer-events: none; animation: floatup .9s ease-out both; }
 @keyframes floatup { to { transform: translateY(-46px) scale(1.4); opacity: 0; } }
@@ -458,7 +459,6 @@ textarea { resize: vertical; min-height: 66px; }
   #app, #page { margin-bottom: var(--nav); }
   #app { grid-template-rows: 46% minmax(0, 1fr); }
   #app.mapfull { grid-template-rows: minmax(0, 1fr) 30px; }
-  #app.mapfull #panel > :not(#grip) { display: none; }
   #grip { display: block; flex: none; align-self: center; width: 54px; height: 16px; margin: -6px 0 -2px; background: none; border: 0; padding: 5px 0; }
   #grip::before { content: ""; display: block; height: 5px; border-radius: 3px; background: var(--ink-faint); }
   #toast { top: auto; bottom: calc(var(--nav) + 10px); }
@@ -482,6 +482,98 @@ textarea { resize: vertical; min-height: 66px; }
   #stage #mapfilters { flex-wrap: nowrap; overflow-x: auto; margin-inline: -8px; padding: 0 8px 4px; }
   #stage #zoomIn, #stage #zoomOut, #stage #homeBtn { display: none; }
   #stage .chip { padding: 3px 12px; }
+}
+
+/* ---------- globe-first layout ---------- */
+#app { position: relative; display: block !important; }
+#stage { position: absolute; inset: 0; }
+#panel { position: absolute; z-index: 3; top: 12px; right: 12px; bottom: 12px; width: min(380px, calc(100% - 24px)); border: 2px solid var(--edge); border-radius: 18px; box-shadow: 4px 4px 0 var(--edge); padding: 16px; transition: transform .28s cubic-bezier(.2, .8, .3, 1), opacity .2s; }
+#app.mapfull #panel { transform: translateX(calc(100% + 24px)); opacity: 0; pointer-events: none; }
+#app.plans #panel { position: static; width: min(720px, 100%); height: 100%; margin: 0 auto; border: 0; border-radius: 0; box-shadow: none; transform: none; opacity: 1; pointer-events: auto; padding: 18px 16px; }
+#app.plans #stage, #app.plans #sheetClose { display: none; }
+#sheetClose { position: absolute; top: 8px; right: 8px; width: 38px; height: 38px; border: 0; background: none; color: var(--ink-soft); font-size: 24px; line-height: 1; z-index: 2; }
+#grip { display: none !important; }
+#app:not(.plans) .back:not(.keep) { display: none; }
+#body { padding-top: 2px; }
+.searchrow { display: flex; gap: 8px; }
+#find { flex: 1; min-width: 0; }
+#find input { border-radius: 14px; height: 44px; }
+#filterBtn { height: 44px; flex: none; padding: 0 14px; border-radius: 14px; }
+#mapbar { left: 50% !important; right: auto !important; transform: translateX(-50%); width: min(460px, calc(100% - 24px)); max-width: none !important; top: 14px; }
+#stage #mapfilters[hidden] { display: none !important; }
+#stage #mapfilters { justify-content: center; }
+#mapmode { left: 50% !important; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important; border-radius: 14px; }
+.seg.small { font-size: 13px; padding: 9px 10px; border-left: 2px solid var(--edge); }
+#stage #tools { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); right: 16px; }
+.tool { background: var(--card); color: var(--ink); border-radius: 12px; font-weight: 800; box-shadow: 2px 2px 0 var(--edge); }
+.tool.hot { background: var(--been); color: #26214a; }
+#app.mapfull ~ x { display: none; }
+#toast { top: calc(84px + env(safe-area-inset-top, 0px)) !important; bottom: auto !important; text-align: center; white-space: normal; width: max-content; }
+@media (min-width: 761px) { #toast { top: calc(136px + env(safe-area-inset-top, 0px)) !important; } }
+@media (max-width: 760px) { #toast { top: calc(122px + env(safe-area-inset-top, 0px)) !important; } }
+#splash { background: #161b3f; gap: 12px; }
+#splash.out { opacity: 0; transform: none; transition: opacity .6s ease; }
+.splashlogo { animation: logoin .7s cubic-bezier(.2, .8, .3, 1) both; }
+.splashlogo .orbit { animation: none; }
+.splashname { font: 400 38px/1 var(--font-display); color: #fff; letter-spacing: .01em; animation: logoin .7s .12s cubic-bezier(.2, .8, .3, 1) both; }
+@keyframes logoin { from { opacity: 0; transform: translateY(10px) scale(.96); } }
+#welcome { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; padding: 20px; background: rgba(14, 17, 44, .5); animation: fadein .3s ease; }
+.welcomecard { background: var(--paper); color: var(--ink); width: min(360px, 100%); border-radius: 22px; padding: 26px 22px 16px; display: grid; gap: 12px; justify-items: center; text-align: center; box-shadow: 0 18px 50px rgba(8, 10, 30, .4); animation: logoin .3s ease; }
+.welcomecard img { width: 112px; height: 112px; }
+.welcomecard h2 { margin: 0; font: 400 25px/1.15 var(--font-display); }
+.welcomecard p { margin: 0; color: var(--ink-soft); font-size: 15.5px; line-height: 1.45; }
+.welcomecard form { display: grid; gap: 12px; width: 100%; }
+.welcomecard > .btn, .welcomecard form .btn { width: 100%; min-height: 48px; font-size: 16px; }
+.welcomecard .link { color: var(--ink-faint); text-decoration: none; font-weight: 700; }
+.dots { display: flex; gap: 6px; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--paper-deep); }
+.dots i.on { background: var(--brand); }
+.swatches.single { justify-content: center; max-height: none; overflow: visible; }
+.swatches.single button { background: var(--card); width: 58px; height: 58px; border-radius: 14px; }
+@keyframes fadein { from { opacity: 0; } }
+@media (max-width: 760px) {
+  #panel, #stage #panel { top: auto !important; right: 0; left: 0; bottom: 0; width: 100%; height: 56%; border-radius: 20px 20px 0 0; border-width: 2px 0 0; box-shadow: none; padding: 14px 16px 12px; }
+  #app.mapfull #panel { transform: translateY(105%); opacity: 1; }
+  #app.plans #panel { height: 100%; border-radius: 0; }
+  #mapbar { top: 10px; width: calc(100% - 20px); }
+  #stage #tools { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); right: 10px; }
+  #mapmode { left: 12px !important; transform: none; bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important; }
+  .seg { padding: 8px 11px; }
+}
+
+#chatBtn { position: relative; flex: none; width: 42px; height: 42px; display: grid; place-items: center; border: 0; background: none; color: var(--ink); }
+#chatDot { position: absolute; top: 7px; right: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--brand); border: 2px solid var(--paper); }
+#chatDot[hidden] { display: none; }
+#chat { position: fixed; z-index: 6; right: 12px; top: calc(66px + env(safe-area-inset-top, 0px)); bottom: 12px; width: min(380px, calc(100% - 24px)); display: flex; flex-direction: column; gap: 8px; background: var(--paper); color: var(--ink); border: 2px solid var(--edge); border-radius: 18px; box-shadow: 4px 4px 0 var(--edge); padding: 12px; animation: logoin .2s ease; }
+#chat[hidden] { display: none; }
+.chathead { display: flex; align-items: center; justify-content: space-between; }
+.chathead h2 { margin: 0; font: 400 21px/1 var(--font-display); }
+.chatx { width: 38px; height: 38px; border: 0; background: none; font-size: 24px; color: var(--ink-soft); }
+.chatlist { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 4px 2px; -webkit-overflow-scrolling: touch; }
+.msg { display: flex; align-items: flex-end; gap: 6px; max-width: 88%; }
+.msg.mine { align-self: flex-end; flex-direction: row-reverse; }
+.msg p { margin: 0; background: var(--card); border: 2px solid var(--edge); border-radius: 14px 14px 14px 4px; padding: 6px 11px; overflow-wrap: anywhere; user-select: text; -webkit-user-select: text; }
+.msg.mine p { background: var(--been); color: #26214a; border-radius: 14px 14px 4px 14px; }
+.msg time { font-size: 11px; color: var(--ink-faint); flex: none; }
+.msgsticker { width: 72px; height: 72px; }
+.stickerbar { display: flex; justify-content: space-between; }
+.stickerbar button { background: none; border: 0; padding: 2px; width: 46px; height: 46px; transition: transform .12s; }
+.stickerbar button:active { transform: scale(1.2); }
+.stickerbar img { width: 100%; height: 100%; }
+.composer { display: flex; gap: 8px; }
+.composer input { flex: 1; min-width: 0; }
+html.widgetview #top, html.widgetview #app, html.widgetview #chat { display: none !important; }
+html.widgetview #page { padding: max(16px, env(safe-area-inset-top, 0px)) 16px 16px; background: var(--sky); margin: 0; }
+.widget { display: grid; gap: 10px; color: #fdf3dc; background: #252a5a; border-radius: 24px; padding: 18px; text-decoration: none; max-width: 420px; margin: 0 auto; }
+.widgethead { display: flex; align-items: center; gap: 8px; }
+.widgethead b { flex: 1; font: 400 20px/1 var(--font-display); color: #ff7a5c; }
+.widgethead em { font-style: normal; font-weight: 800; background: #ffc53d; color: #26214a; border-radius: 10px; padding: 1px 8px; }
+.widget ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.widget li { display: flex; gap: 8px; font-weight: 700; }
+.widget li span { color: #ffc53d; }
+.widget p { margin: 0; color: #c9c3e0; }
+@media (max-width: 760px) {
+  #chat { right: 0; left: 0; width: 100%; top: calc(58px + env(safe-area-inset-top, 0px)); bottom: var(--nav); border-radius: 0; border-width: 0; box-shadow: none; }
 }
 
 /* dark mode: the same adventure after sunset */
@@ -509,6 +601,16 @@ textarea { resize: vertical; min-height: 66px; }
 .pad img { width: 100%; height: 100%; display: block; }
 .packgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 7px; }
 .packgrid .pad.on { background: var(--idea); }
+.lesson .quiz { gap: 12px; }
+.question { font-size: 18px; line-height: 1.3; }
+.quiz .answers .btn { color: var(--ink); }
+.quiz .answers .btn.right { background: #8cc06a; color: #26214a; opacity: 1; }
+.quiz .answers .btn.wrong { background: var(--dream); color: #fff; opacity: 1; }
+.factcard { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 4px 10px; align-items: center; text-align: left; width: 100%; background: var(--paper-deep); border-radius: 12px; padding: 10px; animation: logoin .2s ease; }
+.factcard img { width: 54px; height: 54px; }
+.factcard p { margin: 0; font-size: 14.5px; line-height: 1.4; }
+.factcard .btn { grid-column: 1 / -1; justify-self: start; }
+.bar.still i { animation: none; transition: transform .2s; transform-origin: left; }
 .bar { height: 8px; border-radius: 4px; background: var(--paper-deep); overflow: hidden; }
 .bar i { display: block; height: 100%; background: var(--brand); transform-origin: left; animation: drain linear both; }
 @keyframes drain { to { transform: scaleX(0); } }
@@ -517,17 +619,18 @@ textarea { resize: vertical; min-height: 66px; }
 <body>
 
 <div id="splash" aria-hidden="true">
-  <div class="splashstars"></div>
-  <div class="splashlogo"></div>
+    <div class="splashlogo"></div>
   <div class="splashname"></div>
 </div>
 <header id="top">
   <span id="mark"></span>
   <h1>HugeWorld</h1>
-    <nav id="sections" aria-label="Sections"></nav>
+    <button id="chatBtn" aria-label="Messages"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg><i id="chatDot" hidden></i></button>
+  <nav id="sections" aria-label="Sections"></nav>
 </header>
 <div id="app">
-  <section id="panel" aria-label="Our places">
+  <section id="panel" aria-label="Details">
+    <button id="sheetClose" aria-label="Close">×</button>
     <button id="grip" aria-label="Show more of the globe"></button>
     <nav id="tabs" role="tablist" aria-label="Globe views"></nav>
     <div id="filters"></div>
@@ -537,13 +640,14 @@ textarea { resize: vertical; min-height: 66px; }
   <main id="stage">
     <canvas id="globe" aria-label="Hand-painted globe. Drag to turn it, scroll to zoom, click a country for things to do there. Everything on it is also listed in the panel."></canvas>
     <div id="mapbar">
-      <div id="find"><input class="text" id="findBox" type="search" placeholder="Search a country, city or place" aria-label="Search the map" autocomplete="off"><div id="findList" hidden></div></div>
-      <div id="mapfilters" role="group" aria-label="Show on the map"></div>
+      <div class="searchrow"><div id="find"><input class="text" id="findBox" type="search" placeholder="Search the world" aria-label="Search the map" autocomplete="off"><div id="findList" hidden></div></div>
+      <button id="filterBtn" class="tool" aria-expanded="false">Filters</button></div>
+      <div id="mapfilters" role="group" aria-label="Show on the map" hidden></div>
     </div>
     <div id="mapmode" role="group" aria-label="What the map shows"></div>
     <div id="tools">
+      <button class="tool" id="flatBtn" aria-label="Switch between globe and flat map">2D</button>
       <button class="tool hot" id="surpriseBtn">Surprise us</button>
-      <button class="tool" id="homeBtn">Our base</button>
       <button class="tool" id="zoomOut" aria-label="Zoom out">−</button>
       <button class="tool" id="zoomIn" aria-label="Zoom in">+</button>
     </div>
@@ -553,6 +657,8 @@ textarea { resize: vertical; min-height: 66px; }
   </div>
 <section id="page" hidden></section>
 <div id="login" role="dialog" aria-modal="true" aria-label="Sign in" hidden></div>
+<section id="chat" aria-label="Messages" hidden></section>
+<div id="welcome" role="dialog" aria-modal="true" aria-label="Welcome" hidden></div>
 <div id="toast" role="status" hidden></div>
 
 <script src="vendor/d3.min.js"></script>
@@ -570,6 +676,7 @@ textarea { resize: vertical; min-height: 66px; }
 <script src="spots.js"></script>
 <script src="boost.js"></script>
 <script src="final.js"></script>
+<script src="learn.js"></script>
 <script>
 "use strict";
 const BLACK_SEA = { lat: 43.4, lon: 34 };
@@ -768,7 +875,8 @@ function profileForm(existing) {
 }
 function profileHead() {
   const p = profile(me);
-  if (!p || state.editProfile) return h("section", { class: "profilecard" }, h("h2", {}, p ? "Edit profile" : "Create your profile"), profileForm(state.editProfile ? p : null));
+  if (!p) return null;
+  if (state.editProfile) return h("section", { class: "profilecard" }, h("h2", {}, "Edit profile"), profileForm(p));
   const others = profiles.filter((x) => x.id !== me && !x.owner);
   return h("section", { class: "profilecard" },
     h("div", { class: "me" }, avatar(me, 68), h("div", {}, h("h2", {}, p.name), h("button", { class: "link", style: "padding:0", onclick: () => { Object.assign(newProfile, { name: p.name, animal: p.animal, colour: p.colour }); state.editProfile = true; renderStatsPage(); } }, "Edit profile"))),
@@ -789,6 +897,7 @@ function settingsList() {
       try { localStorage.setItem(PALS_KEY, palsOn ? "on" : "off"); } catch {}
       renderStatsPage();
     } }, palsOn ? "Turn off" : "Turn on")),
+    row("Bucket list widget", "A small view to pin to your home screen", h("a", { class: "btn quiet mini", href: "./?go=widget" }, "Open")),
     row("Backup", "Save a copy of everything", h("button", { class: "btn quiet mini", onclick: downloadBackup }, "Download")),
     authClient && row("Account", null, h("button", { class: "btn quiet mini", onclick: () => authClient.auth.signOut().then(() => location.reload()) }, "Sign out")));
 }
@@ -902,7 +1011,7 @@ async function connectCloud() {
     if (type === "INSERT" && collection === "bucket") announce(doc, true);
     apply();
   });
-  if (!profile(me)) setSection("profile");
+  if (!profile(me)) afterOpening();
 }
 async function connect() {
   if (window.PLANNER_CONFIG?.supabaseUrl) return connectCloud();
@@ -995,9 +1104,6 @@ function row(p) {
     h("em", { style: "display:inline-flex;gap:6px;align-items:center" }, dateText(p) || km + " km", avatar(p.who, 22)));
 }
 
-function renderGlobeHome() {
-  $("body").replaceChildren(dailyCard(), h("p", { class: "fine" }, "Tap a country to explore it, or choose a filter to see ideas."));
-}
 function renderList() {
   const pins = [...currentPins()].sort(byDate);
   const bar = state.view === "been" ? personBar() : null;
@@ -1124,7 +1230,7 @@ function renderCountry() {
       addBtn(t));
     const empty = !named.length && !scenes.length && !here.length;
     $("body").replaceChildren(h("article", { class: "detail" },
-      h("button", { class: "back", onclick: () => { state.region = null; dirty = true; renderPanel(); } }, `← All of ${label}`),
+      h("button", { class: "back keep", onclick: () => { state.region = null; dirty = true; renderPanel(); } }, `← All of ${label}`),
       h("h2", {}, r.name),
       cities.length > 0 && h("section", { class: "notes" }, h("h3", {}, "Cities we've been to"), cityChips(cities, label, r.name)),
       here.length > 0 && h("section", { class: "notes" }, h("h3", {}, "Ours here"), here.map(row)),
@@ -1258,14 +1364,13 @@ function renderPanel() {
   if (panelKey !== lastPanel) { lastPanel = panelKey; void $("body").offsetWidth; $("body").classList.add("fresh"); }
   renderTabs();
   /* on phones the sheet stays out of the way until there's something to show */
-  const nothingOpen = state.section === "globe" && state.mode === "list" && !state.kinds.size && state.mapView === "all";
+  const nothingOpen = state.section === "globe" && state.mode === "list" && !(state.kinds.size && state.mapView === "all");
   if (nothingOpen !== lastSheet) { $("app").classList.toggle("mapfull", nothingOpen); lastSheet = nothingOpen; }
   if (state.mode === "detail") renderDetail();
   else if (state.mode === "form") renderForm();
   else if (state.mode === "spot") renderSpot();
   else if (state.mode === "country") renderCountry();
   else if (state.section === "globe" && state.kinds.size && state.mapView === "all") renderFilterResults();
-  else if (state.section === "globe" && state.mapView === "all") renderGlobeHome();
   else if (state.view === "cal") renderCalendar();
   else if (state.section === "plans") renderBucket();
   else renderList();
@@ -1498,6 +1603,28 @@ const SCENERY = [];
     }
   }
 }
+/* the finest map and the lakes and rivers load only once you zoom in */
+let HD = null, HD_INFO = null, HD_REACH = null, WATER = null, hdLoading = false;
+function loadDetail() {
+  if (hdLoading) return;
+  hdLoading = true;
+  fetch("land-hd.json").then((r) => r.json()).then((list) => {
+    const paint = new Map(HIGH.map((f) => [f.properties.name, f.properties.paint]));
+    for (const f of list) f.properties.paint = paint.get(f.properties.name) ?? 0;
+    HD_INFO = list.map(info); HD_REACH = list.map(reach); HD = list; baseKey = ""; dirty = true;
+  }).catch(() => {});
+  fetch("detail.json").then((r) => r.json()).then((d) => { WATER = d; baseKey = ""; dirty = true; }).catch(() => {});
+}
+/* the flat map shares everything with the globe: same colours, names, stickers and tapping */
+let flatMap = false;
+try { flatMap = localStorage.getItem("hw-map") === "flat"; } catch {}
+const flatProjection = d3.geoNaturalEarth1().precision(.9);
+const baseRadius = () => (flatMap ? Math.max(view.w / 5.45, view.h / 2.78) : Math.min(view.w, view.h) * .43);
+function setFlat() {
+  const R = view.r * view.zoom, roomY = Math.max(0, 1.42 * R - view.h / 2) / R / RAD;
+  view.lat = Math.max(-roomY, Math.min(roomY, view.lat));
+  flatProjection.rotate([-view.lon, 0]).scale(R).translate([view.cx, view.cy + view.lat * RAD * R]);
+}
 const projection = d3.geoOrthographic().clipAngle(90).precision(.9);
 const painter = d3.geoPath(projection, null);
 const layer = document.createElement("canvas"), bctx = layer.getContext("2d");
@@ -1511,11 +1638,11 @@ let velocity = 0, flight = null;
 
 /* sharper on strong devices, gentler on modest ones, and it steps down if frames run slow */
 const lowEnd = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 3;
-let quality = lowEnd ? 1.25 : 1.5, slowFrames = 0, lightDrag = false;
+let quality = lowEnd ? 1.5 : 2, slowFrames = 0, lightDrag = false;
 function noteFrame(ms, moving) {
   if (!moving) return;
   slowFrames = ms > 45 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
-  if (slowFrames > 12) { slowFrames = 0; if (quality > 1) { quality = 1; resize(); } else lightDrag = true; }
+  if (slowFrames > 12) { slowFrames = 0; if (quality > 1) { quality = quality > 1.5 ? 1.5 : 1; resize(); } else lightDrag = true; }
 }
 let resizeQueued = false;
 function queueResize() {
@@ -1529,17 +1656,26 @@ function resize() {
   view.dpr = Math.min(devicePixelRatio || 1, quality);
   view.w = b.width; view.h = b.height;
   canvas.width = layer.width = b.width * view.dpr; canvas.height = layer.height = b.height * view.dpr;
-  view.cx = b.width / 2;
-  view.cy = b.height * .5;
+  view.ox = view.ox || 0; view.oy = view.oy || 0;
+  view.cx = b.width / 2 + view.ox;
+  view.cy = b.height * .5 + view.oy;
   baseKey = ""; dirty = true;
 }
 new ResizeObserver(queueResize).observe(canvas);
 
 function project(x, y, z) {
+  if (flatMap) {
+    const p = flatProjection([Math.atan2(x, z) / RAD, Math.asin(Math.max(-1, Math.min(1, y))) / RAD]), R = view.r * view.zoom;
+    return [(p[0] - view.cx) / R, (view.cy - p[1]) / R, 1];
+  }
   const x1 = x * cosO - z * sinO, z1 = x * sinO + z * cosO;
   return [x1, y * cosP - z1 * sinP, y * sinP + z1 * cosP];
 }
 function unproject(sx, sy) {
+  if (flatMap) {
+    const ll = flatProjection.invert([sx, sy]);
+    return ll && Math.abs(ll[1]) <= 90 ? { lat: ll[1], lon: ((ll[0] + 540) % 360) - 180 } : null;
+  }
   const r = view.r * view.zoom;
   const x = (sx - view.cx) / r, y = (view.cy - sy) / r, d = x * x + y * y;
   if (d > 1) return null;
@@ -1595,13 +1731,13 @@ function drawPin(pin, sx, sy, pz, frame, chosen) {
 }
 /* the sky is fixed in space, so turning the globe swings different things into view */
 /* [sticker, sky longitude, height on screen, size]: a panorama sliding round the corners */
-const SKY_THINGS = [["skySun", 95, .16, 150], ["skyMoon", -14, .83, 112], ["skyPlanet", -110, .17, 112], ["skyRocket", -70, .85, 76], ["skyComet", 170, .82, 96], ["skyEarthling", -165, .15, 58]]
+const SKY_THINGS = [["skySun", 110, .2, 96], ["skyMoon", -50, .78, 64]]
   .map(([kind, lon, fy, size]) => ({ kind, lon, fy, size }));
 const SKY_STARS = [];
 {
   let seed = 23;
   const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  for (let i = 0; i < 240; i++) {
+  for (let i = 0; i < 130; i++) {
     const z = rnd() * 2 - 1, a = rnd() * 6.283, r = Math.sqrt(1 - z * z);
     SKY_STARS.push({ xyz: [r * Math.cos(a), z, r * Math.sin(a)], big: i % 7 === 0 });
   }
@@ -1650,6 +1786,69 @@ function landAt({ lat, lon }) {
     return d3.geoContains(f, [lon, lat]);
   });
 }
+/* each name is drawn once to a small image, then simply placed, which is far quicker */
+const TIERS = [1, 1.5, 2.2, 3.2, 4.6, 6.5, 9, 14];
+const labelTiers = new Map(), sprites = new Map();
+function labelsFor(zoom) {
+  const tier = TIERS.filter((t) => t <= zoom + .001).pop() || 1;
+  const key = tier + "/" + Math.round(view.r) + flatMap;
+  if (labelTiers.has(key)) return labelTiers.get(key);
+  const R = view.r * tier, kept = [];
+  const fits = (xyz, width, height) => !kept.some((k) => {
+    const c = xyz[0] * k.xyz[0] + xyz[1] * k.xyz[1] + xyz[2] * k.xyz[2];
+    if (c < .8) return false;
+    const a = Math.acos(Math.min(1, c)) * R;
+    return a < (width + k.width) / 2 + 12 && a < 26 + (width + k.width) * .32;
+  });
+  for (const l of LABELS) {
+    const text = l.text || (l.text = countryInfo(l.name).label), width = text.length * 7 + 8;
+    if (l.area * R * R < width * width * (tier < 1.5 ? .9 : .55)) continue;
+    if (fits(l.xyz, width)) kept.push({ text, xyz: l.xyz, width, country: l.name });
+  }
+  if (tier >= 3.2) {
+    for (const c of allCities()) {
+      if (tier < c.tier) continue;
+      const width = c.name.length * 6.4 + 16;
+      if (fits(c.xyz, width)) kept.push({ text: c.name, xyz: c.xyz, width, city: true });
+    }
+  }
+  labelTiers.set(key, kept);
+  return kept;
+}
+let cityList = null;
+function allCities() {
+  if (cityList) return cityList;
+  cityList = window.CITIES.map(([name, lat, lon], i) => ({ name, xyz: toXYZ(lat, lon), tier: i % 3 === 0 ? 3.2 : 4.6 }));
+  const seen = new Set(window.CITIES.map(([n]) => n));
+  for (const [country, list] of Object.entries(window.COUNTRY_CITIES)) {
+    if (country === "Ukraine") continue;
+    list.forEach(([name, lat, lon], i) => {
+      if (seen.has(name)) return;
+      seen.add(name);
+      cityList.push({ name, xyz: toXYZ(lat, lon), tier: i < 2 ? 3.2 : i < 6 ? 4.6 : i < 12 ? 6.5 : 9 });
+    });
+  }
+  return cityList;
+}
+function labelSprite(l) {
+  const id = (l.city ? "c:" : "n:") + l.text;
+  if (sprites.has(id)) return sprites.get(id);
+  const scale = 2, font = l.city ? "700 11.5px Nunito, system-ui, sans-serif" : "800 12px Nunito, system-ui, sans-serif";
+  const m = document.createElement("canvas").getContext("2d");
+  m.font = font;
+  const tw = Math.ceil(m.measureText(l.text).width), w = tw + (l.city ? 16 : 8), h = 20;
+  const c = document.createElement("canvas");
+  c.width = w * scale; c.height = h * scale;
+  const g = c.getContext("2d");
+  g.scale(scale, scale); g.font = font; g.textBaseline = "middle"; g.lineJoin = "round";
+  const x = l.city ? 11 : 4;
+  if (l.city) { g.beginPath(); g.arc(4.5, 10, 2.8, 0, 7); g.fillStyle = "#fff6dc"; g.fill(); g.strokeStyle = INK; g.lineWidth = 1.3; g.stroke(); }
+  g.lineWidth = 3; g.strokeStyle = "rgba(255,246,220,.92)"; g.strokeText(l.text, x, 10.5);
+  g.fillStyle = INK; g.fillText(l.text, x, 10.5);
+  const sp = { canvas: c, w, h, ax: l.city ? 4.5 : w / 2 };
+  sprites.set(id, sp);
+  return sp;
+}
 function paintBase(detailed, moving) {
   const busy = moving;
   pen = bctx;
@@ -1660,23 +1859,31 @@ function paintBase(detailed, moving) {
   pen.lineJoin = "round"; pen.lineCap = "round";
 
   /* space behind the globe, only while there's any of it to see */
+  if (flatMap) { pen.fillStyle = state.view === "been" ? "#a9c4c4" : SEA; pen.fillRect(0, 0, w, H); }
+  else {
   if (view.zoom < 1.9) paintSky(w, H, cx, cy, moving);
   pen.beginPath(); pen.arc(cx, cy, R + 5, 0, 7); pen.fillStyle = "rgba(127,208,196,.28)"; pen.fill();
   pen.beginPath(); pen.arc(cx, cy, R, 0, 7); pen.fillStyle = state.view === "been" ? "#a9c4c4" : SEA; pen.fill();
+  }
 
   /* flat gouache land, drawing only what's on screen */
   /* exactly on the equator the south pole sits on the clip edge and Antarctica fills inside out */
   projection.rotate([-view.lon, -(Math.abs(view.lat) < .25 ? .25 : view.lat)]).translate([cx, cy]).scale(R).clipExtent([[-4, -4], [w + 4, H + 4]]);
-  const allLand = detailed ? HIGH : LOW, allInfos = detailed ? HIGH_INFO : LOW_INFO, reaches = detailed ? HIGH_REACH : LOW_REACH;
+  painter.projection(flatMap ? flatProjection : projection);
+  if (flatMap) { setFlat(); flatProjection.clipExtent([[-4, -4], [w + 4, H + 4]]); }
+  if (view.zoom > 2.5) loadDetail();
+  const useHd = HD && view.zoom > 5 && !moving;
+  const allLand = useHd ? HD : detailed ? HIGH : LOW, allInfos = useHd ? HD_INFO : detailed ? HIGH_INFO : LOW_INFO, reaches = useHd ? HD_REACH : detailed ? HIGH_REACH : LOW_REACH;
   const land = [], infos = [];
   const [vx, vy, vz] = toXYZ(view.lat, view.lon);
-  const seen = view.zoom < 1.3 ? Math.PI : Math.asin(Math.min(1, Math.hypot(w, H) / (2 * R))) + .05;
+  const seen = flatMap ? Math.PI * 2 : view.zoom < 1.3 ? Math.PI : Math.asin(Math.min(1, Math.hypot(w, H) / (2 * R))) + .05;
   for (let i = 0; i < allLand.length; i++) {
     const c = reaches[i], d = Math.acos(Math.max(-1, Math.min(1, c.xyz[0] * vx + c.xyz[1] * vy + c.xyz[2] * vz)));
     if (d - c.rad < seen) { land.push(allLand[i]); infos.push(allInfos[i]); }
   }
   const open = state.country?.name, greyMap = state.view === "been";
   projection.precision(moving ? 2.5 : .9);
+  flatProjection.precision(moving ? 2.5 : .9);
   if (moving && !open) {
     const byColour = new Map();
     for (let i = 0; i < land.length; i++) {
@@ -1703,7 +1910,17 @@ function paintBase(detailed, moving) {
   if (!(moving && lightDrag)) {
     pen.beginPath();
     for (const f of land) painter(f);
-    pen.strokeStyle = INK; pen.lineWidth = 1.1; pen.stroke();
+    pen.strokeStyle = INK; pen.lineWidth = view.zoom > 5 ? .9 : 1; pen.stroke();
+  }
+
+  if (WATER && view.zoom > 2.4 && !moving) {
+    pen.beginPath();
+    for (const f of WATER.lakes) painter(f);
+    pen.fillStyle = SEA; pen.fill();
+    pen.strokeStyle = "rgba(38,33,74,.45)"; pen.lineWidth = .7; pen.stroke();
+    pen.beginPath();
+    for (const f of WATER.rivers) painter(f);
+    pen.strokeStyle = "rgba(31,168,160,.8)"; pen.lineWidth = view.zoom > 5 ? 1.3 : .9; pen.stroke();
   }
 
   /* an opened country splits into its provinces */
@@ -1724,7 +1941,7 @@ function paintBase(detailed, moving) {
   }
 
   /* hard cel shadow and a dab of highlight, only on the whole globe */
-  if (view.zoom < 2) {
+  if (view.zoom < 2 && !flatMap) {
     pen.save();
     pen.beginPath(); pen.arc(cx, cy, R, 0, 7); pen.clip();
     pen.beginPath();
@@ -1733,65 +1950,35 @@ function paintBase(detailed, moving) {
     pen.fillStyle = "rgba(43,29,24,.12)"; pen.fill();
     pen.restore();
   }
-  pen.beginPath(); pen.arc(cx, cy, R, 0, 7);
-  pen.strokeStyle = INK; pen.lineWidth = 2.5; pen.stroke();
+  if (!flatMap) { pen.beginPath(); pen.arc(cx, cy, R, 0, 7); pen.strokeStyle = INK; pen.lineWidth = 2.5; pen.stroke(); }
 
-  /* names: biggest first, skipping any that would collide or not fit */
+  /* names come from a fixed list for this zoom, so they never flicker as the globe turns */
   placed = [];
-  pen.font = "800 12px Nunito, system-ui, sans-serif";
-  pen.textAlign = "center"; pen.textBaseline = "middle";
-  const label = (text, sx, sy, soft) => {
-    if (!labelWidth.has(text)) labelWidth.set(text, pen.measureText(text).width);
-    const tw = labelWidth.get(text);
-    const box = [sx - tw / 2 - 3, sy - 9, sx + tw / 2 + 3, sy + 9];
-    if (placed.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) return false;
-    placed.push(box);
-    if (!busy) { pen.lineWidth = 3; pen.strokeStyle = "rgba(255,246,220,.92)"; pen.strokeText(text, sx, sy); }
-    pen.fillStyle = soft ? "#5f4a3b" : INK; pen.fillText(text, sx, sy);
-    return true;
-  };
+  pen.save();
+  for (const l of labelsFor(view.zoom)) {
+    if (l.country === open && state.regions?.length) continue;
+    const [px, py, pz] = project(...l.xyz);
+    if (pz < .1) continue;
+    const sx = cx + R * px, sy = cy - R * py;
+    const sp = labelSprite(l);
+    if (sx < -sp.w || sx > w + sp.w || sy < -20 || sy > H + 20) continue;
+    pen.globalAlpha = Math.min(1, (pz - .1) / .2);
+    pen.drawImage(sp.canvas, sx - sp.ax, sy - sp.h / 2, sp.w, sp.h);
+  }
+  pen.restore();
   if (open && state.regions?.length) {
     pen.font = "700 11px Nunito, system-ui, sans-serif";
+    pen.textAlign = "center"; pen.textBaseline = "middle";
     for (const r of [...state.regions].sort((a, b) => b.area - a.area)) {
       const [px, py, pz] = project(...r.xyz);
       if (pz < .22) continue;
-      const sx = cx + R * px, sy = cy - R * py;
-      if (sx < 0 || sx > w || sy < 0 || sy > H) continue;
-      const tw = r.name.length * 6;
-      if (r.area * R * R * pz < tw * tw * .3) continue;
-      label(r.name, sx, sy, true);
-    }
-    pen.font = "800 12px Nunito, system-ui, sans-serif";
-  }
-  let count = 0;
-  for (const l of LABELS) {
-    if (l.name === open && state.regions?.length) continue;
-    const [px, py, pz] = project(...l.xyz);
-    if (pz < .22) continue;
-    const sx = cx + R * px, sy = cy - R * py;
-    if (sx < 0 || sx > w || sy < 0 || sy > H) continue;
-    const text = l.text || (l.text = countryInfo(l.name).label);
-    const tw = text.length * 6.6;
-    if (l.area * R * R * pz < tw * tw * .5) continue;
-    if (moving && lightDrag) break;
-    if (label(text, sx, sy) && moving && ++count > 9) break;
-  }
-  if (view.zoom > 3.4) {
-    pen.font = "700 11.5px Nunito, system-ui, sans-serif";
-    for (const c of CITY_POINTS) {
-      if (view.zoom < c.zoom) continue;
-      const [px, py, pz] = project(...c.xyz);
-      if (pz < .15) continue;
-      const sx = cx + R * px, sy = cy - R * py;
-      if (sx < 0 || sx > w || sy < 0 || sy > H) continue;
-      const nameW = pen.measureText(c.name).width;
-      const cb = [sx - 4, sy - 8, sx + nameW + 9, sy + 8];
-      if (placed.some((o) => cb[0] < o[2] && cb[2] > o[0] && cb[1] < o[3] && cb[3] > o[1])) continue;
-      placed.push(cb);
-      pen.beginPath(); pen.arc(sx, sy, 3, 0, 7); inked("#fff6dc", 1.5);
-      pen.textAlign = "left"; pen.lineWidth = 3; pen.strokeStyle = "rgba(255,246,220,.92)"; pen.fillStyle = INK;
-      pen.strokeText(c.name, sx + 6, sy); pen.fillText(c.name, sx + 6, sy);
-      pen.textAlign = "center";
+      const sx = cx + R * px, sy = cy - R * py, tw = r.name.length * 6;
+      if (sx < 0 || sx > w || sy < 0 || sy > H || r.area * R * R * pz < tw * tw * .3) continue;
+      const b = [sx - tw / 2, sy - 8, sx + tw / 2, sy + 8];
+      if (placed.some((o) => b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1])) continue;
+      placed.push(b);
+      pen.lineWidth = 3; pen.strokeStyle = "rgba(255,246,220,.92)"; pen.strokeText(r.name, sx, sy);
+      pen.fillStyle = "#57507a"; pen.fillText(r.name, sx, sy);
     }
   }
   pen.textBaseline = "alphabetic";
@@ -1813,6 +2000,15 @@ function draw(now) {
   } else if (!dragging && Math.abs(velocity) > .002) {
     view.lon -= velocity; velocity *= .92; moving = true;
   }
+  /* make room for the sheet: the globe glides aside rather than the page resizing */
+  const sheetOpen = !$("app").classList.contains("mapfull") && state.section === "globe";
+  const phone = view.w <= 760;
+  const wantX = sheetOpen && !phone ? -200 : 0, wantY = sheetOpen && phone ? -view.h * .24 : 0;
+  if (Math.abs(wantX - view.ox) > .5 || Math.abs(wantY - view.oy) > .5) {
+    view.ox += (wantX - view.ox) * .2; view.oy += (wantY - view.oy) * .2;
+    view.cx = view.w / 2 + view.ox; view.cy = view.h * .5 + view.oy;
+    moving = true;
+  }
   const settled = wasMoving && !moving;
   wasMoving = moving;
   /* a still map costs nothing: only animals close up keep it ticking, four times a second */
@@ -1822,17 +2018,18 @@ function draw(now) {
   lastDraw = moving ? now : 0;
   drawn = now; dirty = false;
 
-  view.r = Math.min(view.w, view.h) * .43;
+  view.r = baseRadius();
+  if (flatMap) setFlat();
   sinO = Math.sin(view.lon * RAD); cosO = Math.cos(view.lon * RAD); sinP = Math.sin(view.lat * RAD); cosP = Math.cos(view.lat * RAD);
 
   const detailed = view.zoom > 4.5 || !moving;
-  const key = [state.view, view.lon, view.lat, view.zoom, detailed, threadVersion, state.country?.name, state.region?.name, state.regions?.length, hoverName, hoverRegion?.name].join();
+  const key = [flatMap, state.view, view.cx, view.cy, view.lon, view.lat, view.zoom, detailed, threadVersion, state.country?.name, state.region?.name, state.regions?.length, hoverName, hoverRegion?.name].join();
   /* up close the map is nearly flat, so a drag can slide the last painting and only
      repaint now and then; the sea colour fills any gap at the edges */
   const R_ = view.r * view.zoom;
   const dLon = ((paintedAt.lon - view.lon + 540) % 360) - 180, slideX = dLon * RAD * R_ * cosP, slideY = (view.lat - paintedAt.lat) * RAD * R_;
-  const canSlide = moving && !flight && view.zoom >= 2.4 && paintedAt.zoom === view.zoom && paintedAt.key === [state.view, threadVersion, state.country?.name, state.region?.name].join()
-    && now - paintedAt.t < 160 && Math.hypot(slideX, slideY) < view.w * .22;
+  const canSlide = !flatMap && moving && !flight && view.zoom >= 2.4 && paintedAt.zoom === view.zoom && paintedAt.key === [state.view, threadVersion, state.country?.name, state.region?.name].join()
+    && now - paintedAt.t < 420 && Math.hypot(slideX, slideY) < view.w * .22;
   let shiftX = 0, shiftY = 0;
   if (canSlide) { shiftX = slideX; shiftY = slideY; }
   else if (key !== baseKey) {
@@ -1908,13 +2105,13 @@ function draw(now) {
   {
     const [x, y, z] = toXYZ(BLACK_SEA.lat, BLACK_SEA.lon);
     const [px, py, pz] = project(x, y, z);
-    if (pz > .1 && view.zoom < 3) boat(cx + R * px, cy - R * py, Math.max(.8, Math.min(1.5, R / 260)), 0);
+    if (false) boat(cx + R * px, cy - R * py, Math.max(.8, Math.min(1.5, R / 260)), 0);
   }
   {
     const [x, y, z] = toXYZ(HOME.lat, HOME.lon);
     const [px, py, pz] = project(x, y, z);
     const img = STICKER_IMG.base;
-    if (pz > .1 && img.complete) {
+    if (pz > .1 && img.complete && HOME.name !== "Not set yet") {
       const sz = Math.min(52, 28 + view.zoom * 4), sx = cx + R * px, sy = cy - R * py;
       ctx.drawImage(img, sx - sz / 2, sy - sz * .9, sz, sz);
     }
@@ -1981,6 +2178,7 @@ canvas.addEventListener("pointerdown", (e) => {
   touches.set(e.pointerId, local(e));
   dragging = true; moved = 0; velocity = 0; flight = null;
   canvas.classList.add("dragging");
+  $("toast").hidden = true;
   $("tip").hidden = true;
 });
 let hoverQueued = false;
@@ -2067,7 +2265,7 @@ canvas.addEventListener("pointerleave", () => { $("tip").hidden = true; hoverNam
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
   const [x, y] = local(e), before = unproject(x, y);
-  view.r = Math.min(view.w, view.h) * .43;
+  view.r = baseRadius();
   setZoom(view.zoom * Math.exp(-e.deltaY * .002));
   const after = unproject(x, y);
   if (before && after) {
@@ -2093,7 +2291,22 @@ document.addEventListener("keydown", (e) => {
 });
 $("zoomIn").onclick = () => setZoom(view.zoom * 1.6);
 $("zoomOut").onclick = () => setZoom(view.zoom / 1.6);
-$("homeBtn").onclick = () => flyTo(HOME.lat, HOME.lon, 1);
+function renderFlatBtn() { $("flatBtn").textContent = flatMap ? "Globe" : "2D"; }
+$("flatBtn").onclick = () => {
+  flatMap = !flatMap;
+  try { localStorage.setItem("hw-map", flatMap ? "flat" : "globe"); } catch {}
+  labelTiers.clear(); chosenKey = ""; baseKey = ""; dirty = true;
+  if (flatMap) { view.lat = 10; view.zoom = 1; } else view.zoom = 1;
+  renderFlatBtn(); buzz();
+};
+renderFlatBtn();
+$("filterBtn").onclick = () => {
+  const f = $("mapfilters"), open = f.hidden;
+  f.hidden = !open;
+  $("filterBtn").setAttribute("aria-expanded", String(open));
+};
+$("sheetClose").onclick = closeSheet;
+$("chatBtn").onclick = toggleChat;
 
 /* ---------- map filters ---------- */
 const FILTERS = { wild: ["Wildlife", "wild"], dive: ["Underwater", "water"], hike: ["Hiking", "trail"], thrill: ["Thrills", "sky"], food: ["Food", "table"], history: ["History", "sights"], still: ["Slow", "still"] };
@@ -2147,7 +2360,15 @@ function openSuggestion(p) {
   state.spot = p; state.mode = "spot"; state.sel = null; state.draft = { lat: p.lat, lon: p.lon };
   renderPanel(); flyTo(p.lat, p.lon, 6);
 }
+function closeSheet() {
+  if (state.mode === "spot") closeSpot();
+  else if (state.mode === "country") closeCountry();
+  else if (state.mode === "detail") closeDetail();
+  else if (state.mode === "form") cancelForm();
+  else if (state.kinds.size) { state.kinds.clear(); pickFilters(); renderMapFilters(); refreshThreads(); renderPanel(); }
+}
 function renderMapFilters() {
+  $("filterBtn").textContent = state.kinds.size ? `Filters · ${state.kinds.size}` : "Filters";
   $("mapfilters").replaceChildren(...Object.entries(FILTERS).map(([k, [label, cat]]) =>
     h("button", { class: "chip", "aria-pressed": String(state.kinds.has(k)), html: glyph(cat) + label, onclick: () => {
       state.kinds.has(k) ? state.kinds.delete(k) : state.kinds.add(k);
@@ -2309,7 +2530,6 @@ function saveMove(key, value) {
   buzz();
 }
 function startGame(type) {
-  if (!profile(me)) { setSection("profile"); return toast("Create your profile first."); }
   if (profiles.length < 2) return toast("Both of you need a profile to play together.");
   store.saveGame({ id: "current", type, gid: newId(), seed: 1 + Math.floor(Math.random() * 2147483000), by: me, to: profiles.find((p) => p.id !== me).id, startedAt: Date.now() });
 }
@@ -2515,6 +2735,46 @@ function gameBoard(g) {
     result.line && h("p", { class: "scoreline" }, result.line),
     result.done ? [h("div", { class: "quiz" }, h("h3", {}, title)), h("button", { class: "btn", style: "justify-self:center", onclick: () => startGame(g.type) }, "Rematch")] : result.view());
 }
+/* ---------- learn: one player, no signal needed ---------- */
+const LEARN_KEY = "hw-learn";
+let learnBest = {};
+try { learnBest = JSON.parse(localStorage.getItem(LEARN_KEY)) || {}; } catch {}
+const learn = { track: null, list: [], n: 0, score: 0, picked: null };
+function startLesson(track) {
+  const pool = [...window.LESSONS[track].questions].sort(() => Math.random() - .5).slice(0, 10);
+  const list = pool.map((q) => ({ q, opts: [q[1], q[2], q[3]].sort(() => Math.random() - .5) }));
+  Object.assign(learn, { track, list, n: 0, score: 0, picked: null });
+  renderPlay();
+}
+function lessonView() {
+  const lesson = window.LESSONS[learn.track], total = learn.list.length;
+  if (learn.n >= total) {
+    const best = Math.max(learnBest[learn.track] || 0, learn.score);
+    if (best !== learnBest[learn.track]) { learnBest[learn.track] = best; try { localStorage.setItem(LEARN_KEY, JSON.stringify(learnBest)); } catch {} }
+    return h("div", { class: "wrap lesson" }, h("div", { class: "quiz" },
+      h("img", { src: STICKER_IMG[lesson.icon].src, alt: "" }), h("h3", {}, `${learn.score} of ${total}`),
+      h("p", { class: "fine" }, learn.score >= 8 ? "Superb. You really know this." : learn.score >= 5 ? "Nicely done." : "Every round teaches you something."),
+      h("button", { class: "btn", onclick: () => startLesson(learn.track) }, "Play again"),
+      h("button", { class: "btn quiet", onclick: () => { learn.track = null; renderPlay(); } }, "Back to Minigames")));
+  }
+  const item = learn.list[learn.n], [question, right, , , fact, place, where, lat, lon, kind] = item.q, added = place && items.some((i) => i.title === place);
+  return h("div", { class: "wrap lesson" },
+    h("div", { class: "gamehead" }, h("span", { class: "fine" }, `${lesson.name} · ${learn.n + 1} of ${total}`), h("button", { class: "btn quiet mini", onclick: () => { learn.track = null; renderPlay(); } }, "Leave")),
+    h("div", { class: "bar still" }, h("i", { style: `transform:scaleX(${(learn.n + (learn.picked ? 1 : 0)) / total})` })),
+    h("div", { class: "quiz" },
+      h("strong", { class: "question" }, question),
+      h("div", { class: "answers" }, item.opts.map((o) => h("button", {
+        class: "btn quiet" + (learn.picked ? (o === right ? " right" : o === learn.picked ? " wrong" : "") : ""), disabled: !!learn.picked,
+        onclick: () => { learn.picked = o; if (o === right) { learn.score++; buzz(); } renderPlay(); },
+      }, o))),
+      learn.picked && h("div", { class: "factcard" },
+        kind && h("img", { src: STICKER_IMG[kind].src, alt: "" }),
+        h("p", {}, fact),
+        place && canWrite && h("button", { class: "btn quiet mini", disabled: added, onclick: () => {
+          persist({ id: newId(), title: place, place: where, lat, lon, cat: "sights", status: "dream", blurb: fact, by: myId, createdAt: Date.now(), notes: [] }, "Added to our bucket list").then(() => { refreshThreads(); renderPlay(); });
+        } }, added ? "On our bucket list" : `+ ${place}`)),
+      learn.picked && h("button", { class: "btn", onclick: () => { learn.n++; learn.picked = null; renderPlay(); $("page").scrollTop = 0; } }, learn.n + 1 === total ? "See my score" : "Next")));
+}
 const celebrated = new Set();
 const duel = { a: null, b: null, round: 0, rounds: 8, done: false };
 const quiz = { scene: null, options: [], answered: null, streak: 0, best: 0 };
@@ -2540,12 +2800,18 @@ function pickCard(p) {
     h("b", {}, p.title), h("span", { class: "sub" }, p.place));
 }
 function renderPlay() {
+  if (learn.track) { $("page").replaceChildren(lessonView()); return; }
   const g = current();
   if (g && rival(g)) { $("page").replaceChildren(gameBoard(g)); return; }
   if (!duel.a) nextDuel();
   if (!quiz.scene) nextQuiz();
   const winner = duel.a, t = games.find((x) => x.id === "tally") || {}, wins = t.wins || {}, two = profiles.slice(0, 2);
   $("page").replaceChildren(h("div", { class: "wrap" },
+    h("h2", {}, "Learn"),
+    h("p", { class: "fine", style: "margin:-12px 0 0" }, "Short lessons for one. Works with no signal, so it's perfect for a flight."),
+    h("div", { class: "gamegrid" }, Object.entries(window.LESSONS).map(([id, l]) => h("button", { class: "gamecard", onclick: () => startLesson(id) },
+      h("img", { src: STICKER_IMG[l.icon].src, alt: "" }), h("span", {}, h("b", {}, l.name), h("small", {}, learnBest[id] ? `Best score ${learnBest[id]} of 10` : `${l.questions.length} questions`))))),
+    h("h2", {}, "Play together"),
     two.length === 2 && h("section", { class: "score" },
       h("div", { class: "scoretop" }, two.map((p, i) => [i === 1 && h("b", { class: "vs" }, "vs"), h("div", { class: "scoreside" }, avatar(p.id, 48), h("b", { class: "num" }, String(wins[p.id] || 0)), h("span", {}, p.name))])),
       h("details", {}, h("summary", {}, "Scoreboard by game"),
@@ -2585,6 +2851,8 @@ function renderPlay() {
 let announcedGame = null;
 function gamesChanged() {
   if (typeof profile !== "function" || !$("sections")) return;
+  chatChanged();
+  if (new URLSearchParams(location.search).get("go") === "widget") renderWidgetView();
   const g = current();
   if (g && g.gid !== announcedGame) {
     announcedGame = g.gid;
@@ -2643,34 +2911,76 @@ function openingScreen() {
   const box = $("splash");
   let seen = false;
   try { seen = sessionStorage.getItem("hw-opened") === "1"; sessionStorage.setItem("hw-opened", "1"); } catch {}
-  if (seen || reduced) { box.remove(); return; }
-  box.querySelector(".splashlogo").innerHTML = logoSvg(170);
-  box.querySelector(".splashname").replaceChildren(...[..."HugeWorld"].map((c, i) => h("span", { style: `animation-delay:${.45 + i * .05}s` }, c)));
-  const stars = box.querySelector(".splashstars");
-  for (let i = 0; i < 46; i++) stars.append(h("i", { style: `left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-delay:${Math.random() * 2}s` }));
-  const W_ = innerWidth, H_ = innerHeight, cast = [];
-  const add = (kind, size, opts) => { const el = sprite(kind, size); el.classList.add("cast"); cast.push(el); travel(el, opts); };
-  add("flyRed", 74, { from: -90, to: W_ + 90, y: H_ * .17, bob: 26, duration: 1900, delay: 150 });
-  add("flyBlue", 62, { from: W_ + 90, to: -90, y: H_ * .27, bob: 20, duration: 2000, delay: 420 });
-  add("flyGreen", 54, { from: -80, to: W_ + 80, y: H_ * .1, bob: 16, duration: 1750, delay: 750 });
-  add("flyGold", 34, { from: W_ + 50, to: -50, y: H_ * .36, bob: 12, duration: 1500, delay: 900 });
-  add("walkGinger", 70, { from: W_ + 90, to: -90, y: H_ * .78, bob: 5, duration: 2100, delay: 300 });
-  add("walkSiamese", 62, { from: -90, to: W_ + 90, y: H_ * .84, bob: 5, duration: 1900, delay: 700 });
-  add("walkBlack", 56, { from: W_ + 90, to: -90, y: H_ * .7, bob: 5, duration: 1700, delay: 1000 });
+  if (reduced) { box.remove(); afterOpening(); return; }
+  if (seen || location.search.includes("go=widget")) { box.remove(); afterOpening(); return; }
+  box.querySelector(".splashlogo").innerHTML = logoSvg(116);
+  box.querySelector(".splashname").textContent = "HugeWorld";
+  /* the globe settles into place behind the logo, so leaving it feels like arriving */
+  if (!flatMap) { view.zoom = .78; view.lon = HOME.lon - 70; }
   let gone = false;
-  const finish = () => { if (gone) return; gone = true; box.remove(); cast.forEach((c) => c.remove()); };
-  /* the cheetah sprints through and pulls the night away behind it */
-  let revealing = false;
-  const reveal = (delay) => {
-    if (revealing) return;
-    revealing = true;
-    const dash = sprite("cheetah", 128);
-    dash.classList.add("cast"); cast.push(dash);
-    travel(dash, { from: W_ + 30, to: -160, y: H_ * .46, bob: 8, duration: 900, delay, easing: "cubic-bezier(.3, 0, .6, 1)" });
-    box.animate([{ clipPath: "inset(0 0 0 0)" }, { clipPath: "inset(0 100% 0 0)" }], { duration: 900, delay, easing: "cubic-bezier(.3, 0, .6, 1)", fill: "both" }).onfinish = finish;
+  const leave = () => {
+    if (gone) return;
+    gone = true;
+    if (flatMap) dirty = true; else { flyTo(HOME.lat === 30 ? 26 : HOME.lat, HOME.lon === 20 ? 30 : HOME.lon, 1); if (flight) flight.dur = 1500; }
+    box.classList.add("out");
+    setTimeout(() => { box.remove(); afterOpening(); }, 620);
   };
-  const timer = setTimeout(() => reveal(0), 2100);
-  box.addEventListener("pointerdown", () => { clearTimeout(timer); reveal(0); }, { once: true });
+  box.addEventListener("pointerdown", leave, { once: true });
+  setTimeout(leave, 1250);
+}
+/* what happens the moment the app is ready */
+function afterOpening() {
+  let onboarded = false;
+  try { onboarded = localStorage.getItem("hw-onboarded") === "1"; } catch {}
+  if (!$("login").hidden || new URLSearchParams(location.search).get("go") === "widget") return;                       // signing in comes first
+  if (profile(me)) { if (!onboarded) showWelcome(); return; }
+  /* a profile is needed once, here, so nothing in the app ever has to ask again */
+  showWelcome(onboarded ? WELCOME.length : 0);
+}
+const WELCOME = [
+  { kind: "lion", title: "Explore the whole world", text: "Tap any country to see what's there. Zoom in and the animals and landmarks appear." },
+  { kind: "balloon", title: "Dream it, then plan it", text: "Save anything to your bucket list, then give it a date in your calendar." },
+  { kind: "tea", title: "Colour in your map", text: "Tap the cities you've been to. Your world fills with colour as you go." },
+];
+function showWelcome(step = 0) {
+  const box = $("welcome");
+  const finish = () => {
+    try { localStorage.setItem("hw-onboarded", "1"); } catch {}
+    box.hidden = true;
+    setTimeout(() => toast("Tap any country to begin"), 500);
+  };
+  if (step < WELCOME.length) {
+    const w = WELCOME[step];
+    box.replaceChildren(h("div", { class: "welcomecard" },
+      h("img", { src: STICKER_IMG[w.kind].src, alt: "" }),
+      h("h2", {}, w.title), h("p", {}, w.text),
+      h("div", { class: "dots", "aria-hidden": "true" }, WELCOME.map((_, i) => h("i", { class: i === step ? "on" : "" }))),
+      h("button", { class: "btn", onclick: () => showWelcome(step + 1) }, step === WELCOME.length - 1 ? "Continue" : "Next"),
+      step < WELCOME.length - 1 && h("button", { class: "link", onclick: () => showWelcome(WELCOME.length) }, "Skip")));
+  } else if (profile(me)) return finish();
+  else {
+    const picks = ["siamese", "ginger", "shiba", "corgi", "owl", "parrot", "cheetah", "panda"];
+    const form = h("form", { onsubmit: (e) => {
+      e.preventDefault();
+      const name = e.target.elements.welcomeName.value.trim();
+      if (!name) return;
+      const id = newId();
+      store.saveProfile({ id, name, animal: newProfile.animal, colour: COLOURS[profiles.length % COLOURS.length], createdAt: Date.now() }).then(() => {
+        me = id;
+        try { localStorage.setItem(ME_KEY, id); } catch {}
+        finish();
+      }, () => toast("That didn't save. Try again."));
+    } },
+      h("input", { class: "text", id: "welcomeName", name: "welcomeName", required: true, maxlength: 24, placeholder: "Your name", autocomplete: "off", "aria-label": "Your name" }),
+      h("div", { class: "swatches single" }, picks.map((a) => h("button", { type: "button", "aria-label": a, "aria-pressed": String(newProfile.animal === a), onclick: (e) => { newProfile.animal = a; e.currentTarget.parentNode.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b === e.currentTarget))); } }, h("img", { src: STICKER_IMG[a].src, alt: "" })))),
+      h("button", { class: "btn", type: "submit" }, "Start exploring"));
+    newProfile.animal = picks[0];
+    const existing = profiles.filter((p) => !p.owner || p.owner === authUid);
+    box.replaceChildren(h("div", { class: "welcomecard" }, h("h2", {}, "Create your profile"),
+      existing.length > 0 && h("div", { class: "people" }, existing.map((p) => h("button", { class: "person", onclick: () => { me = p.id; try { localStorage.setItem(ME_KEY, p.id); } catch {} finish(); } }, avatar(p.id, 26), p.name))),
+      form));
+  }
+  box.hidden = false;
 }
 
 /* ---------- animal visitors ---------- */
@@ -2688,41 +2998,41 @@ function palTapped(el, kind) {
   document.body.append(heart);
   setTimeout(() => heart.remove(), 900);
 }
+/* visitors live on a layer behind every control, so they can never walk across the interface:
+   they peek up from behind a button, sit on top of it, or land on it from the sky */
+function stageSprite(kind, size) {
+  const el = h("div", { class: "pal stagepal", style: `width:${size}px;height:${size}px` }, h("img", { src: STICKER_IMG[kind].src, alt: "" }));
+  $("stage").append(el);
+  el.onclick = () => palTapped(el, kind);
+  return el;
+}
 function visit() {
-  const blocked = !palsOn || palBusy || reduced || document.hidden || $("splash") || !$("login").hidden || state.mode === "form";
-  if (blocked || document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
-  const W_ = innerWidth, H_ = innerHeight;
-  const leftEdge = -80, rightEdge = W_ + 80, leftward = Math.random() < .5;
-  const [a, b] = leftward ? [rightEdge, leftEdge] : [leftEdge, rightEdge];
-  const flyers = ["flyRed", "flyBlue", "flyGreen", "flyPink", "flyGold", "flyTeal"], walkers = ["walkGinger", "walkSiamese", "walkBlack"];
+  const blocked = !palsOn || palBusy || reduced || document.hidden || flatMap || dragging || !!flight || $("splash") || !$("login").hidden || !$("welcome").hidden || state.section !== "globe" || view.zoom > 1.5;
+  if (blocked || !$("app").classList.contains("mapfull")) return;
+  const stage = $("stage").getBoundingClientRect();
+  const spots = [$("surpriseBtn")].filter((n) => n?.offsetParent).map((n) => n.getBoundingClientRect());
+  if (!spots.length) return;
+  const spot = spots[Math.floor(Math.random() * spots.length)];
   const pick = (l) => l[Math.floor(Math.random() * l.length)];
-  const roll = Math.random();
   palBusy = true;
-  const done = (el) => { el.remove(); palBusy = false; };
-  if (roll < .4) {
-    const kind = pick(flyers), el = sprite(kind, 46);
-    el.onclick = () => palTapped(el, kind);
-    travel(el, { from: a, to: b, y: H_ * (.15 + Math.random() * .4), bob: 26, duration: 7000 }).onfinish = () => done(el);
-  } else if (roll < .75) {
-    const kind = pick(walkers), el = sprite(kind, 52);
-    el.onclick = () => palTapped(el, kind);
-    const floor = H_ - (innerWidth <= 760 ? 122 : 60);
-    travel(el, { from: a, to: b, y: floor, bob: 3, duration: 11000 }).onfinish = () => done(el);
-  } else if (roll < .88) {
-    const el = sprite("cheetah", 72);
-    el.onclick = () => palTapped(el, "cheetah");
-    travel(el, { from: a, to: b, y: H_ - (innerWidth <= 760 ? 150 : 90), bob: 5, duration: 1800 }).onfinish = () => done(el);
+  if (Math.random() < .55) {
+    /* a cat climbs up from behind the button, sits on it, then ducks back down */
+    const kind = pick(["walkGinger", "walkSiamese", "walkBlack"]), size = 58, el = stageSprite(kind, size);
+    const x = spot.left - stage.left + spot.width * (.2 + Math.random() * .6) - size / 2, low = spot.top - stage.top + 6, high = spot.top - stage.top - size * .9;
+    const at = (y) => ({ transform: `translate(${x}px, ${y}px)` });
+    el.animate([at(low), { ...at(high), offset: .1, easing: "ease-in" }, { ...at(high), offset: .9 }, at(low)], { duration: 8000, easing: "ease-out", fill: "both" }).onfinish = () => { el.remove(); palBusy = false; };
   } else {
-    /* a small bird stops for a rest on a button */
-    const perches = ["surpriseBtn", "homeBtn"].map($).filter((n) => n && n.offsetParent);
-    const spot = pick(perches).getBoundingClientRect(), kind = pick(flyers.slice(3)), el = sprite(kind, 32);
-    el.onclick = () => palTapped(el, kind);
-    const x = spot.left + spot.width / 2 - 16, y = spot.top - 26;
-    const here = `translate(${x}px, ${y}px)`;
-    el.animate([{ transform: `translate(${a}px, ${y - 90}px)` }, { transform: here, offset: .14 }, { transform: here, offset: .86 }, { transform: `translate(${b}px, ${y - 110}px)` }], { duration: 9000, easing: "ease-in-out", fill: "both" }).onfinish = () => done(el);
+    /* a small bird drops in from above, rests on the button and leaves the way it came */
+    const kind = pick(["flyPink", "flyGold", "flyTeal", "flyRed"]), size = 40, el = stageSprite(kind, size);
+    const x = spot.left - stage.left + spot.width * (.15 + Math.random() * .7) - size / 2, y = spot.top - stage.top - size * .82, sky = -60;
+    const fromRight = x > stage.width / 2, side = fromRight ? stage.width + 60 : -60, flip = fromRight ? 1 : -1;
+    const pose = (px, py, f) => ({ transform: `translate(${px}px, ${py}px) scaleX(${f})` });
+    el.animate([pose(side, y - 240, flip), { ...pose(x, y, flip), offset: .16, easing: "ease-in" }, { ...pose(x, y, flip), offset: .84 }, pose(side, sky, -flip)], { duration: 9000, easing: "ease-out", fill: "both" }).onfinish = () => { el.remove(); palBusy = false; };
   }
 }
-function scheduleVisit() { setTimeout(() => { visit(); scheduleVisit(); }, 30000 + Math.random() * 45000); }
+/* rare on purpose: a small surprise, at most twice in a session */
+let visitsLeft = 2;
+function scheduleVisit() { setTimeout(() => { if (visitsLeft > 0 && !palBusy) { visit(); if (palBusy) visitsLeft--; } if (visitsLeft > 0) scheduleVisit(); }, 240000 + Math.random() * 300000); }
 
 /* ---------- the daily card ---------- */
 const dayNumber = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 6e4) / 864e5);
@@ -2746,6 +3056,76 @@ function downloadBackup() {
   const link = h("a", { href: URL.createObjectURL(new Blob([body], { type: "application/json" })), download: `hugeworld-backup-${stamp}.json` });
   document.body.append(link); link.click(); link.remove();
   toast("Backup saved");
+}
+
+/* ---------- messages ----------
+   Each message is its own record, so two people typing at once can't overwrite each other. */
+const CHAT_READ = "hw-chat-read";
+const CHAT_STICKERS = ["siamese", "owl", "cheetah", "parrot", "panda", "tea"];
+let chatOpen = false, chatRead = 0;
+try { chatRead = +localStorage.getItem(CHAT_READ) || 0; } catch {}
+const messages = () => games.filter((g) => g.id.startsWith("msg-")).sort((a, b) => a.at - b.at).slice(-200);
+function sendMessage(fields) {
+  if (!profile(me)) return;
+  store.saveGame({ id: `msg-${newId()}`, who: me, at: Date.now(), ...fields }).catch(() => toast("That didn't send. Try again."));
+  buzz();
+}
+function renderChat() {
+  const box = $("chat"), list = messages();
+  const form = h("form", { class: "composer", onsubmit: (e) => {
+    e.preventDefault();
+    const f = e.target.elements.chatText, text = f.value.trim().slice(0, 500);
+    if (!text) return;
+    f.value = "";
+    sendMessage({ text });
+    $("chatText")?.focus();
+  } },
+    h("input", { class: "text", id: "chatText", name: "chatText", placeholder: "Say something nice…", "aria-label": "Message", autocomplete: "off", maxlength: 500 }),
+    h("button", { class: "btn", type: "submit" }, "Send"));
+  const draft = $("chatText")?.value || "";
+  box.replaceChildren(
+    h("div", { class: "chathead" }, h("h2", {}, "Messages"), h("button", { class: "chatx", "aria-label": "Close messages", onclick: toggleChat }, "×")),
+    h("div", { class: "chatlist", id: "chatList" }, list.length ? list.map((m) => h("div", { class: "msg" + (m.who === me ? " mine" : "") },
+      m.who !== me && avatar(m.who, 28),
+      m.sticker ? h("img", { class: "msgsticker", src: STICKER_IMG[m.sticker]?.src || "", alt: m.sticker }) : h("p", {}, m.text),
+      h("time", {}, new Date(m.at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }))))
+      : h("p", { class: "fine", style: "text-align:center" }, "Say hello to start.")),
+    h("div", { class: "stickerbar" }, CHAT_STICKERS.map((k) => h("button", { "aria-label": `Send ${k} sticker`, onclick: () => sendMessage({ sticker: k }) }, h("img", { src: STICKER_IMG[k].src, alt: "" })))),
+    form);
+  if (draft) $("chatText").value = draft;
+  const scroller = $("chatList");
+  scroller.scrollTop = scroller.scrollHeight;
+}
+function markRead() {
+  chatRead = Date.now();
+  try { localStorage.setItem(CHAT_READ, String(chatRead)); } catch {}
+  $("chatDot").hidden = true;
+}
+function toggleChat() {
+  chatOpen = !chatOpen;
+  $("chat").hidden = !chatOpen;
+  if (chatOpen) { renderChat(); markRead(); }
+}
+let lastSeenMsg = null;
+const pageOpened = Date.now();
+function chatChanged() {
+  const list = messages(), last = list[list.length - 1];
+  if (chatOpen) { renderChat(); markRead(); }
+  else {
+    $("chatDot").hidden = !list.some((m) => m.who !== me && m.at > chatRead);
+    if (last && last.id !== lastSeenMsg && last.who !== me && last.at > pageOpened) toast(`${personName(last.who)}: ${last.text || "sent a sticker"}`);
+  }
+  if (last) lastSeenMsg = last.id;
+}
+/* the small home-screen view of the bucket list */
+function renderWidgetView() {
+  document.documentElement.classList.add("widgetview");
+  const list = [...items.filter((i) => i.status === "dream").map((i) => ({ text: i.title, at: i.createdAt, who: i.who })),
+    ...bucket.filter((b) => !b.done).map((b) => ({ text: b.text, at: b.createdAt, who: b.who }))].sort((a, b) => b.at - a.at);
+  $("page").hidden = false;
+  $("page").replaceChildren(h("a", { class: "widget", href: "./?go=plans" },
+    h("div", { class: "widgethead" }, h("span", { html: logoSvg(34) }), h("b", {}, "Our bucket list"), h("em", {}, String(list.length))),
+    list.length ? h("ul", {}, list.slice(0, 8).map((x) => h("li", {}, h("span", {}, "★"), x.text))) : h("p", {}, "Nothing yet. Dream something up!")));
 }
 
 /* ---------- sections ---------- */
@@ -2782,8 +3162,10 @@ function setMapView(v) {
   renderMapMode(); refreshThreads(); renderPanel();
 }
 function renderMapMode() {
+  const people = state.mapView === "been" && profiles.length > 1 ? [["all", "Both"], ...profiles.map((p) => [p.id, p.name])] : [];
   $("mapmode").replaceChildren(...[["all", "Everything"], ["been", "Been to"]].map(([v, label]) =>
-    h("button", { class: "seg", "aria-pressed": String(state.mapView === v), onclick: () => setMapView(v) }, label)));
+    h("button", { class: "seg", "aria-pressed": String(state.mapView === v), onclick: () => setMapView(v) }, label)),
+    ...people.map(([id, label]) => h("button", { class: "seg small", "aria-pressed": String(state.person === id), onclick: () => { state.person = id; refreshThreads(); renderMapMode(); renderPanel(); } }, label)));
 }
 
 const PICKS = [
@@ -2940,11 +3322,12 @@ resize();
 /* home-screen shortcuts land here: ?go=plans, been, explore, play, profile, surprise */
 {
   const go = new URLSearchParams(location.search).get("go");
-  if (go === "been") setMapView("been");
+  if (go === "widget") { $("app").hidden = true; renderWidgetView(); setTimeout(renderWidgetView, 1500); }
+  else if (go === "been") setMapView("been");
   else if (go === "surprise") setTimeout(surprise, 400);
   else if (go && SECTIONS[go]) setSection(go);
 }
-document.fonts?.ready.then(() => { labelWidth.clear(); baseKey = ""; dirty = true; });
+document.fonts?.ready.then(() => { sprites.clear(); baseKey = ""; dirty = true; });
 requestAnimationFrame(draw);
 connect().then(async () => { if (user) myId = await user.id(); }).catch(() => {});
 </script>
