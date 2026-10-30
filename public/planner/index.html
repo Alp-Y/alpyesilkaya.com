@@ -4,16 +4,18 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#f5e6bf">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'">
+<meta name="theme-color" content="#161b3f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Fun time">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HugeWorld">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png">
 <style>html,body{margin:0}body{font-size:14px;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fun time planner</title>
+<title>HugeWorld</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -289,6 +291,27 @@ button.row:hover { background: var(--paper-deep); }
 .feed span.t { overflow-wrap: anywhere; min-width: 0; }
 .feed time { margin-left: auto; font-size: 12.5px; color: var(--ink-faint); white-space: nowrap; }
 .chip i.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c); border: 1px solid var(--ink); }
+#mark { display: flex; }
+#splash { position: fixed; inset: 0; z-index: 30; background: radial-gradient(70% 60% at 50% 42%, #2a3170 0, #161b3f 75%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; overflow: hidden; transition: opacity .42s, transform .42s; }
+#splash.out { opacity: 0; transform: scale(1.08); pointer-events: none; }
+.splashstars { position: absolute; inset: 0; }
+.splashstars i { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff1c9; animation: twinkle 1.8s ease-in-out infinite; }
+.splashlogo { animation: drop .8s cubic-bezier(.3, 1.5, .5, 1) both; position: relative; }
+.splashlogo svg { overflow: visible; display: block; }
+.splashlogo .orbit { transform-origin: 60px 60px; animation: orbit 4s linear infinite; }
+.splashname { font: 400 40px/1 var(--font-display); color: #fff1c9; display: flex; position: relative; }
+.splashname span { display: block; animation: hop .5s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes drop { from { transform: translateY(-120px) scale(.5); opacity: 0; } }
+@keyframes hop { from { transform: translateY(26px); opacity: 0; } }
+@keyframes orbit { to { transform: rotate(360deg); } }
+@keyframes twinkle { 50% { opacity: .15; } }
+#top .sec svg { display: none; }
+#grip { display: none; }
+button, a, input, select, textarea { touch-action: manipulation; }
+.btn:active, .chip:active, .pick:active, .tool:active { transform: translate(1px, 1px) scale(.98); }
+body { -webkit-user-select: none; user-select: none; }
+input, textarea { -webkit-user-select: text; user-select: text; }
+input.text, textarea { font-size: 16px; }
 .btn.mini { padding: 3px 10px; font-size: 12.5px; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
 .fine { margin: 0; font-size: 12.5px; color: var(--ink-faint); }
 .notes h3 { margin: 0; font: 400 16px/1.2 var(--font-display); }
@@ -334,6 +357,20 @@ textarea { resize: vertical; min-height: 66px; }
 }
 
 @media (max-width: 760px) {
+  :root { --nav: calc(56px + env(safe-area-inset-bottom, 0px)); }
+  #top { padding-bottom: 6px; }
+  #top h1 { display: block; font-size: 18px; }
+  #sections { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; flex: none; background: var(--paper); border-top: 3px solid var(--ink); padding: 4px 4px env(safe-area-inset-bottom, 0px); }
+  #sections .sec { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 3px 0; border: 0; border-radius: 10px; font-size: 11.5px; font-weight: 800; box-shadow: none; }
+  #sections .sec svg { display: block; width: 22px; height: 22px; }
+  #sections .sec[aria-current="page"] { background: var(--been); box-shadow: none; }
+  #app, #page { margin-bottom: var(--nav); }
+  #app { grid-template-rows: 46% minmax(0, 1fr); transition: grid-template-rows .26s ease; }
+  #app.mapfull { grid-template-rows: minmax(0, 1fr) 30px; }
+  #app.mapfull #panel > :not(#grip) { display: none; }
+  #grip { display: block; flex: none; align-self: center; width: 54px; height: 16px; margin: -6px 0 -2px; background: none; border: 0; padding: 5px 0; }
+  #grip::before { content: ""; display: block; height: 5px; border-radius: 3px; background: var(--ink-faint); }
+  #toast { top: auto; bottom: calc(var(--nav) + 10px); }
   #mapfilters { top: 58px; left: 0; right: 0; flex-direction: row; overflow-x: auto; padding: 0 10px 4px; scrollbar-width: none; }
   #mapfilters .chip { flex: none; }
   #app { grid-template-columns: minmax(0, 1fr); grid-template-rows: 43% minmax(0, 1fr); }
@@ -344,12 +381,7 @@ textarea { resize: vertical; min-height: 66px; }
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-block: 10px max(10px, env(safe-area-inset-bottom, 0px)); gap: 9px;
   }
-  #top h1 { display: none; }
-  #mark { display: none; }
-  .sec { padding: 4px 6px; font-size: 13px; white-space: nowrap; }
-  #sections { gap: 2px; }
-  #meBtn { font-size: 0; gap: 0; } #musicBtn { font-size: 0; } #musicBtn::before { content: "♪"; font-size: 16px; }
-  #sections { flex: 1; justify-content: space-between; }
+  #meBtn { font-size: 13px; padding: 3px 6px; } #musicBtn { font-size: 0; padding: 3px 6px; } #musicBtn::before { content: "♪"; font-size: 16px; }
   .tab { font-size: 11.5px; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -357,15 +389,21 @@ textarea { resize: vertical; min-height: 66px; }
 </head>
 <body>
 
+<div id="splash" aria-hidden="true">
+  <div class="splashstars"></div>
+  <div class="splashlogo"></div>
+  <div class="splashname"></div>
+</div>
 <header id="top">
   <span id="mark"></span>
-  <h1>Fun time planner</h1>
+  <h1>HugeWorld</h1>
   <button id="meBtn" class="sec" aria-label="Choose your profile"></button>
   <button id="musicBtn" class="sec" aria-pressed="false">♪ Music</button>
   <nav id="sections" aria-label="Sections"></nav>
 </header>
 <div id="app">
   <section id="panel" aria-label="Our places">
+    <button id="grip" aria-label="Show more of the globe"></button>
     <div id="stats"></div>
     <div id="find"><input class="text" id="findBox" type="search" placeholder="Search a country, city or place" aria-label="Search the map" autocomplete="off"><div id="findList" hidden></div></div>
     <nav id="tabs" role="tablist" aria-label="Globe views"></nav>
@@ -479,7 +517,7 @@ const threadVar = (s) => VIEWS[STATUS_VIEW[s]]?.thread || "var(--ink)";
 {
   let rays = "";
   for (let i = 0; i < 12; i++) rays += `<path d="M21 2l3.500 8h-7z" transform="rotate(${i * 30} 21 21)" fill="${i % 2 ? "#f2ae14" : "#d6432c"}" stroke="#2b1d18" stroke-width="1.500" stroke-linejoin="round"/>`;
-  $("mark").innerHTML = `<svg width="34" height="34" viewBox="0 0 42 42" aria-hidden="true">${rays}<circle cx="21" cy="21" r="11" fill="#f2ae14" stroke="#2b1d18" stroke-width="2"/><path d="M15 19h3M24 19h3M16 25c3 3 7 3 10 0" fill="none" stroke="#2b1d18" stroke-width="1.800" stroke-linecap="round"/></svg>`;
+  $("mark").dataset.old = `<svg width="34" height="34" viewBox="0 0 42 42" aria-hidden="true">${rays}<circle cx="21" cy="21" r="11" fill="#f2ae14" stroke="#2b1d18" stroke-width="2"/><path d="M15 19h3M24 19h3M16 25c3 3 7 3 10 0" fill="none" stroke="#2b1d18" stroke-width="1.800" stroke-linecap="round"/></svg>`;
 }
 
 /* ---------- geometry ---------- */
@@ -596,6 +634,7 @@ function renderWho() {
     } }, avatar(p.id, 30), p.name))),
     createForm,
     h("button", { class: "btn quiet", onclick: close }, "Not now"),
+    h("button", { class: "btn quiet", onclick: downloadBackup }, "Download a backup"),
     authClient && h("button", { class: "link", onclick: () => authClient.auth.signOut().then(() => location.reload()) }, "Sign out")));
   box.hidden = false;
 }
@@ -620,6 +659,18 @@ async function persist(item, okMsg) {
 
 /* the installed app: sign in, then share everything through Supabase */
 let authClient = null, authUid = null;
+function askNewPassword(client) {
+  const box = $("login"), note = h("p", { class: "fine", role: "status" });
+  box.replaceChildren(h("div", { class: "whobox" }, h("h2", {}, "Choose a new password"),
+    h("form", { style: "display:grid;gap:10px", onsubmit: async (e) => {
+      e.preventDefault();
+      const { error } = await client.auth.updateUser({ password: e.target.elements.newPass.value });
+      if (error) note.textContent = error.message; else { box.hidden = true; toast("Password changed"); }
+    } },
+      h("label", { class: "field" }, "New password", h("input", { class: "text", id: "newPass", name: "newPass", type: "password", required: true, minlength: 8, autocomplete: "new-password" })),
+      h("button", { class: "btn", type: "submit" }, "Save password")), note));
+  box.hidden = false;
+}
 function askToSignIn(client) {
   return new Promise((resolve) => {
     const box = $("login"), note = h("p", { class: "fine", role: "status" });
@@ -635,20 +686,26 @@ function askToSignIn(client) {
       resolve(data.session);
     };
     box.replaceChildren(h("div", { class: "whobox" },
-      h("h2", {}, "Welcome back"),
+      h("div", { html: logoSvg(84), style: "justify-self:center" }),
+      h("h2", { style: "text-align:center" }, "HugeWorld"),
       h("form", { id: "loginForm", style: "display:grid;gap:10px", onsubmit: (e) => submit(e, "in") },
         h("label", { class: "field" }, "Email", h("input", { class: "text", id: "loginEmail", name: "loginEmail", type: "email", required: true, autocomplete: "username" })),
-        h("label", { class: "field" }, "Password", h("input", { class: "text", id: "loginPass", name: "loginPass", type: "password", required: true, minlength: 6, autocomplete: "current-password" })),
+        h("label", { class: "field" }, "Password", h("input", { class: "text", id: "loginPass", name: "loginPass", type: "password", required: true, minlength: 8, autocomplete: "current-password" })),
         h("button", { class: "btn", type: "submit" }, "Sign in"),
-        h("button", { class: "btn quiet", type: "button", onclick: (e) => submit(e, "new") }, "First time? Create my account")),
+        h("button", { class: "btn quiet", type: "button", onclick: (e) => submit(e, "new") }, "First time? Create my account"),
+        h("button", { class: "link", style: "padding:0", type: "button", onclick: async () => {
+          const email = $("loginEmail").value.trim();
+          if (!email) { note.textContent = "Type your email first."; return; }
+          const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: location.href.split("#")[0] });
+          note.textContent = error ? error.message : "Check your email for a reset link.";
+        } }, "Forgot password?")),
       note));
     box.hidden = false;
   });
 }
 /* personal touches live in the private database, not in the public site files */
 function applyPrivate(settings) {
-  const app = settings.find((d) => d.id === "app"), heart = settings.find((d) => d.id === "heart");
-  if (app?.name) { document.title = app.name; document.querySelector("#top h1").textContent = app.name; }
+  const heart = settings.find((d) => d.id === "heart");
   if (heart && !SCENES.some((s) => s.kind === "heart")) {
     SCENES.unshift({ name: heart.name, lat: heart.lat, lon: heart.lon, kind: "heart", zoom: 4.5, xyz: toXYZ(heart.lat, heart.lon), phase: 0, country: nearestCountry(heart.lat, heart.lon).index });
     chosenKey = "";
@@ -657,6 +714,7 @@ function applyPrivate(settings) {
 async function connectCloud() {
   const { supabaseUrl, supabaseKey } = window.PLANNER_CONFIG;
   const client = (authClient = window.supabase.createClient(supabaseUrl, supabaseKey));
+  client.auth.onAuthStateChange((event) => { if (event === "PASSWORD_RECOVERY") askNewPassword(client); });
   let { data: { session } } = await client.auth.getSession();
   if (!session) session = await askToSignIn(client);
   authUid = session.user.id;
@@ -680,8 +738,9 @@ async function connectCloud() {
     saveBucket: (b) => cloud.save("bucket", b).then(apply),
     removeBucket: (id) => cloud.remove("bucket", id).then(apply),
   };
-  if (!(await cloud.load())) toast("You're offline, showing your saved copy.");
+  if (!(await cloud.load())) toast("You're offline. New things will sync when you're back.");
   apply();
+  window.addEventListener("online", async () => { await cloud.load(); apply(); toast("Back online and synced"); });
   cloud.subscribe((type, collection, doc) => {
     if (type === "INSERT" && collection === "places") announce(doc);
     if (type === "INSERT" && collection === "bucket") announce(doc, true);
@@ -1125,6 +1184,7 @@ function openCountry(name, ll, keepView) {
   });
 }
 function markBeen(fields) {
+  buzz();
   persist({ id: newId(), cat: "sights", status: "been", by: myId, createdAt: Date.now(), notes: [], ...fields }, "Another one for the map").then(changed);
   celebrate();
 }
@@ -1982,6 +2042,7 @@ async function toggleMusic() {
 }
 $("musicBtn").onclick = toggleMusic;
 $("meBtn").onclick = renderWho;
+$("grip").onclick = () => { $("app").classList.toggle("mapfull"); buzz(); };
 
 /* ---------- search ---------- */
 const plain = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ı/g, "i").toLowerCase();
@@ -2066,12 +2127,55 @@ function renderPlay() {
         quiz.answered && h("button", { class: "btn", onclick: () => { nextQuiz(); renderPlay(); } }, "Next"))))));
 }
 
+/* ---------- opening ---------- */
+function logoSvg(size) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 120 120" aria-hidden="true"><g stroke="#2b1d18" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+  <circle class="lg" cx="60" cy="60" r="38" fill="#2c9c98"/>
+  <path d="M33 42c8-11 21-17 35-15 5 5-3 11-9 12-1 6 9 6 11 12-4 8-11 4-17 9-8 2-14-2-16-9-3 0-4-5-4-9z" fill="#ecd59c"/>
+  <path d="M73 52c6-4 15-1 21 8 2 11-4 21-12 27-9 0-14-11-11-21 0-5-1-10 2-14z" fill="#c5cf8e"/>
+  <path d="M37 79c5-3 13 0 16 6-1 6-4 10-7 12-5-4-10-11-9-18z" fill="#e9b98f"/>
+  <path d="M49 60c2-2 5-2 7 0M64 60c2-2 5-2 7 0" fill="none"/><path d="M53 67c3 3 9 3 12 0" fill="none"/>
+  <ellipse cx="46" cy="66" rx="4" ry="2.500" fill="#ef9a9a" stroke="none"/><ellipse cx="74" cy="66" rx="4" ry="2.500" fill="#ef9a9a" stroke="none"/>
+  <g class="orbit"><ellipse cx="60" cy="60" rx="55" ry="15" fill="none" stroke="#f2ae14" stroke-width="3" stroke-dasharray="6 5" transform="rotate(-18 60 60)"/>
+  <path d="M106 34l8-12-16 6 5 2z" fill="#fff6dc"/></g></g></svg>`;
+}
+function openingScreen() {
+  const box = $("splash");
+  let seen = false;
+  try { seen = sessionStorage.getItem("hw-opened") === "1"; sessionStorage.setItem("hw-opened", "1"); } catch {}
+  if (seen || reduced) { box.remove(); return; }
+  box.querySelector(".splashlogo").innerHTML = logoSvg(190);
+  box.querySelector(".splashname").replaceChildren(...[..."HugeWorld"].map((c, i) => h("span", { style: `animation-delay:${.55 + i * .05}s` }, c)));
+  const stars = box.querySelector(".splashstars");
+  for (let i = 0; i < 46; i++) stars.append(h("i", { style: `left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-delay:${Math.random() * 2}s` }));
+  const leave = () => { box.classList.add("out"); setTimeout(() => box.remove(), 480); };
+  box.addEventListener("pointerdown", leave, { once: true });
+  setTimeout(leave, 2300);
+}
+const buzz = () => { try { navigator.vibrate?.(9); } catch {} };
+
+/* ---------- backup ---------- */
+function downloadBackup() {
+  const stamp = new Date().toISOString().slice(0, 10);
+  const body = JSON.stringify({ app: "HugeWorld", saved: stamp, places: items, bucket, profiles, base: HOME }, null, 2);
+  const link = h("a", { href: URL.createObjectURL(new Blob([body], { type: "application/json" })), download: `hugeworld-backup-${stamp}.json` });
+  document.body.append(link); link.click(); link.remove();
+  toast("Backup saved");
+}
+
 /* ---------- sections ---------- */
 const SECTIONS = { globe: "Globe", been: "Been to", explore: "Explore", play: "Play", stats: "Stats" };
+const SEC_ICON = {
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+  been: '<path d="M6 21V4M6 5c5-3 8 3 13 0v9c-5 3-8-3-13 0"/>',
+  explore: '<circle cx="12" cy="12" r="9"/><path d="M15.500 8.500l-2 5-5 2 2-5z"/>',
+  play: '<rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="15" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="9" cy="15" r="1"/>',
+  stats: '<path d="M5 20v-7M12 20V5M19 20v-10"/>',
+};
 const activeSection = () => (state.section === "globe" && state.view === "been" ? "been" : state.section);
 function renderSections() {
   $("sections").replaceChildren(...Object.entries(SECTIONS).map(([k, label]) =>
-    h("button", { class: "sec", "aria-current": activeSection() === k ? "page" : "false", onclick: () => setSection(k) }, label)));
+    h("button", { class: "sec", "aria-current": activeSection() === k ? "page" : "false", html: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SEC_ICON[k]}</svg><span>${label}</span>`, onclick: () => { buzz(); setSection(k); } })));
 }
 function setSection(k) {
   const wasBeen = state.view === "been";
@@ -2228,6 +2332,8 @@ async function renderStatsPage() {
 
 /* ---------- start ---------- */
 refreshThreads();
+$("mark").innerHTML = logoSvg(38);
+openingScreen();
 renderSections();
 renderMapFilters();
 renderPanel();
@@ -2239,6 +2345,17 @@ requestAnimationFrame(draw);
 connect().then(async () => { if (user) myId = await user.id(); }).catch(() => {});
 </script>
 
-<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+  /* a new version arrived: refresh once, the next time the app is put away and reopened */
+  let hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!hadController) { hadController = true; return; }
+    if (document.hidden) location.reload();
+    else document.addEventListener("visibilitychange", () => { if (document.hidden) location.reload(); }, { once: true });
+  });
+}
+</script>
 </body>
 </html>

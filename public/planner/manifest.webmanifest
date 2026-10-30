@@ -1,6 +1,6 @@
 {
-  "name": "Fun time planner",
-  "short_name": "Fun time",
+  "name": "HugeWorld",
+  "short_name": "HugeWorld",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

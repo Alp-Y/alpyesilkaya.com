@@ -1,5 +1,5 @@
 // Offline support. The build fills in VERSION and FILES.
-const VERSION = "4d2e6b49e1";
+const VERSION = "a1c0bb23b7";
 const FILES = ["./","index.html","config.js","cloud.js","manifest.webmanifest","world.js","land.js","country.js","facts.js","cities.js","stickers.js","more-scenes.js","home-countries.js","spots.js","boost.js","vendor/d3.min.js","vendor/supabase.js","icons/icon-180.png","icons/icon-192.png","icons/icon-512.png"];
 const CACHE = `planner-${VERSION}`;
 
