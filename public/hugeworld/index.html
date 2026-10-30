@@ -2102,7 +2102,7 @@ function draw(now) {
   const settled = wasMoving && !moving;
   wasMoving = moving;
   /* a still map costs nothing: only animals close up keep it ticking, four times a second */
-  const animate = !reduced && (view.zoom > 2.2 || state.kinds.size > 0) && now - drawn >= 250;
+  const animate = !reduced && !!state.country && view.zoom > 2 && now - drawn >= 250;
   if (!moving && !dirty && !settled && !animate) return;
   if (moving && lastDraw) noteFrame(now - lastDraw, true);
   lastDraw = moving ? now : 0;
@@ -2128,7 +2128,15 @@ function draw(now) {
   }
 
   pen = ctx;
-  const { w, h: H, cx, cy, dpr } = view;
+  const { w, h: H, dpr } = view;
+  /* while the painted map slides, everything on top is placed from that same painting,
+     so stickers and pins stay locked to the land instead of drifting against it */
+  let cx = view.cx, cy = view.cy;
+  const trueRotation = [sinO, cosO, sinP, cosP];
+  if (shiftX || shiftY) {
+    sinO = Math.sin(paintedAt.lon * RAD); cosO = Math.cos(paintedAt.lon * RAD); sinP = Math.sin(paintedAt.lat * RAD); cosP = Math.cos(paintedAt.lat * RAD);
+    cx += shiftX; cy += shiftY;
+  }
   const R = view.r * view.zoom;
   const tick = reduced ? 0 : Math.floor(now / 250);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -2140,11 +2148,13 @@ function draw(now) {
 
   /* the living map: zoom in and the country's animals and landmarks appear */
   screenScenes = [];
+  const openIndex = state.country ? W.names.indexOf(state.country.name) : -1;
   const filtering = state.kinds.size > 0;
-  if ((view.zoom > 2 || filtering) && chosenKey === key + state.kinds.size + filterMarks.length) {
+  const sceneKey = [view.lon, view.lat, view.zoom, cx, cy, state.view, state.kinds.size, filterMarks.length].join();
+  if ((view.zoom > 2 || filtering) && chosenKey === sceneKey) {
     /* same view as last tick: reuse the layout and just move the animals */
   } else if (view.zoom > 2 || filtering) {
-    chosenKey = key + state.kinds.size + filterMarks.length;
+    chosenKey = sceneKey;
     const size = filtering ? Math.min(78, 42 + Math.max(0, view.zoom - 1) * 8) : Math.min(78, 30 + (view.zoom - 2) * 9);
     chosen = [];
     const taken = (x, y, gap) => chosen.some((o) => (o.x - x) ** 2 + (o.y - y) ** 2 < ((gap + o.gap) / 2) ** 2);
@@ -2174,7 +2184,8 @@ function draw(now) {
       const img = STICKER_IMG[s.kind];
       if (!img.complete) continue;
       const big = !!s.name, hovered = s === hoverScene;
-      const live = !reduced && big, swim = SWIMMERS.has(s.kind), walk = WALKERS.has(s.kind);
+      /* only the animals in the country you've opened come to life */
+      const live = !reduced && big && openIndex >= 0 && s.country === openIndex, swim = SWIMMERS.has(s.kind), walk = WALKERS.has(s.kind);
       const step = (tick + s.phase) % 4;
       const dy = live && walk ? [0, -sz * .04, 0, -sz * .02][step] : 0;
       const dx = live && swim ? [0, sz * .05, 0, -sz * .05][step] : 0;
@@ -2230,6 +2241,8 @@ function draw(now) {
     const [px, py, pz] = project(x, y, z);
     if (pz > 0) starPin(cx + R * px, cy - R * py, 12, STATUS_COLOR.been);
   }
+
+  [sinO, cosO, sinP, cosP] = trueRotation;
 
   /* confetti for a finished moment */
   if (confetti.length) {
