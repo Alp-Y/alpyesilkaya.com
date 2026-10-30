@@ -978,7 +978,6 @@ function settingsList() {
     row("Vibration", "On phones that support it", toggle(prefs.haptics, () => { prefs.haptics = !prefs.haptics; savePrefs(); })),
     row("Animal visitors", "A rare cat or bird", toggle(palsOn, () => { palsOn = !palsOn; try { localStorage.setItem(PALS_KEY, palsOn ? "on" : "off"); } catch {} })),
     h("h3", {}, "Your data"),
-    row("Bucket list widget", "A small view to pin to your home screen", h("a", { class: "btn quiet mini", href: "./?go=widget" }, "Open")),
     row("Backup", "Save a copy of everything", h("button", { class: "btn quiet mini", onclick: downloadBackup }, "Download")),
     authClient && row("Account", null, h("button", { class: "btn quiet mini", onclick: () => authClient.auth.signOut().then(() => location.reload()) }, "Sign out")));
 }
@@ -1008,7 +1007,7 @@ async function persist(item, okMsg) {
 }
 
 /* the installed app: sign in, then share everything through Supabase */
-let authClient = null, authUid = null;
+let authClient = null, authUid = null, cloudReady = false;
 function askNewPassword(client) {
   const box = $("login"), note = h("p", { class: "fine", role: "status" });
   box.replaceChildren(h("div", { class: "whobox" }, h("h2", {}, "Choose a new password"),
@@ -1098,7 +1097,8 @@ async function connectCloud() {
     if (type === "INSERT" && collection === "bucket") announce(doc, true);
     apply();
   });
-  if (!profile(me)) afterOpening();
+  cloudReady = true;
+  if (!$("splash")) afterOpening();
 }
 async function connect() {
   if (window.PLANNER_CONFIG?.supabaseUrl) return connectCloud();
@@ -3182,7 +3182,8 @@ function openingScreen() {
 function afterOpening() {
   let onboarded = false;
   try { onboarded = localStorage.getItem("hw-onboarded") === "1"; } catch {}
-  if (!$("login").hidden || new URLSearchParams(location.search).get("go") === "widget") return;                       // signing in comes first
+  if (!$("login").hidden || new URLSearchParams(location.search).get("go") === "widget") return;
+  if (window.PLANNER_CONFIG?.supabaseUrl && !cloudReady) return;   // wait until sign-in has loaded                       // signing in comes first
   if (profile(me)) { if (!onboarded) showWelcome(); return; }
   /* a profile is needed once, here, so nothing in the app ever has to ask again */
   showWelcome(onboarded ? WELCOME.length : 0);
